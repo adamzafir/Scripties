@@ -1,18 +1,31 @@
-//
-//  TabHolder.swift
-//  yapLONGER
-//
-//  Created by Adam Zafir on 11/10/25.
-//
-
 import SwiftUI
 
-struct TabHolder: View {
-    var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
-    }
+
+enum Tabs {
+    case scripts
+    case settings
+    case add
 }
 
+struct TabHolder: View {
+    @State private var selectedTab: Tabs = .scripts
+    
+    var body: some View {
+        TabView(selection: $selectedTab) {
+            Tab("Scripts", systemImage: "swirl.circle.righthalf.filled", value: Tabs.scripts) {
+                Screen1()
+            }
+            
+            Tab("Settings", systemImage: "gear", value: Tabs.settings) {
+                Settings()
+            }
+            
+            Tab("Add", systemImage: "plus", value: Tabs.add, role: .search) {
+                Text("Hi")
+            }
+        }}}
+            
+            
 #Preview {
     TabHolder()
 }
