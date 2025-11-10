@@ -110,7 +110,7 @@ struct Screen2: View {
                 .background(.ultraThinMaterial)
         }
         .fullScreenCover(isPresented: $showScreen) {
-            Screen3(title: $title, script: $script)
+            Screen3Teleprompter(title: $title, script: $script)
         }
     }
 }

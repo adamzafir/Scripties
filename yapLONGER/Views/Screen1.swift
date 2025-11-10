@@ -1,7 +1,5 @@
 import SwiftUI
 
-import SwiftUI
-
 struct Screen1: View {
     @StateObject private var viewModel = Screen2ViewModel()
 
