@@ -11,10 +11,10 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		66C863F62EC1B315007A5F08 /* Exceptions for "yapLONGER" folder in "yapLONGER" target */ = {
+		66157EE82EC6144A001EF93E /* Exceptions for "yapLONGER" folder in "yapLONGER" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				visionOS/Info.plist,
+				Info.plist,
 			);
 			target = 66C863CD2EC1AA94007A5F08 /* yapLONGER */;
 		};
@@ -24,7 +24,7 @@
 		66C863D02EC1AA94007A5F08 /* yapLONGER */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				66C863F62EC1B315007A5F08 /* Exceptions for "yapLONGER" folder in "yapLONGER" target */,
+				66157EE82EC6144A001EF93E /* Exceptions for "yapLONGER" folder in "yapLONGER" target */,
 			);
 			path = yapLONGER;
 			sourceTree = "<group>";
