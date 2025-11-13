@@ -132,7 +132,7 @@ struct Settings: View {
                         .transition(.opacity.combined(with: .move(edge: .top)))
                     }
                 }
-                Section(header: Text("Acknoledgments")) {
+                Section(header: Text("Acknowledgements")) {
                     Text("Avyan Inteligence")
                         .fontWeight(.semibold)
                         .appleIntelligenceGradient()
