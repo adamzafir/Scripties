@@ -10,8 +10,8 @@ struct AppleIntelligenceGradient: ViewModifier {
                 .init(color: Color(red: 0.19, green: 0.54, blue: 1.00), location: 0.00),
                 .init(color: Color(red: 0.45, green: 0.38, blue: 1.00), location: 0.18),
                 .init(color: Color(red: 0.74, green: 0.37, blue: 1.00), location: 0.40),
-                .init(color: Color(red: 1.00, green: 0.33, blue: 0.55), location: 0.67), 
-                .init(color: Color(red: 1.00, green: 0.63, blue: 0.23), location: 1.00)
+                .init(color: Color(red: 1.00, green: 0.33, blue: 0.55), location: 0.67),
+                    .init(color: Color(red: 1.00, green: 0.63, blue: 0.23), location: 1.00)
             ],
             startPoint: start,
             endPoint: end
@@ -37,7 +37,7 @@ extension View {
 
 struct GlowEffect: View {
     @State private var gradientStops: [Gradient.Stop] = GlowEffect.generateGradientStops()
-
+    
     var body: some View {
         ZStack {
             EffectNoBlur(gradientStops: gradientStops, width: 6)
@@ -96,7 +96,7 @@ struct Effect: View {
     var gradientStops: [Gradient.Stop]
     var width: CGFloat
     var blur: CGFloat
-
+    
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 55)
@@ -120,7 +120,7 @@ struct Effect: View {
 struct EffectNoBlur: View {
     var gradientStops: [Gradient.Stop]
     var width: CGFloat
-
+    
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 55)

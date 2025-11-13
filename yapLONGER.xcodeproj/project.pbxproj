@@ -14,7 +14,7 @@
 		66C863F62EC1B315007A5F08 /* Exceptions for "yapLONGER" folder in "yapLONGER" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Info.plist,
+				visionOS/Info.plist,
 			);
 			target = 66C863CD2EC1AA94007A5F08 /* yapLONGER */;
 		};
