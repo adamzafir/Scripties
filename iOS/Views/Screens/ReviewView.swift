@@ -72,6 +72,12 @@ struct Screen4: View {
     var body: some View {
         NavigationStack {
             VStack {
+                #if DEBUG
+                Text("DEBUG: Elapsed Time: \(elapsedTime)")
+                    .font(.caption)
+                    .foregroundColor(.red)
+                    .padding(.top, 10)
+                #endif
                 Form{
                     Section("Result"){
                         LabeledContent {
@@ -132,6 +138,23 @@ struct Screen4: View {
                     .buttonStyle(.glassProminent)
                     .controlSize(.large)
                 }
+                NavigationLink {
+                    TabHolder()
+                } label: {
+                    ZStack {
+                        Rectangle()
+                            .frame(height: 55)
+                            .frame(maxWidth: .infinity)
+                            .cornerRadius(25)
+                            .foregroundStyle(Color.accentColor)
+                            .glassEffect()
+                            .padding(.horizontal)
+                        Text("Done")
+                            .fontWeight(.semibold)
+                            .foregroundStyle(Color.white)
+                    }
+                    .padding()
+                }
             }
             .onAppear {
                 updateWPMFromBindings()
@@ -139,11 +162,12 @@ struct Screen4: View {
             }
             .navigationTitle("Review")
         }
+        .navigationBarBackButtonHidden(true)
     }
     
     
     struct SemiCircleGauge: View {
-       
+        
         var progress: Double
         var lineWidth: CGFloat = 16
         var label: String? = nil
@@ -173,7 +197,7 @@ struct Screen4: View {
         }
     }
     
-   
+    
     struct Arc: Shape {
         var startAngle: Angle
         var endAngle: Angle

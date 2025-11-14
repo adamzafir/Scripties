@@ -85,7 +85,7 @@ struct Screen3Teleprompter: View {
     @State private var silenceDurations: [TimeInterval] = []
     @State private var wallTimer: Timer? = nil
     @State var deviation: Double = 0
-
+    
     // Tuning parameters for silence detection (AudioRecorderView parity)
     private let silenceThreshold: Float = -40.0 // dB regarded as silence
     private let minSilenceDuration: TimeInterval = 0.25 // ignore very short blips
@@ -116,7 +116,7 @@ struct Screen3Teleprompter: View {
             }
         }
     }
-
+    
     // MARK: - Wall clock timer
     private func startWallClockTimer() {
         wallTimer?.invalidate()
@@ -126,12 +126,12 @@ struct Screen3Teleprompter: View {
         }
         RunLoop.current.add(wallTimer!, forMode: .common)
     }
-
+    
     private func stopWallClockTimer() {
         wallTimer?.invalidate()
         wallTimer = nil
     }
-
+    
     // MARK: - Silence tracking via AVAudioEngine metering
     private func startSilenceTracking() {
         isCurrentlySilent = true
@@ -145,12 +145,12 @@ struct Screen3Teleprompter: View {
         }
         RunLoop.current.add(meteringTimer!, forMode: .common)
     }
-
+    
     private func stopSilenceTracking() {
         meteringTimer?.invalidate()
         meteringTimer = nil
     }
-
+    
     private func handleLevel(_ levelDB: Float) {
         let now = Date()
         if levelDB <= silenceThreshold {
@@ -174,7 +174,7 @@ struct Screen3Teleprompter: View {
             }
         }
     }
-
+    
     private func finalizeSilenceIfNeeded() {
         if isCurrentlySilent, let silenceStart = lastSilenceStartTime {
             let duration = Date().timeIntervalSince(silenceStart)
@@ -184,7 +184,7 @@ struct Screen3Teleprompter: View {
             }
         }
     }
-
+    
     // Compute RMS -> dB from audio buffer
     private func dBLevel(from buffer: AVAudioPCMBuffer) -> Float {
         guard let channelData = buffer.floatChannelData else { return -120.0 }
@@ -198,7 +198,7 @@ struct Screen3Teleprompter: View {
         let db = 20.0 * log10f(max(rms, 1e-7))
         return db.isFinite ? db : -120.0
     }
-
+    
     var body: some View {
         NavigationStack {
             NavigationLink(isActive: $navigateToScreen4) {
@@ -207,60 +207,62 @@ struct Screen3Teleprompter: View {
                 EmptyView()
             }
             VStack {
-              if isLoading {
-                  ProgressView("Loading...")
-                      .progressViewStyle(CircularProgressViewStyle())
-                      .padding()
-              } else {
-                  ScrollViewReader { proxy in
-                      ScrollView {
-                         VStack(alignment: .leading, spacing: 12) {
-                             ForEach(Array(scriptLines.enumerated()), id: \.offset) { index, line in
-                                 Text(line)
-                                     .font(.system(size: CGFloat(fontSize)))
-                                     .frame(maxWidth: .infinity, alignment: .leading)
-                                     .id(index)
-                                     .background(index == currentLineIndex ? Color.primary.opacity(0.08) : Color.clear)
-                             }
-                         }
-                         .frame(maxWidth: .infinity, alignment: .leading)
-                     }
-                     .onChange(of: currentLineIndex) { _, newValue in
-                         withAnimation(.easeInOut) {
-                             proxy.scrollTo(newValue, anchor: .top)
-                         }
-                     }
-                     .onAppear {
-                         if !scriptLines.isEmpty {
-                             proxy.scrollTo(0, anchor: .top)
-                         }
-                     }
-                     .onChange(of: transcription) { _, newValue in
-                         let tokens = normalizeAndTokenize(newValue)
-                         tryAdvance(using: tokens, scrollProxy: proxy)
-                         
-                         if !scriptWords.isEmpty && transcription.contains(scriptWords[0]) {
-                             transscriptionChangeCount += 1
-                             scriptWords.remove(at: 0)
-                             if transscriptionChangeCount % 5 == 0 {
-                                 let chunkTime = timer.elapsedSeconds
-                                 secondsPerWord.append(chunkTime)
-                                 timer.reset()
-                                 timer.start()
-                             }
-
-                         }
-                     }
-                 }
-             }
-             
-           Spacer()
+                if isLoading {
+                    ProgressView("Loading...")
+                        .progressViewStyle(CircularProgressViewStyle())
+                        .padding()
+                } else {
+                    ScrollViewReader { proxy in
+                        ScrollView {
+                            VStack(alignment: .leading, spacing: 12) {
+                                ForEach(Array(scriptLines.enumerated()), id: \.offset) { index, line in
+                                    Text(line)
+                                        .font(.system(size: CGFloat(fontSize)))
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        .id(index)
+                                        .background(index == currentLineIndex ? Color.primary.opacity(0.08) : Color.clear)
+                                }
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .onChange(of: currentLineIndex) { _, newValue in
+                            withAnimation(.easeInOut) {
+                                proxy.scrollTo(newValue, anchor: .top)
+                            }
+                        }
+                        .onAppear {
+                            if !scriptLines.isEmpty {
+                                proxy.scrollTo(0, anchor: .top)
+                            }
+                        }
+                        .onChange(of: transcription) { _, newValue in
+                            let tokens = normalizeAndTokenize(newValue)
+                            tryAdvance(using: tokens, scrollProxy: proxy)
+                            
+                            if !scriptWords.isEmpty && transcription.contains(scriptWords[0]) {
+                                transscriptionChangeCount += 1
+                                scriptWords.remove(at: 0)
+                                if transscriptionChangeCount % 5 == 0 {
+                                    let chunkTime = timer.elapsedSeconds
+                                    secondsPerWord.append(chunkTime)
+                                    timer.reset()
+                                    timer.start()
+                                }
+                                
+                            }
+                        }
+                    }
+                }
+                
+                Spacer()
                 
                 HStack {
+                    #if DEBUG
                     Text("DEBUG: \(secondsPerWord.description)")
                         .font(.caption)
                         .foregroundColor(.red)
                         .padding(.top, 10)
+                    #endif
                     Button {
                         isRecording.toggle()
                         showAccessory.toggle()

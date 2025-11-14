@@ -20,21 +20,45 @@ struct Screen2: View {
     // Added to satisfy Screen3Teleprompter requirements
     @State private var WPM: Int = 120
     @State private var timer = TimerManager()
+    @State private var isLoading = false
     
     var body: some View {
         NavigationStack {
             VStack {
-                TextField("Untitled Script", text: $title)
-                    .font(.title)
-                    .fontWeight(.bold)
-                    .padding()
-                
-                TextEditor(text: $script)
-                    .focused($isEditingScript)
-                    .padding(.horizontal)
-                    .frame(maxHeight: .infinity)
-                
-                Spacer()
+                if isLoading {
+                    Spacer()
+                    ZStack {
+                        VStack(spacing: 4) {
+                            ProgressView("Loading...")
+                                .progressViewStyle(CircularProgressViewStyle())
+                                .padding()
+                            Text("Powered By")
+                                .fontWeight(.medium)
+                                .font(.title3)
+                            Text("Avyan Intelligence")
+                                .font(.system(size: 35, weight: .semibold))
+                                .appleIntelligenceGradient()
+                        }
+                        VStack {
+                            Spacer()
+                            GlowEffect()
+                                .offset(y: 25)
+                        }
+                    }
+                    Spacer()
+                } else {
+                    TextField("Untitled Script", text: $title)
+                        .font(.title)
+                        .fontWeight(.bold)
+                        .padding()
+                    
+                    TextEditor(text: $script)
+                        .focused($isEditingScript)
+                        .padding(.horizontal)
+                        .frame(maxHeight: .infinity)
+                    
+                    Spacer()
+                }
             }
             .onAppear {
                 wordCount =  script.split { $0.isWhitespace }.count
@@ -52,6 +76,7 @@ struct Screen2: View {
                 
                 Button("Rewrite Now") {
                     rewriting = true
+                    isLoading = true
                     Task {
                         do {
                             let session = LanguageModelSession()
@@ -66,18 +91,11 @@ struct Screen2: View {
                             rewriteError = error.localizedDescription
                         }
                         rewriting = false
+                        isLoading = false
                     }
                 }.disabled(rewriting)
                 
                 Button("Cancel", role: .cancel) {}
-            }
-            .overlay {
-                if rewriting {
-                    ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle())
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .background(.ultraThinMaterial)
-                }
             }
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -114,7 +132,6 @@ struct Screen2: View {
                 }
             }
         }
-       
         .overlay(alignment: .bottom) {
             HStack {
                 Text("Word Count: \(wordCount)")
@@ -127,7 +144,6 @@ struct Screen2: View {
             .padding(.horizontal, 16)
             .padding(.bottom, 12)
             .frame(maxWidth: .infinity, alignment: .center)
-            
         }
         .fullScreenCover(isPresented: $showScreent) {
             Screen3Teleprompter(title: $title, script: $script, WPM: $WPM, timer: timer)

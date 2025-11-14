@@ -5,15 +5,17 @@ struct Screen1: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                ForEach($viewModel.scriptItems) { $item in
-                    NavigationLink {
-                        Screen2(title: $item.title, script: $item.scriptText)
-                    } label: {
-                        Text(item.title)
+            VStack {
+                Form {
+                    ForEach($viewModel.scriptItems) { $item in
+                        NavigationLink {
+                            Screen2(title: $item.title, script: $item.scriptText)
+                        } label: {
+                            Text(item.title)
+                        }
                     }
+                    .onDelete(perform: deleteItems) 
                 }
-                .onDelete(perform: deleteItems) 
             }
             .navigationTitle("Scripts")
            
