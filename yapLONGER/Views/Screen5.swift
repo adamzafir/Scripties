@@ -9,10 +9,9 @@ struct Screen5: View {
     @State private var progressTimer: Timer?
     @State private var isScrubbing = false
     @Binding var scoreTwo: Double
+    // Keep recordings internally to detect the most recent, but do not show them
     @State private var audios: [URL] = []
-    
-    // Gauge progress (0.0 ... 1.0)
-    @State private var gaugeProgress: Double = 0.67
+    @State private var selectedURL: URL? = nil
 
     private func configureAudioSessionForPlayback() {
         do {
@@ -35,51 +34,37 @@ struct Screen5: View {
         }
     }
 
-    private func playProvidedRecordingIfAvailable() {
-        guard let url = recordingURL else {
-            print("No recordingURL provided to Screen5.")
-            return
-        }
+    private func prepare(url: URL) {
         configureAudioSessionForPlayback()
         do {
-            audioPlayer = try AVAudioPlayer(contentsOf: url)
-            duration = audioPlayer?.duration ?? 0
-            currentTime = 0
-            audioPlayer?.prepareToPlay()
-            audioPlayer?.play()
-            startProgressTimer()
+            let player = try AVAudioPlayer(contentsOf: url)
+            audioPlayer = player
+            duration = player.duration
+            selectedURL = url
+            player.prepareToPlay()
+            // do not auto-play
         } catch {
-            print("Failed to play provided recording:", error)
+            print("Failed to prepare recording:", error)
         }
     }
 
-    func playSound(sound: String, type: String) {
-        configureAudioSessionForPlayback()
-
-        guard let url = Bundle.main.url(forResource: sound, withExtension: type) else {
-            print("Audio file not found:", sound, ".", type)
-            return
-        }
-        do {
-            audioPlayer = try AVAudioPlayer(contentsOf: url)
-            duration = audioPlayer?.duration ?? 0
-            audioPlayer?.prepareToPlay()
-            audioPlayer?.play()
-            startProgressTimer()
-        } catch {
-            print("AVAudioPlayer init error:", error)
-        }
+    // Decide which URL to play when Play is pressed
+    private func bestURLToPlay() -> URL? {
+        if let selectedURL { return selectedURL }
+        if let newest = audios.first { return newest }
+        if let recordingURL { return recordingURL }
+        return nil
     }
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 24) {
+            VStack(spacing: 16) {
                 // Gauge
                 SemiCircleGauge(progress: max(0.0, min(1.0, scoreTwo / 100.0)))
                     .frame(height: 160)
                     .padding(.horizontal)
                     .padding(.top, 8)
-                
+
                 // Progress slider & timestamps
                 VStack(spacing: 8) {
                     Slider(value: Binding(
@@ -91,8 +76,9 @@ struct Screen5: View {
                         isScrubbing = editing
                         if !editing, let player = audioPlayer {
                             player.currentTime = currentTime
-                            if !player.isPlaying { player.play() }
-                            startProgressTimer()
+                            if player.isPlaying {
+                                startProgressTimer()
+                            }
                         }
                     })
                     .padding(.horizontal)
@@ -131,25 +117,14 @@ struct Screen5: View {
                                 player.play()
                                 startProgressTimer()
                             }
+                        } else if let urlToUse = bestURLToPlay() {
+                            // Prepare then play on this button press
+                            prepare(url: urlToUse)
+                            audioPlayer?.currentTime = currentTime
+                            audioPlayer?.play()
+                            startProgressTimer()
                         } else {
-                            // No player yet — try to build one from the passed-in recordingURL
-                            if let url = recordingURL {
-                                do {
-                                    let player = try AVAudioPlayer(contentsOf: url)
-                                    audioPlayer = player
-                                    duration = player.duration
-                                    player.currentTime = currentTime
-                                    player.prepareToPlay()
-                                    player.play()
-                                    startProgressTimer()
-                                } catch {
-                                    print("Failed to init player with recordingURL:", error)
-                                }
-                            } else {
-                                // Optional: fallback to nothing or a bundled sample
-                                // playSound(sound: "cooked-dog-meme", type: "mp3")
-                                print("No recordingURL available to play.")
-                            }
+                            print("No recording available to play.")
                         }
                     } label: {
                         let isPlaying = audioPlayer?.isPlaying == true
@@ -166,13 +141,16 @@ struct Screen5: View {
                         Label("", systemImage: "goforward.15")
                     }
                 }
+                .padding(.bottom, 8)
+
+                Spacer(minLength: 0)
             }
-            .padding()
+            .padding(.horizontal)
             .navigationTitle("Review")
             .onAppear {
-                // If you prefer auto-play when Screen5 appears, uncomment:
-                // playProvidedRecordingIfAvailable()
                 configureAudioSessionForPlayback()
+                getAudios()
+                // No auto-play or UI for recordings
             }
             .onDisappear {
                 progressTimer?.invalidate()
@@ -186,13 +164,19 @@ struct Screen5: View {
         let total = Int(t.rounded())
         return String(format: "%d:%02d", total / 60, total % 60)
     }
+
     private func getAudios() {
         do {
             let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-            let result = try FileManager.default.contentsOfDirectory(at: url, includingPropertiesForKeys: nil, options: [])
+            let result = try FileManager.default.contentsOfDirectory(at: url, includingPropertiesForKeys: [.contentModificationDateKey], options: [])
             self.audios = result
                 .filter { $0.pathExtension.lowercased() == "m4a" }
-                .sorted { $0.lastPathComponent < $1.lastPathComponent }
+                // Sort by modification date descending (latest first)
+                .sorted(by: { lhs, rhs in
+                    let lDate = (try? lhs.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantPast
+                    let rDate = (try? rhs.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantPast
+                    return lDate > rDate
+                })
         } catch {
             print("List audios error: \(error.localizedDescription)")
         }
