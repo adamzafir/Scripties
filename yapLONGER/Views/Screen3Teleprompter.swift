@@ -66,6 +66,7 @@ struct Screen3Teleprompter: View {
     @State private var tokensPerLine: [[String]] = []
     @State private var currentLineIndex: Int = 0
     @State private var lastAdvanceTime: Date = .distantPast
+    @State private var navigateToScreen4 = false
 
     private func recomputeLines() {
         let font = UIFont.systemFont(ofSize: CGFloat(fontSize))
@@ -96,6 +97,8 @@ struct Screen3Teleprompter: View {
 
     var body: some View {
         NavigationStack {
+            // Hidden link to Screen4 that activates on stop
+            NavigationLink(destination: Screen4(), isActive: $navigateToScreen4) { EmptyView() }
             VStack {
                 if isLoading {
                     ProgressView("Loading...")
@@ -213,6 +216,8 @@ struct Screen3Teleprompter: View {
                     recordingStore.stopRecording()
                     audioEngine.stop()
                     audioEngine.inputNode.removeTap(onBus: 0)
+                    // Navigate to Screen4 after stopping
+                    navigateToScreen4 = true
                 }
             }
         }
