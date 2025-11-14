@@ -23,64 +23,60 @@ struct Screen2: View {
     
     var body: some View {
         NavigationStack {
-            TabView {
-                VStack {
-                    TextField("Untitled Script", text: $title)
-                        .font(.title)
-                        .fontWeight(.bold)
-                        .padding()
-                    
-                    TextEditor(text: $script)
-                        .focused($isEditingScript)
-                        .padding(.horizontal)
-                        .frame(maxHeight: .infinity)
-                    
-                    Spacer()
-                }
-                .onAppear {
-                    wordCount =  script.split { $0.isWhitespace }.count
-                }
-                .navigationTitle(title.isEmpty ? "Untitled Script" : title)
-                .lineLimit(3)
-                .alert("Rewrite Failed", isPresented: Binding(
-                    get: { rewriteError != nil },
-                    set: { if !$0 { rewriteError = nil } }
-                )) {
-                    Button("OK", role: .cancel) {}
-                } message: {
-                    Text(rewriteError ?? "Unknown error")
-                }
-                .confirmationDialog("Rewrite with AI", isPresented: $showPromptDialog, titleVisibility: .visible) {
-                    TextField("Prompt for rewriting", text: $rewritePrompt)
-                    
-                    Button("Rewrite Now") {
-                        rewriting = true
-                        Task {
-                            do {
-                                let session = LanguageModelSession()
-                                let result = try await session.respond(to: """
-                                Rewrite this text using these instructions: \(rewritePrompt)
-                                
-                                Original:
-                                \(script)
-                                """)
-                                script = result.content
-                            } catch {
-                                rewriteError = error.localizedDescription
-                            }
-                            rewriting = false
+            VStack {
+                TextField("Untitled Script", text: $title)
+                    .font(.title)
+                    .fontWeight(.bold)
+                    .padding()
+                
+                TextEditor(text: $script)
+                    .focused($isEditingScript)
+                    .padding(.horizontal)
+                    .frame(maxHeight: .infinity)
+                
+                Spacer()
+            }
+            .onAppear {
+                wordCount =  script.split { $0.isWhitespace }.count
+            }
+            .alert("Rewrite Failed", isPresented: Binding(
+                get: { rewriteError != nil },
+                set: { if !$0 { rewriteError = nil } }
+            )) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(rewriteError ?? "Unknown error")
+            }
+            .confirmationDialog("Rewrite with AI", isPresented: $showPromptDialog, titleVisibility: .visible) {
+                TextField("Prompt for rewriting", text: $rewritePrompt)
+                
+                Button("Rewrite Now") {
+                    rewriting = true
+                    Task {
+                        do {
+                            let session = LanguageModelSession()
+                            let result = try await session.respond(to: """
+                            Rewrite this text using these instructions: \(rewritePrompt)
+                            
+                            Original:
+                            \(script)
+                            """)
+                            script = result.content
+                        } catch {
+                            rewriteError = error.localizedDescription
                         }
-                    }.disabled(rewriting)
-                    
-                    Button("Cancel", role: .cancel) {}
-                }
-                .overlay {
-                    if rewriting {
-                        ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle())
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                            .background(.ultraThinMaterial)
+                        rewriting = false
                     }
+                }.disabled(rewriting)
+                
+                Button("Cancel", role: .cancel) {}
+            }
+            .overlay {
+                if rewriting {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle())
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(.ultraThinMaterial)
                 }
             }
             .toolbar {
@@ -117,30 +113,34 @@ struct Screen2: View {
                     }
                 }
             }
-
-                
-            }
-            .tabViewBottomAccessory {
+        }
+       
+        .overlay(alignment: .bottom) {
+            HStack {
                 Text("Word Count: \(wordCount)")
                     .font(.headline)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(.ultraThinMaterial)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .glassEffect()
             }
-            .fullScreenCover(isPresented: $showScreent) {
-                Screen3Teleprompter(title: $title, script: $script, WPM: $WPM, timer: timer)
-            }
-            .fullScreenCover(isPresented: $showScreen) {
-                Screen3Keywords(title: $title, script: $script)
-            }
+            .shadow(color: Color.black.opacity(0.1), radius: 12, x: 0, y: 4)
+            .padding(.horizontal, 16)
+            .padding(.bottom, 12)
+            .frame(maxWidth: .infinity, alignment: .center)
+            
+        }
+        .fullScreenCover(isPresented: $showScreent) {
+            Screen3Teleprompter(title: $title, script: $script, WPM: $WPM, timer: timer)
+        }
+        .fullScreenCover(isPresented: $showScreen) {
+            Screen3Keywords(title: $title, script: $script)
         }
     }
-    
-    
-    #Preview {
-        Screen2(
-            title: .constant("untitled"),
-            script: .constant("This is a test script.")
-        )
-    }
+}
 
+#Preview {
+    Screen2(
+        title: .constant("untitled"),
+        script: .constant("This is a test script.")
+    )
+}
