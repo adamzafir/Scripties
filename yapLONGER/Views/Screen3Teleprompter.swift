@@ -1,6 +1,7 @@
 import SwiftUI
 import AVFoundation
 import Speech
+import Accelerate
 
 func splitIntoLinesByWidth(_ text: String, font: UIFont, maxWidth: CGFloat) -> [String] {
     let words = text.components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }
@@ -72,6 +73,24 @@ struct Screen3Teleprompter: View {
     @State var timer: TimerManager
     @State var transscriptionChangeCount: Int = 0
     
+    // Metrics required by Screen4
+    @State private var elapsedTime: Int = 0
+    @State private var wordCount: Int = 0
+    @State private var LGBW: Int = 0 // Longest Gap Between Words, in seconds (rounded)
+    // Internal tracking for silence detection
+    @State private var LGBWSeconds: TimeInterval = 0
+    @State private var meteringTimer: Timer? = nil
+    @State private var isCurrentlySilent: Bool = true
+    @State private var lastSilenceStartTime: Date? = nil
+    @State private var silenceDurations: [TimeInterval] = []
+    @State private var wallTimer: Timer? = nil
+    @State var deviation: Double = 0
+
+    // Tuning parameters for silence detection (AudioRecorderView parity)
+    private let silenceThreshold: Float = -40.0 // dB regarded as silence
+    private let minSilenceDuration: TimeInterval = 0.25 // ignore very short blips
+    private let meteringInterval: TimeInterval = 0.05 // 20 Hz sampling
+    
     private func recomputeLines() {
         let font = UIFont.systemFont(ofSize: CGFloat(fontSize))
         let maxWidth = UIScreen.main.bounds.width - 32
@@ -97,9 +116,96 @@ struct Screen3Teleprompter: View {
             }
         }
     }
-    
+
+    // MARK: - Wall clock timer
+    private func startWallClockTimer() {
+        wallTimer?.invalidate()
+        elapsedTime = 0
+        wallTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
+            elapsedTime += 1
+        }
+        RunLoop.current.add(wallTimer!, forMode: .common)
+    }
+
+    private func stopWallClockTimer() {
+        wallTimer?.invalidate()
+        wallTimer = nil
+    }
+
+    // MARK: - Silence tracking via AVAudioEngine metering
+    private func startSilenceTracking() {
+        isCurrentlySilent = true
+        lastSilenceStartTime = Date()
+        silenceDurations.removeAll()
+        LGBWSeconds = 0
+        // meteringTimer not needed if we compute dB in the input tap; we keep this for parity if needed
+        meteringTimer?.invalidate()
+        meteringTimer = Timer.scheduledTimer(withTimeInterval: meteringInterval, repeats: true) { _ in
+            // No-op: metering is driven by input tap callback where we compute level dB from buffers
+        }
+        RunLoop.current.add(meteringTimer!, forMode: .common)
+    }
+
+    private func stopSilenceTracking() {
+        meteringTimer?.invalidate()
+        meteringTimer = nil
+    }
+
+    private func handleLevel(_ levelDB: Float) {
+        let now = Date()
+        if levelDB <= silenceThreshold {
+            // Silence
+            if !isCurrentlySilent {
+                isCurrentlySilent = true
+                lastSilenceStartTime = now
+            }
+        } else {
+            // Speaking
+            if isCurrentlySilent {
+                isCurrentlySilent = false
+                if let silenceStart = lastSilenceStartTime {
+                    let duration = now.timeIntervalSince(silenceStart)
+                    if duration >= minSilenceDuration {
+                        silenceDurations.append(duration)
+                        if duration > LGBWSeconds { LGBWSeconds = duration }
+                    }
+                }
+                lastSilenceStartTime = nil
+            }
+        }
+    }
+
+    private func finalizeSilenceIfNeeded() {
+        if isCurrentlySilent, let silenceStart = lastSilenceStartTime {
+            let duration = Date().timeIntervalSince(silenceStart)
+            if duration >= minSilenceDuration {
+                silenceDurations.append(duration)
+                if duration > LGBWSeconds { LGBWSeconds = duration }
+            }
+        }
+    }
+
+    // Compute RMS -> dB from audio buffer
+    private func dBLevel(from buffer: AVAudioPCMBuffer) -> Float {
+        guard let channelData = buffer.floatChannelData else { return -120.0 }
+        let channel = channelData[0]
+        let frameLength = Int(buffer.frameLength)
+        if frameLength == 0 { return -120.0 }
+        var sum: Float = 0.0
+        vDSP_measqv(channel, 1, &sum, vDSP_Length(frameLength))
+        // sum is mean square
+        let rms = sqrtf(sum)
+        let db = 20.0 * log10f(max(rms, 1e-7))
+        return db.isFinite ? db : -120.0
+    }
+
     var body: some View {
         NavigationStack {
+            NavigationLink(isActive: $navigateToScreen4) {
+                Screen4(LGBW: $LGBW, elapsedTime: $elapsedTime, wordCount: $wordCount, deriative: $deviation)
+            } label: {
+                EmptyView()
+            }
             VStack {
               if isLoading {
                   ProgressView("Loading...")
@@ -156,7 +262,7 @@ struct Screen3Teleprompter: View {
                             timer.reset()
                         } else {
                             timer.start()
-                            let deviation = secondsPerWord.standardDeviation(from: Double(WPM))
+                            self.deviation = secondsPerWord.standardDeviation(from: Double(WPM))
                             print(deviation)
                         }
                     } label: {
@@ -172,6 +278,7 @@ struct Screen3Teleprompter: View {
             .onAppear {
                 Task {
                     scriptWords = script.components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }
+                    wordCount = script.split { $0.isWhitespace }.count
                     recomputeLines()
                     isLoading = false
                 }
@@ -181,6 +288,7 @@ struct Screen3Teleprompter: View {
             }
             .onChange(of: script) { _, _ in
                 recomputeLines()
+                wordCount = script.split { $0.isWhitespace }.count
             }
             .navigationTitle(title)
             .padding()
@@ -193,16 +301,18 @@ struct Screen3Teleprompter: View {
             }
             .onChange(of: isRecording) { _, recording in
                 if recording {
+                    // Start file recording
                     recordingStore.startRecording()
+                    // Start clocks
+                    startWallClockTimer()
+                    // Request speech recognition
                     SFSpeechRecognizer.requestAuthorization { status in
                         guard status == .authorized else { return }
                     }
-                    
                     Task {
                         let micGranted = await AVAudioApplication.requestRecordPermission()
                         guard micGranted else { return }
                     }
-                    
                     guard let recogniser = speechRecogniser, recogniser.isAvailable else { return }
                     
                     let audioSession = AVAudioSession.sharedInstance()
@@ -216,8 +326,14 @@ struct Screen3Teleprompter: View {
                     let format = inputNode.outputFormat(forBus: 0)
                     
                     inputNode.removeTap(onBus: 0)
+                    // Start silence tracking before installing tap
+                    startSilenceTracking()
                     inputNode.installTap(onBus: 0, bufferSize: 1024, format: format) { buffer, _ in
+                        // Feed speech recognition
                         request.append(buffer)
+                        // Compute dB level for silence detection
+                        let level = dBLevel(from: buffer)
+                        handleLevel(level)
                     }
                     audioEngine.prepare()
                     try? audioEngine.start()
@@ -228,9 +344,17 @@ struct Screen3Teleprompter: View {
                         }
                     }
                 } else {
+                    // Stop both recordings and metering
                     recordingStore.stopRecording()
                     audioEngine.stop()
                     audioEngine.inputNode.removeTap(onBus: 0)
+                    stopWallClockTimer()
+                    finalizeSilenceIfNeeded()
+                    stopSilenceTracking()
+                    // Finalize metrics
+                    let longest = max(LGBWSeconds, silenceDurations.max() ?? 0)
+                    LGBW = Int(longest.rounded())
+                    // elapsedTime already tracked via wall timer
                     navigateToScreen4 = true
                 }
             }

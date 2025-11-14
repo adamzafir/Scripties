@@ -25,12 +25,17 @@ struct Screen3Keywords: View {
     @State var response2: keyword = .init(keywords: [])
     @State var response3: [String] = []
     
+    // Add states needed by Screen4
+    @State private var LGBW: Int = 0
+    @State private var elapsedTime: Int = 0
+    @State private var wordCount: Int = 0
+    
     @State private var isLoading = true
     @State private var navigateToScreen4 = false
     
     var body: some View {
         NavigationStack {
-            NavigationLink(destination: Screen4(LGBW: .constant(0), elapsedTime: .constant(0), wordCount:.constant(0) ), isActive: $navigateToScreen4) { EmptyView() }
+           
             VStack(spacing: 20) {
                 if isLoading {
                     Spacer()

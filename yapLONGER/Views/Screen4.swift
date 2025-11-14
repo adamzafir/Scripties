@@ -8,6 +8,8 @@ struct Screen4: View {
     @State private var scoreTwo: Double = 67
     @Binding var elapsedTime: Int
     @Binding var wordCount: Int
+    @Binding var deriative: Double
+    
     private func wpmPercentage(_ wpm: Int) -> Double {
         if wpm <= 120 {
             
@@ -84,7 +86,7 @@ struct Screen4: View {
                             Text("Longest gap between words (seconds)")
                         }
                         LabeledContent {
-                            Text(String(CIS))
+                            Text(String(deriative))
                         } label: {
                             Text("Consistency in speech (%)")
                         }
@@ -195,6 +197,3 @@ struct Screen4: View {
     }
 }
 
-#Preview {
-    Screen4(LGBW: .constant(0), elapsedTime: .constant(0), wordCount: .constant(0))
-}
