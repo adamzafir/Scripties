@@ -11,7 +11,7 @@ import AVKit
 struct ContentView: View {
     var body: some View {
         Home()
-            .preferredColorScheme(.dark)
+            .preferredColorScheme(.light)
     }
 }
 
@@ -23,49 +23,34 @@ struct Home: View {
     @State private var record = false
     @State private var session: AVAudioSession?
     @State private var recorder: AVAudioRecorder?
-    @State private var player: AVAudioPlayer?
-    @State private var currentlyPlayingURL: URL?
     @State private var alert = false
     @State private var audio = false
     @State private var audios: [URL] = []
-    // Hold a strong reference to the AVAudioPlayer delegate
-    @State private var playerDelegate: PlaybackDelegate?
+    @State private var currentRecordingURL: URL?
+    @State private var latestRecordingURL: URL?
+    @State private var navigateToScreen5 = false
+    @State private var scoreTwo: Double = 0
     
     var body: some View {
         NavigationView {
             VStack {
-                List(self.audios, id: \.self) { url in
-                    HStack {
-                        VStack(alignment: .leading) {
-                            Text(url.lastPathComponent)
-                                .lineLimit(1)
-                            if currentlyPlayingURL == url {
-                                Text("Playing…")
-                                    .font(.caption)
-                                    .foregroundColor(.green)
-                            }
-                        }
-                        Spacer()
-                        Button(action: {
-                            togglePlayback(for: url)
-                        }) {
-                            Image(systemName: (currentlyPlayingURL == url) ? "stop.circle.fill" : "play.circle.fill")
-                                .font(.system(size: 24, weight: .bold))
-                        }
-                        .buttonStyle(.plain)
-                    }
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        togglePlayback(for: url)
-                    }
-                }
+                NavigationLink(
+                    destination: Screen5(recordingURL: latestRecordingURL, scoreTwo: $scoreTwo),
+                    isActive: $navigateToScreen5
+                ) { EmptyView() }
                 
                 Button(action: {
                     if record {
                         // Stop recording
                         recorder?.stop()
                         record = false
+                        // Capture the just-recorded URL and navigate to Screen 5
+                        latestRecordingURL = currentRecordingURL
+                        recorder = nil
                         getAudios()
+                        if latestRecordingURL != nil {
+                            navigateToScreen5 = true
+                        }
                     } else {
                         startRecording()
                     }
@@ -127,12 +112,10 @@ struct Home: View {
     }
     
     private func startRecording() {
-        // Stop any playback before recording
-        stopPlayback()
-        
         do {
             let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
             let fileName = docs.appendingPathComponent("myRcd\(self.audios.count + 1).m4a")
+            self.currentRecordingURL = fileName
             let settings: [String: Any] = [
                 AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
                 AVSampleRateKey: 12_000,
@@ -159,68 +142,5 @@ struct Home: View {
         } catch {
             print("List audios error: \(error.localizedDescription)")
         }
-    }
-    
-    // MARK: - Playback
-    
-    private func togglePlayback(for url: URL) {
-        // If tapping the currently playing item, stop
-        if currentlyPlayingURL == url {
-            stopPlayback()
-            return
-        }
-        // Otherwise, start playing the selected URL
-        startPlayback(url: url)
-    }
-    
-    private func startPlayback(url: URL) {
-        // Don’t play while recording
-        guard !record else { return }
-        
-        do {
-            // Configure session for playback while still allowing recording category
-            try session?.setActive(true)
-            
-            // Stop any previous playback
-            stopPlayback()
-            
-            let newPlayer = try AVAudioPlayer(contentsOf: url)
-            newPlayer.prepareToPlay()
-            
-            // Set up delegate using a strong reference
-            let delegate = PlaybackDelegate(onFinish: {
-                // No weak capture needed; Home is a struct and this closure
-                // does not create a retain cycle with AVAudioPlayer.
-                stopPlayback()
-            })
-            self.playerDelegate = delegate
-            newPlayer.delegate = delegate
-            
-            newPlayer.play()
-            self.player = newPlayer
-            self.currentlyPlayingURL = url
-        } catch {
-            print("Playback error: \(error.localizedDescription)")
-            stopPlayback()
-        }
-    }
-    
-    private func stopPlayback() {
-        player?.stop()
-        player = nil
-        currentlyPlayingURL = nil
-        // Release delegate when stopping
-        playerDelegate = nil
-    }
-}
-
-// A small helper to handle AVAudioPlayerDelegate without making Home conform directly.
-private final class PlaybackDelegate: NSObject, AVAudioPlayerDelegate {
-    let onFinish: () -> Void
-    init(onFinish: @escaping () -> Void) {
-        self.onFinish = onFinish
-    }
-    func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
-        onFinish()
     }
 }

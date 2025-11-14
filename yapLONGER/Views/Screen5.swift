@@ -2,6 +2,7 @@ import SwiftUI
 import AVFoundation
 
 struct Screen5: View {
+    var recordingURL: URL? = nil
     @State private var audioPlayer: AVAudioPlayer?
     @State private var currentTime: TimeInterval = 0
     @State private var duration: TimeInterval = 0
@@ -30,6 +31,20 @@ struct Screen5: View {
                 progressTimer?.invalidate()
                 progressTimer = nil
             }
+        }
+    }
+
+    private func playProvidedRecordingIfAvailable() {
+        guard let url = recordingURL else { return }
+        configureAudioSessionForPlayback()
+        do {
+            audioPlayer = try AVAudioPlayer(contentsOf: url)
+            duration = audioPlayer?.duration ?? 0
+            audioPlayer?.prepareToPlay()
+            audioPlayer?.play()
+            startProgressTimer()
+        } catch {
+            print("Failed to play provided recording:", error)
         }
     }
 
@@ -94,7 +109,7 @@ struct Screen5: View {
                         currentTime = newTime
                         audioPlayer?.currentTime = newTime
                     } label: {
-                        Label("Back 15s", systemImage: "gobackward.15")
+                        Label("", systemImage: "gobackward.15")
                     }
 
                     // Play/Pause
@@ -118,7 +133,7 @@ struct Screen5: View {
                         }
                     } label: {
                         let isPlaying = audioPlayer?.isPlaying == true
-                        Label(isPlaying ? "Pause" : "Play", systemImage: isPlaying ? "pause.fill" : "play.fill")
+                        Label(isPlaying ? "" : "", systemImage: isPlaying ? "pause.fill" : "play.fill")
                             .font(.headline)
                     }
 
@@ -128,7 +143,7 @@ struct Screen5: View {
                         currentTime = newTime
                         audioPlayer?.currentTime = newTime
                     } label: {
-                        Label("Forward 15s", systemImage: "goforward.15")
+                        Label("", systemImage: "goforward.15")
                     }
                 }
             }
@@ -136,6 +151,7 @@ struct Screen5: View {
             .navigationTitle("Review")
             .onAppear {
                 configureAudioSessionForPlayback()
+                playProvidedRecordingIfAvailable()
             }
             .onDisappear {
                 progressTimer?.invalidate()
@@ -192,5 +208,5 @@ extension Screen5 {
 }
 
 #Preview {
-    Screen5(scoreTwo: .constant(67))
+    Screen5(recordingURL: nil, scoreTwo: .constant(67))
 }
