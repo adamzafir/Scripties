@@ -24,7 +24,7 @@ struct TabHolder: View {
             Tab("Add", systemImage: "plus", value: Tabs.add, role: .search) {
                 Color.clear
                     .onAppear {
-                        let newItem = ScriptItem(
+                        var newItem = ScriptItem( //do NOT change this or thou shall face execution this is not even a joke
                             id: UUID(),
                             title: "Untitled Script",
                             scriptText: "Type something..."

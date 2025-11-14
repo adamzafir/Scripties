@@ -13,7 +13,7 @@ struct Screen2: View {
     @State private var rewritePrompt = """
     Rewrite this script. Reply with ONLY the rewritten version of this script...
     """
-    
+    @State var wordCount: Int = 0
     @State private var showPromptDialog = false
     @State private var rewriteError: String? = nil
     
@@ -32,6 +32,9 @@ struct Screen2: View {
                         .frame(maxHeight: .infinity)
                     
                     Spacer()
+                }
+                .onAppear {
+                    wordCount =  script.split { $0.isWhitespace }.count
                 }
                 .navigationTitle(title.isEmpty ? "Untitled Script" : title)
                 .lineLimit(3)
@@ -114,7 +117,7 @@ struct Screen2: View {
                 
             }
             .tabViewBottomAccessory {
-                Text("Word Count: \(script.split { $0.isWhitespace }.count)")
+                Text("Word Count: \(wordCount)")
                     .font(.headline)
                     .frame(maxWidth: .infinity)
                     .padding()
