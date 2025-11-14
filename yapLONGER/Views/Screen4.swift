@@ -6,8 +6,8 @@ struct Screen4: View {
     @State private var CIS = 70
     @State private var score: Int = 2
     @State var scoreTwo: Double = 67
-    
-    
+    @Binding var elapsedTime: Int
+    @Binding var wordCount: Int
     private func wpmPercentage(_ wpm: Int) -> Double {
         if wpm <= 120 {
             
@@ -57,6 +57,17 @@ struct Screen4: View {
         score = computeScoreThreePoint(wpmPct: wpmPct, lgbwPct: lgbwPct, cisPct: cisPct)
     }
     
+    private func updateWPMFromBindings() {
+        // Compute words per minute safely from wordCount and elapsedTime (seconds)
+        guard elapsedTime > 0 else {
+            WPM = 0
+            return
+        }
+        let minutes = Double(elapsedTime) / 60.0
+        let computed = Int(round(Double(wordCount) / minutes))
+        WPM = max(0, computed)
+    }
+    
     var body: some View {
         NavigationStack {
             VStack {
@@ -81,6 +92,14 @@ struct Screen4: View {
                     .onChange(of: WPM) { _, _ in updateScores() }
                     .onChange(of: LGBW) { _, _ in updateScores() }
                     .onChange(of: CIS) { _, _ in updateScores() }
+                    .onChange(of: elapsedTime) { _, _ in
+                        updateWPMFromBindings()
+                        updateScores()
+                    }
+                    .onChange(of: wordCount) { _, _ in
+                        updateWPMFromBindings()
+                        updateScores()
+                    }
                     
                     Section("Score"){
                         VStack {
@@ -113,7 +132,10 @@ struct Screen4: View {
                     .controlSize(.large)
                 }
             }
-            .onAppear { updateScores() }
+            .onAppear {
+                updateWPMFromBindings()
+                updateScores()
+            }
             .navigationTitle("Review")
         }
     }
@@ -160,12 +182,13 @@ struct Screen4: View {
             let width = rect.width
             let height = rect.height
             let center = CGPoint(x: rect.midX, y: rect.maxY)
-            let radius = min(width, height)
+            let radius = min(width, height) / 2
             path.addArc(center: center,
                         radius: radius,
                         startAngle: startAngle,
                         endAngle: endAngle,
-                        clockwise: false)
+                        clockwise: false,
+                        transform: .identity)
             
             return path
         }
@@ -173,5 +196,5 @@ struct Screen4: View {
 }
 
 #Preview {
-    Screen4()
+    Screen4(elapsedTime: .constant(0), wordCount: .constant(0))
 }

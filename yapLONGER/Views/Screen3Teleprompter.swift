@@ -109,7 +109,7 @@ struct Screen3Teleprompter: View {
     var body: some View {
         NavigationStack {
             // Hidden link to Screen4 that activates on stop
-            NavigationLink(destination: Screen4(), isActive: $navigateToScreen4) { EmptyView() }
+            NavigationLink(destination: Screen4(elapsedTime: .constant(0), wordCount: .constant(0)), isActive: $navigateToScreen4) { EmptyView() }
             VStack {
                 if isLoading {
                     ProgressView("Loading...")

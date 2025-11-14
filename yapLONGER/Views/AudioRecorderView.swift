@@ -20,7 +20,7 @@ struct AudioRecorderView: View {
     @State private var navigateToScreen5 = false
     @State private var scoreTwo: Double = 0
     @State private var currentDate = Date.now
-        @State private var elapsedTime: Int = 0
+        @State var elapsedTime: Int = 0
         @State private var timer: Timer? = nil
 
         
