@@ -9,7 +9,8 @@ import SwiftUI
 import Foundation
 
 struct startGame: View {
-    @State private var currentDate = Date.now
+    
+@State private var currentDate = Date.now
     @State private var elapsedTime: Int = 0
     @State private var timer: Timer? = nil
 

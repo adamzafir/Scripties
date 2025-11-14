@@ -67,7 +67,18 @@ struct Screen3Teleprompter: View {
     @State private var currentLineIndex: Int = 0
     @State private var lastAdvanceTime: Date = .distantPast
     @State private var navigateToScreen4 = false
-
+    @State private var currentDate = Date.now
+    @State private var elapsedTime: Int = 0
+    @State private var timer: Timer? = nil
+    
+    
+    @State private var showingAlert = false
+    var formattedTime: String {
+        let minutes = elapsedTime / 60
+        let seconds = elapsedTime % 60
+        return String(format: "%02d:%02d", minutes, seconds)
+        
+    }
     private func recomputeLines() {
         let font = UIFont.systemFont(ofSize: CGFloat(fontSize))
         let maxWidth = UIScreen.main.bounds.width - 32
