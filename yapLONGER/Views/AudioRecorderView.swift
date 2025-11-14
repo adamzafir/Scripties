@@ -20,18 +20,31 @@ struct AudioRecorderView: View {
     @State private var navigateToScreen5 = false
     @State private var scoreTwo: Double = 0
     @State private var currentDate = Date.now
-        @State var elapsedTime: Int = 0
-        @State private var timer: Timer? = nil
+    @State var elapsedTime: Int = 0
+    @State private var timer: Timer? = nil
 
-        
-        @State private var showingAlert = false
-        var formattedTime: String {
-            let minutes = elapsedTime / 60
-            let seconds = elapsedTime % 60
-            return String(format: "%02d:%02d", minutes, seconds)
-            
-        }
+    // Silence detection state
+    @State private var meteringTimer: Timer? = nil
+    @State private var isCurrentlySilent: Bool = true
+    @State private var lastSpeechEndTime: Date? = nil
+    @State private var lastSilenceStartTime: Date? = nil
+    @State private var silenceDurations: [TimeInterval] = []
+    @State var LGBW: TimeInterval = 0 // largest gap between words (seconds)
+
+    // Tuning parameters
+    private let silenceThreshold: Float = -40.0 // dB level regarded as silence (lower is quieter)
+    private let minSilenceDuration: TimeInterval = 0.25 // ignore very short blips
+    private let meteringInterval: TimeInterval = 0.05 // 20 Hz sampling
+
     
+    @State private var showingAlert = false
+    var formattedTime: String {
+        let minutes = elapsedTime / 60
+        let seconds = elapsedTime % 60
+        return String(format: "%02d:%02d", minutes, seconds)
+        
+    }
+
     var body: some View {
         NavigationView {
             VStack {
@@ -44,10 +57,13 @@ struct AudioRecorderView: View {
                     if record {
                         // Stop recording
                         recorder?.stop()
+                        stopMetering()
+                        finalizeSilenceIfNeeded()
                         record = false
                         // Capture the just-recorded URL and navigate to Screen 5
                         latestRecordingURL = currentRecordingURL
                         recorder = nil
+                        resetSilenceTracking()
                         getAudios()
                         if latestRecordingURL != nil {
                             navigateToScreen5 = true
@@ -60,6 +76,7 @@ struct AudioRecorderView: View {
                             elapsedTime += 1
                             
                         }
+                        startMetering()
                     }
                 }) {
                     ZStack {
@@ -130,6 +147,7 @@ struct AudioRecorderView: View {
                 AVEncoderAudioQualityKey: AVAudioQuality.high.rawValue
             ]
             let newRecorder = try AVAudioRecorder(url: fileName, settings: settings)
+            newRecorder.isMeteringEnabled = true
             newRecorder.prepareToRecord()
             newRecorder.record()
             self.recorder = newRecorder
@@ -149,6 +167,73 @@ struct AudioRecorderView: View {
         } catch {
             print("List audios error: \(error.localizedDescription)")
         }
+    }
+    
+    private func startMetering() {
+        meteringTimer?.invalidate()
+        meteringTimer = Timer.scheduledTimer(withTimeInterval: meteringInterval, repeats: true) { _ in
+            guard let recorder = recorder else { return }
+            recorder.updateMeters()
+            // Using average power on channel 0
+            let level = recorder.averagePower(forChannel: 0)
+            handleLevel(level)
+        }
+        RunLoop.current.add(meteringTimer!, forMode: .common)
+       
+        isCurrentlySilent = true
+        lastSpeechEndTime = nil
+        lastSilenceStartTime = Date()
+    }
+
+    private func stopMetering() {
+        meteringTimer?.invalidate()
+        meteringTimer = nil
+    }
+
+    private func handleLevel(_ level: Float) {
+        let now = Date()
+        if level <= silenceThreshold {
+            //silence
+            if !isCurrentlySilent {
+                //if in silence
+                isCurrentlySilent = true
+                lastSpeechEndTime = now
+                lastSilenceStartTime = now
+            }
+        } else {
+            //speaking
+            if isCurrentlySilent {
+                // from silence to speaking
+                isCurrentlySilent = false
+                if let silenceStart = lastSilenceStartTime {
+                    let duration = now.timeIntervalSince(silenceStart)
+                    if duration >= minSilenceDuration {
+                        silenceDurations.append(duration)
+                        if duration > LGBW { LGBW = duration }
+                    }
+                }
+                lastSilenceStartTime = nil
+            }
+        }
+    }
+
+    private func finalizeSilenceIfNeeded() {
+        // If recording stopped during a silence cout it
+        if isCurrentlySilent, let silenceStart = lastSilenceStartTime {
+            let duration = Date().timeIntervalSince(silenceStart)
+            if duration >= minSilenceDuration {
+                silenceDurations.append(duration)
+                if duration > LGBW { LGBW = duration }
+            }
+        }
+    }
+
+    private func resetSilenceTracking() {
+        isCurrentlySilent = true
+        lastSpeechEndTime = nil
+        lastSilenceStartTime = nil
+        silenceDurations.removeAll()
+        LGBW = 0
     }
 }
 
