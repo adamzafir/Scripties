@@ -26,9 +26,11 @@ struct Screen3Keywords: View {
     @State var response3: [String] = []
     
     @State private var isLoading = true
+    @State private var navigateToScreen4 = false
     
     var body: some View {
         NavigationStack {
+            NavigationLink(destination: Screen4(), isActive: $navigateToScreen4) { EmptyView() }
             VStack(spacing: 20) {
                 if isLoading {
                     Spacer()
@@ -149,6 +151,7 @@ struct Screen3Keywords: View {
                     recordingStore.stopRecording()
                     audioEngine.stop()
                     audioEngine.inputNode.removeTap(onBus: 0)
+                    navigateToScreen4 = true
                 }
             }
         }

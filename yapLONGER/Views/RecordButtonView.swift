@@ -23,3 +23,4 @@ struct RecordButtonView: View {
         .animation(.snappy, value: isRecording)
     }
 }
+
