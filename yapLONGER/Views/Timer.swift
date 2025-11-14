@@ -1,11 +1,4 @@
-//
-//  startGame.swift
-//  Challenge 2
-//
-//  Created by Ethan Soh on 16/8/25.
-//
-
-import SwiftUI
+ import SwiftUI
 import Foundation
 
 struct startGame: View {
