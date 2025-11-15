@@ -6,7 +6,13 @@ struct yapLONGERApp: App {
     
     var body: some Scene {
         WindowGroup {
-            TabHolder()
+            Screen4(
+                   WPM: 120,
+                   LGBW: .constant(23),
+                   elapsedTime: .constant(150),
+                   wordCount: .constant(50),
+                   deriative: .constant(85.0)
+               )
                 .environmentObject(recordingStore)
         }
     }

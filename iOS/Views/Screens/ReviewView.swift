@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct Screen4: View {
-    @State var WPM = 120
+    @State var WPM = 120.0
     @Binding var LGBW: Int
     @State private var CIS = 70
     @State private var score: Int = 2
@@ -9,6 +9,8 @@ struct Screen4: View {
     @Binding var elapsedTime: Int
     @Binding var wordCount: Int
     @Binding var deriative: Double
+    let minVal = 0.0
+    let maxVal = 250.0
     
     private func wpmPercentage(_ wpm: Int) -> Double {
         if wpm <= 120 {
@@ -56,7 +58,7 @@ struct Screen4: View {
     }
     
     private func updateScores() {
-        let wpmPct = wpmPercentage(WPM)
+        let wpmPct = wpmPercentage(Int(WPM))
         let lgbwPct = lgbwPercentage(LGBW)
         let cisPct = cisPercentage(CIS)
         
@@ -73,28 +75,23 @@ struct Screen4: View {
         }
         let minutes = Double(elapsedTime) / 60.0
         let computed = Int(round(Double(wordCount) / minutes))
-        WPM = max(0, computed)
+        WPM = Double(max(0, computed))
     }
     var body: some View {
         NavigationStack {
             VStack {
-                #if DEBUG
+#if DEBUG
                 Text("DEBUG: Elapsed Time: \(elapsedTime)")
                     .font(.caption)
                     .foregroundColor(.red)
                     .padding(.top, 10)
-                #endif
+#endif
                 Form{
                     Section("Result"){
                         LabeledContent {
                             Text(String(WPM))
                         } label: {
                             Text("Words per minute")
-                        }
-                        LabeledContent {
-                            Text(String(LGBW))
-                        } label: {
-                            Text("Longest gap between words (seconds)")
                         }
                         LabeledContent {
                             Text(String(deriative))
@@ -114,35 +111,34 @@ struct Screen4: View {
                         updateScores()
                     }
                     
-                    Section("Score"){
-                        VStack {
-                            TabView {
-                                SemiCircleGauge(progress: Double(score) / 3.0, label: "\(score)/3")
-                                    .frame(height: 160)
-                                    .padding(.horizontal)
-                                    .padding(.top, 8)
-                                SemiCircleGauge(progress: max(0.0, min(1.0, scoreTwo / 100.0)), label: "\(Int(scoreTwo))%")
-                                    .frame(height: 160)
-                                    .padding(.horizontal)
-                                    .padding(.top, 8)
-                            }
-                            .tabViewStyle(.page)
-                            .indexViewStyle(.page(backgroundDisplayMode: .always))
-                            
-                        }
-                        .frame(maxWidth: .infinity, minHeight: 200, alignment: .center)
-                        .listRowInsets(EdgeInsets(top: 16, leading: 16, bottom: 24, trailing: 16))
+                   
+                      
                         
-                    }
-                    NavigationLink {
+            
+                   
                         Screen5(scoreTwo: $scoreTwo)
-                    } label: {
-                        Text("Playback")
-                            .bold()
-                            .font(.system(size: 20))
-                    }
-                    .buttonStyle(.glassProminent)
-                    .controlSize(.large)
+                    
+                }
+                VStack {
+                    Gauge(value: WPM, in: 0...240) {
+                        Text("Words Per Minute")
+                    } currentValueLabel: {
+                                Text("\(Int(WPM))")
+                            } minimumValueLabel: {
+                                Text("\(Int(minVal))")
+                            } maximumValueLabel: {
+                                Text("\(Int(maxVal))")
+                            }
+                    Gauge(value: WPM, in: 0...1) {
+                        Text("Consitency")
+                    } currentValueLabel: {
+                                Text("\(Int(deriative))")
+                            } minimumValueLabel: {
+                                Text("\(Int(0))")
+                            } maximumValueLabel: {
+                                Text("\(Int(2))")
+                            }
+                    
                 }
                 NavigationLink {
                     TabHolder()
@@ -172,57 +168,5 @@ struct Screen4: View {
     }
     
     
-    struct SemiCircleGauge: View {
-        
-        var progress: Double
-        var lineWidth: CGFloat = 16
-        var label: String? = nil
-        
-        var body: some View {
-            GeometryReader { geo in
-                let size = min(geo.size.width, geo.size.height)
-                let radius = size / 2
-                ZStack {
-                    
-                    Arc(startAngle: .degrees(180), endAngle: .degrees(360))
-                        .stroke(Color.gray.opacity(0.25), style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-                    
-                    Arc(startAngle: .degrees(180), endAngle: .degrees(180 + 180 * progress))
-                        .stroke(Color.blue, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-                        .animation(.easeInOut(duration: 0.4), value: progress)
-                    
-                    if let label {
-                        Text(label)
-                            .font(.system(size: 24, weight: .bold))
-                            .foregroundStyle(.primary)
-                            .offset(y: size * 0.15)
-                    }
-                }
-                .frame(width: geo.size.width, height: geo.size.height)
-            }
-        }
-    }
-    
-    
-    struct Arc: Shape {
-        var startAngle: Angle
-        var endAngle: Angle
-        
-        func path(in rect: CGRect) -> Path {
-            var path = Path()
-            let width = rect.width
-            let height = rect.height
-            let center = CGPoint(x: rect.midX, y: rect.maxY)
-            let radius = min(width, height) / 2
-            path.addArc(center: center,
-                        radius: radius,
-                        startAngle: startAngle,
-                        endAngle: endAngle,
-                        clockwise: false,
-                        transform: .identity)
-            
-            return path
-        }
-    }
 }
-
+   

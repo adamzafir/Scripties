@@ -60,10 +60,8 @@ struct Screen5: View {
         NavigationStack {
             VStack(spacing: 16) {
                 // Gauge
-                SemiCircleGauge(progress: max(0.0, min(1.0, scoreTwo / 100.0)))
-                    .frame(height: 160)
-                    .padding(.horizontal)
-                    .padding(.top, 8)
+                
+                    
 
                 // Progress slider & timestamps
                 VStack(spacing: 8) {
