@@ -21,6 +21,12 @@ struct Screen4: View {
             return Double(max(0, min(200, pct)))
         }
     }
+    private func wrdEstimate(_wordCount: Int) -> Double{
+        let estimate = Double(_wordCount) / 120.0
+        let estSeconds = Int(estimate) * 60
+        let finEst = Int(estSeconds) % 60
+        return Double(finEst)
+    }
     
     private func lgbwPercentage(_ lgbw: Int) -> Double {
         if lgbw <= 5 { return 100 }

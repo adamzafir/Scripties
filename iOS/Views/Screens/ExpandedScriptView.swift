@@ -16,11 +16,25 @@ struct Screen2: View {
     @State var wordCount: Int = 0
     @State private var showPromptDialog = false
     @State private var rewriteError: String? = nil
-
+    
     // Added to satisfy Screen3Teleprompter requirements
     @State private var WPM: Int = 120
     @State private var timer = TimerManager()
     @State private var isLoading = false
+    
+    private func wrdEstimateString(for wordCount: Int, wpm: Int = 120) -> String {
+        guard wordCount > 0, wpm > 0 else { return "0 min 0 sec" }
+        let totalSeconds = Double(wordCount) / Double(wpm) * 60.0
+        let minutes = Int(totalSeconds) / 60
+        let seconds = Int(totalSeconds) % 60
+        if minutes == 0 {
+            return "\(seconds) sec"
+        } else if seconds == 0 {
+            return "\(minutes) min"
+        } else {
+            return "\(minutes) min \(seconds) sec"
+        }
+    }
     
     var body: some View {
         NavigationStack {
@@ -62,6 +76,9 @@ struct Screen2: View {
             }
             .onAppear {
                 wordCount =  script.split { $0.isWhitespace }.count
+            }
+            .onChange(of: script) { _, newValue in
+                wordCount = newValue.split { $0.isWhitespace }.count
             }
             .alert("Rewrite Failed", isPresented: Binding(
                 get: { rewriteError != nil },
@@ -133,16 +150,21 @@ struct Screen2: View {
             }
         }
         .overlay(alignment: .bottom) {
-            HStack {
-                Text("Word Count: \(wordCount)")
-                    .font(.headline)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                    .glassEffect()
+            VStack {
+                Text("""
+                           Word Count: \(wordCount)
+                    Estimated Time: \(wrdEstimateString(for: wordCount, wpm: WPM))
+                    
+                    """)
+                .font(.headline)
+                .padding(.horizontal, 16)
+                .padding(.top)
+                .glassEffect()
+                
             }
             .shadow(color: Color.black.opacity(0.1), radius: 12, x: 0, y: 4)
             .padding(.horizontal, 16)
-            .padding(.bottom, 12)
+            .padding(.bottom, 8)
             .frame(maxWidth: .infinity, alignment: .center)
         }
         .fullScreenCover(isPresented: $showScreent) {
