@@ -49,7 +49,7 @@ struct AudioRecorderView: View {
         NavigationView {
             VStack {
                 NavigationLink(
-                    destination: Screen5(recordingURL: latestRecordingURL, scoreTwo: $scoreTwo),
+                    destination: Screen5(recordingURL: latestRecordingURL),
                     isActive: $navigateToScreen5
                 ) { EmptyView() }
                 

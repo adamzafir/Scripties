@@ -8,7 +8,6 @@ struct Screen5: View {
     @State private var duration: TimeInterval = 0
     @State private var progressTimer: Timer?
     @State private var isScrubbing = false
-    @Binding var scoreTwo: Double
     // Keep recordings internally to detect the most recent, but do not show them
     @State private var audios: [URL] = []
     @State private var selectedURL: URL? = nil
@@ -222,5 +221,5 @@ extension Screen5 {
 }
 
 #Preview {
-    Screen5(recordingURL: nil, scoreTwo: .constant(67))
+    Screen5(recordingURL: nil)
 }
