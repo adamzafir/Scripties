@@ -3,15 +3,17 @@ import AVFoundation
 
 struct Screen5: View {
     var recordingURL: URL? = nil
+    @EnvironmentObject private var recordingStore: RecordingStore
+
     @State private var audioPlayer: AVAudioPlayer?
     @State private var currentTime: TimeInterval = 0
     @State private var duration: TimeInterval = 0
     @State private var progressTimer: Timer?
     @State private var isScrubbing = false
     @Binding var scoreTwo: Double
-    // Keep recordings internally to detect the most recent, but do not show them
     @State private var audios: [URL] = []
     @State private var selectedURL: URL? = nil
+    @State private var lastPreparedURL: URL? = nil
 
     private func configureAudioSessionForPlayback() {
         do {
@@ -24,7 +26,7 @@ struct Screen5: View {
 
     private func startProgressTimer() {
         progressTimer?.invalidate()
-        progressTimer = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { _ in
+        let timer = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { _ in
             guard let player = audioPlayer, !isScrubbing else { return }
             currentTime = player.currentTime
             if !player.isPlaying || currentTime >= duration {
@@ -32,37 +34,73 @@ struct Screen5: View {
                 progressTimer = nil
             }
         }
+        progressTimer = timer
+        RunLoop.current.add(timer, forMode: .common)
+    }
+
+    private func fileSizeString(for url: URL) -> String {
+        let path = url.path
+        if let attrs = try? FileManager.default.attributesOfItem(atPath: path),
+           let size = attrs[.size] as? NSNumber {
+            return "\(size.intValue) bytes"
+        }
+        return "unknown size"
     }
 
     private func prepare(url: URL) {
+        // Stop any existing player and reset state
+        audioPlayer?.stop()
+        audioPlayer = nil
+        duration = 0
+        currentTime = 0
+
         configureAudioSessionForPlayback()
+
+        // Verify the file exists and is non-empty
+        guard FileManager.default.fileExists(atPath: url.path) else {
+            print("Prepare failed: file does not exist at \(url)")
+            return
+        }
+
         do {
             let player = try AVAudioPlayer(contentsOf: url)
+            player.prepareToPlay()
             audioPlayer = player
             duration = player.duration
             selectedURL = url
-            player.prepareToPlay()
-            // do not auto-play
+            lastPreparedURL = url
+
+            // Always reset to the start to avoid stale positions
+            currentTime = 0
+            audioPlayer?.currentTime = 0
+
+            print("Prepared URL:", url.lastPathComponent, "size:", fileSizeString(for: url), "duration:", duration)
         } catch {
-            print("Failed to prepare recording:", error)
+            print("Failed to prepare recording:", error, "URL:", url)
+            audioPlayer = nil
+            duration = 0
+            currentTime = 0
         }
     }
 
-    // Decide which URL to play when Play is pressed
-    private func bestURLToPlay() -> URL? {
-        if let selectedURL { return selectedURL }
-        if let newest = audios.first { return newest }
-        if let recordingURL { return recordingURL }
-        return nil
+    private func getBestCandidateURL() -> URL? {
+        if let u = recordingURL { return u }
+        if let u = recordingStore.latestRecordingURL { return u }
+        return audios.first
+    }
+
+    private func refreshAndPrepareBest() {
+        getAudios()
+        if let candidate = getBestCandidateURL() {
+            prepare(url: candidate)
+        } else {
+            print("No candidate URL available to prepare.")
+        }
     }
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 16) {
-                // Gauge
-                
-                    
-
                 // Progress slider & timestamps
                 VStack(spacing: 8) {
                     Slider(value: Binding(
@@ -111,18 +149,27 @@ struct Screen5: View {
                                 progressTimer?.invalidate()
                                 progressTimer = nil
                             } else {
-                                player.currentTime = currentTime
-                                player.play()
+                                // Ensure we aren't resuming some stale URL; if no URL yet, prepare best
+                                if lastPreparedURL == nil {
+                                    refreshAndPrepareBest()
+                                }
+                                // Start from 0 to avoid any end-of-file resumes
+                                currentTime = 0
+                                audioPlayer?.currentTime = 0
+                                audioPlayer?.play()
                                 startProgressTimer()
                             }
-                        } else if let urlToUse = bestURLToPlay() {
-                            // Prepare then play on this button press
-                            prepare(url: urlToUse)
-                            audioPlayer?.currentTime = currentTime
-                            audioPlayer?.play()
-                            startProgressTimer()
                         } else {
-                            print("No recording available to play.")
+                            // No prepared player yet; pick and prepare the best URL, then play
+                            refreshAndPrepareBest()
+                            if audioPlayer != nil {
+                                currentTime = 0
+                                audioPlayer?.currentTime = 0
+                                audioPlayer?.play()
+                                startProgressTimer()
+                            } else {
+                                print("No recording available to play.")
+                            }
                         }
                     } label: {
                         let isPlaying = audioPlayer?.isPlaying == true
@@ -147,8 +194,15 @@ struct Screen5: View {
             .navigationTitle("Review")
             .onAppear {
                 configureAudioSessionForPlayback()
-                getAudios()
-                // No auto-play or UI for recordings
+                // Clear any stale state
+                progressTimer?.invalidate()
+                progressTimer = nil
+                audioPlayer = nil
+                currentTime = 0
+                duration = 0
+                lastPreparedURL = nil
+                // Prepare the best candidate so duration is correct and we start from 0
+                refreshAndPrepareBest()
             }
             .onDisappear {
                 progressTimer?.invalidate()
@@ -169,7 +223,6 @@ struct Screen5: View {
             let result = try FileManager.default.contentsOfDirectory(at: url, includingPropertiesForKeys: [.contentModificationDateKey], options: [])
             self.audios = result
                 .filter { $0.pathExtension.lowercased() == "m4a" }
-                // Sort by modification date descending (latest first)
                 .sorted(by: { lhs, rhs in
                     let lDate = (try? lhs.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantPast
                     let rDate = (try? rhs.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantPast
@@ -177,50 +230,12 @@ struct Screen5: View {
                 })
         } catch {
             print("List audios error: \(error.localizedDescription)")
-        }
-    }
-}
-
-extension Screen5 {
-    struct SemiCircleGauge: View {
-        var progress: Double
-        var lineWidth: CGFloat = 16
-
-        var body: some View {
-            GeometryReader { geo in
-                let size = min(geo.size.width, geo.size.height)
-                ZStack {
-                    Arc(startAngle: .degrees(180), endAngle: .degrees(360))
-                        .stroke(Color.gray.opacity(0.25), style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-
-                    Arc(startAngle: .degrees(180), endAngle: .degrees(180 + 180 * progress))
-                        .stroke(Color.blue, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-                        .animation(.easeInOut(duration: 0.4), value: progress)
-
-                    Text("\(Int(progress * 100))%")
-                        .font(.system(size: 24, weight: .bold))
-                        .foregroundStyle(.primary)
-                        .offset(y: size * 0.15)
-                }
-                .frame(width: geo.size.width, height: geo.size.height)
-            }
-        }
-    }
-
-    struct Arc: Shape {
-        var startAngle: Angle
-        var endAngle: Angle
-
-        func path(in rect: CGRect) -> Path {
-            var path = Path()
-            let radius = min(rect.width, rect.height)
-            let center = CGPoint(x: rect.midX, y: rect.maxY)
-            path.addArc(center: center, radius: radius, startAngle: startAngle, endAngle: endAngle, clockwise: false)
-            return path
+            self.audios = []
         }
     }
 }
 
 #Preview {
     Screen5(recordingURL: nil, scoreTwo: .constant(67))
+        .environmentObject(RecordingStore())
 }

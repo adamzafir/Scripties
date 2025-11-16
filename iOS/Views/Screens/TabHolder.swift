@@ -29,6 +29,7 @@ struct TabHolder: View {
             Tab("Add", systemImage: "plus", value: Tabs.add, role: .search) {
                 Color.clear
                     .onAppear {
+                        
                         let newItem = ScriptItem(
                             id: UUID(),
                             title: "Untitled Script",
@@ -36,6 +37,7 @@ struct TabHolder: View {
                         )
                         viewModel.scriptItems.append(newItem)
                         selectedTab = .scripts
+                        
                     }
             }
         }

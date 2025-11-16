@@ -21,6 +21,11 @@ struct Screen2: View {
     @State private var WPM: Int = 120
     @State private var timer = TimerManager()
     @State private var isLoading = false
+    @State private var showEstimate = true
+    
+    // Typing detection (debounced)
+    @State private var isTyping = false
+    @State private var typingResetTask: Task<Void, Never>? = nil
     
     private func wrdEstimateString(for wordCount: Int, wpm: Int = 120) -> String {
         guard wordCount > 0, wpm > 0 else { return "0 min 0 sec" }
@@ -79,6 +84,13 @@ struct Screen2: View {
             }
             .onChange(of: script) { _, newValue in
                 wordCount = newValue.split { $0.isWhitespace }.count
+                // Mark as typing and debounce reset
+                isTyping = true
+                typingResetTask?.cancel()
+                typingResetTask = Task {
+                    try? await Task.sleep(nanoseconds: 700_000_000) // ~0.7s after last change
+                    await MainActor.run { isTyping = false }
+                }
             }
             .alert("Rewrite Failed", isPresented: Binding(
                 get: { rewriteError != nil },
@@ -150,28 +162,35 @@ struct Screen2: View {
             }
         }
         .overlay(alignment: .bottom) {
-            VStack {
-                Text("""
-                           Word Count: \(wordCount)
-                    Estimated Time: \(wrdEstimateString(for: wordCount, wpm: WPM))
-                    
-                    """)
-                .font(.headline)
+            // Hide while typing or when editor is focused
+            if showEstimate && !isEditingScript && !isTyping {
+                VStack {
+                    Text("""
+                               Word Count: \(wordCount)
+                        Estimated Time: \(wrdEstimateString(for: wordCount, wpm: WPM))
+                        
+                        """)
+                    .font(.headline)
+                    .padding(.horizontal, 16)
+                    .padding(.top)
+                    .glassEffect()
+                }
+                .shadow(color: Color.black.opacity(0.1), radius: 12, x: 0, y: 4)
                 .padding(.horizontal, 16)
-                .padding(.top)
-                .glassEffect()
-                
+                .padding(.bottom, 8)
+                .frame(maxWidth: .infinity, alignment: .center)
+                .animation(.easeInOut(duration: 0.15), value: isTyping)
+                .animation(.easeInOut(duration: 0.15), value: isEditingScript)
             }
-            .shadow(color: Color.black.opacity(0.1), radius: 12, x: 0, y: 4)
-            .padding(.horizontal, 16)
-            .padding(.bottom, 8)
-            .frame(maxWidth: .infinity, alignment: .center)
         }
         .fullScreenCover(isPresented: $showScreent) {
             Screen3Teleprompter(title: $title, script: $script, WPM: $WPM, timer: timer)
         }
         .fullScreenCover(isPresented: $showScreen) {
             Screen3Keywords(title: $title, script: $script)
+        }
+        .onDisappear {
+            typingResetTask?.cancel()
         }
     }
 }
