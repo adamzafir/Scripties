@@ -152,10 +152,11 @@ struct Screen2: View {
         .overlay(alignment: .bottom) {
             VStack {
                 Text("""
-                           Word Count: \(wordCount)
+                    Word Count: \(wordCount)
                     Estimated Time: \(wrdEstimateString(for: wordCount, wpm: WPM))
                     
                     """)
+                .multilineTextAlignment(.center)
                 .font(.headline)
                 .padding(.horizontal, 16)
                 .padding(.top)

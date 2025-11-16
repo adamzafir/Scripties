@@ -119,6 +119,9 @@ struct Screen4: View {
                         Screen5(scoreTwo: $scoreTwo)
                     
                 }
+                .onAppear {
+                    deriative = deriative * 100
+                }
                 VStack {
                     Gauge(value: WPM, in: 0...240) {
                         Text("Words Per Minute")
@@ -129,20 +132,20 @@ struct Screen4: View {
                             } maximumValueLabel: {
                                 Text("\(Int(maxVal))")
                             }
-                    Gauge(value: WPM, in: 0...1) {
-                        Text("Consitency")
+                    Gauge(value: deriative) {
+                        Text("Consistency")
                     } currentValueLabel: {
                                 Text("\(Int(deriative))")
                             } minimumValueLabel: {
                                 Text("\(Int(0))")
                             } maximumValueLabel: {
-                                Text("\(Int(2))")
+                                Text("\(Int(100))%")
                             }
-                    
+                            
                 }
                 NavigationLink {
                     TabHolder()
-                } label: {
+                } label:  {
                     ZStack {
                         Rectangle()
                             .frame(height: 55)
