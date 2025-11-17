@@ -125,14 +125,6 @@ struct Screen5: View {
 
                 HStack(spacing: 24) {
                     Button {
-                        let newTime = max(0, currentTime - 5)
-                        currentTime = newTime
-                        audioPlayer?.currentTime = newTime
-                    } label: {
-                        Label("", systemImage: "gobackward.5")
-                    }
-
-                    Button {
                         configureAudioSessionForPlayback()
 
                         if let player = audioPlayer {
@@ -164,14 +156,7 @@ struct Screen5: View {
                             .font(.headline)
                             
                     }
-
-                    Button {
-                        let newTime = min(duration, currentTime + 5)
-                        currentTime = newTime
-                        audioPlayer?.currentTime = newTime
-                    } label: {
-                        Label("", systemImage: "goforward.5")
-                    }
+                    .buttonStyle(.borderedProminent)
                 }
                 .padding(.bottom, 8)
 
