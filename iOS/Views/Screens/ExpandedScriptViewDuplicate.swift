@@ -1,10 +1,3 @@
-//
-//  ExpandedScriptViewDuplicate.swift
-//  yapLONGER
-//
-//  Created by T Krobot on 17/11/25.
-//
-
 import SwiftUI
 import FoundationModels
 
@@ -91,11 +84,10 @@ struct Screen22: View {
             }
             .onChange(of: script) { _, newValue in
                 wordCount = newValue.split { $0.isWhitespace }.count
-                // Mark as typing and debounce reset
                 isTyping = true
                 typingResetTask?.cancel()
                 typingResetTask = Task {
-                    try? await Task.sleep(nanoseconds: 700_000_000) // ~0.7s after last change
+                    try? await Task.sleep(nanoseconds: 700_000_000)
                     await MainActor.run { isTyping = false }
                 }
             }
@@ -160,7 +152,6 @@ struct Screen22: View {
             }
         }
         .overlay(alignment: .bottom) {
-            // Hide while typing or when editor is focused
             if showEstimate && !isEditingScript && !isTyping {
                 VStack {
                     Text("""
@@ -182,7 +173,7 @@ struct Screen22: View {
             }
         }
         .fullScreenCover(isPresented: $showScreent) {
-            Screen3Teleprompter(title: $title, script: $script, WPM: $WPM, timer: timer)
+            Screen3Teleprompter(title: $title, script: $script, WPM: $WPM, timer: timer, isPresented: $showScreent)
         }
         .onDisappear {
             typingResetTask?.cancel()

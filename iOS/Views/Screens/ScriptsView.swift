@@ -7,25 +7,41 @@ struct Screen1: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                VStack {
-                    Form {
-                        ForEach($viewModel.scriptItems) { $item in
-                            NavigationLink {
-                                if isBeta {
-                                    Screen2(title: $item.title, script: $item.scriptText) 
-                                } else {
-                                    Screen22(title: $item.title, script: $item.scriptText)
-                                }
+                // Main content
+                Group {
+                    if viewModel.scriptItems.isEmpty {
+                        // Empty state centered
+                        VStack(spacing: 8) {
+                            Text("No Scripts")
+                                .font(.headline)
+                                .foregroundStyle(.secondary)
+                            Text("Tap “Add Script” to create your first script.")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    } else {
+                        // Show scripts in a Form
+                        Form {
+                            ForEach($viewModel.scriptItems) { $item in
+                                NavigationLink {
+                                    if isBeta {
+                                        Screen2(title: $item.title, script: $item.scriptText)
+                                    } else {
+                                        Screen22(title: $item.title, script: $item.scriptText)
+                                    }
                                 } label: {
                                     Text(item.title)
                                 }
                             }
-                        .onDelete(perform: deleteItems)
+                            .onDelete(perform: deleteItems)
                         }
                     }
                 }
+                
+                // Keep the floating Add Script button where it was
                 VStack {
-                    
+                    Spacer()
                     Button {
                         viewModel.addNewScriptAtFront()
                     } label: {
@@ -47,9 +63,9 @@ struct Screen1: View {
             }
             .navigationTitle("Scripts")
         }
+    }
     
     private func deleteItems(at offsets: IndexSet) {
         viewModel.scriptItems.remove(atOffsets: offsets)
     }
 }
-
