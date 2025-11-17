@@ -407,15 +407,8 @@ struct Screen3Teleprompter: View {
 
             .navigationTitle(title)
             .padding()
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button(action: { dismiss() }) {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 16, weight: .semibold))
-                    }
-                }
             }
             .navigationBarBackButtonHidden(true)
         }
     }
-}
+
