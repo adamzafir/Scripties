@@ -114,6 +114,7 @@ struct Screen5: View {
                         }
                     })
                     .padding(.horizontal)
+                    .sliderThumbVisibility(.hidden)
 
                     HStack {
                         Text(formatTime(currentTime))

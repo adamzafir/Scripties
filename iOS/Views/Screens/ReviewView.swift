@@ -12,6 +12,8 @@ struct ReviewView: View {
     @Binding var elapsedTime: Int
     @Binding var wordCount: Int
     @Binding var deriative: Double
+    @Binding var isCoverPresented: Bool
+    @Environment(\.dismiss) private var dismiss
 
     private func wpmPercentage(_ wpm: Int) -> Double {
         if wpm <= 120 {
@@ -121,7 +123,7 @@ struct ReviewView: View {
                             HStack {
                                 Text("Consistency in speech (%)")
                                 Spacer()
-                                Text("\(Int(deriative.rounded()))%")
+                                Text("\(CIS)%")
                                     .foregroundStyle(.secondary)
                             }
                         }
@@ -129,23 +131,27 @@ struct ReviewView: View {
 
                     Screen5()
                 }
-                NavigationLink {
-                                    TabHolder()
-                                } label: {
-                                    ZStack {
-                                        Rectangle()
-                                            .frame(height: 55)
-                                            .frame(maxWidth: .infinity)
-                                            .cornerRadius(25)
-                                            .foregroundStyle(Color.accentColor)
-                                            .glassEffect()
-                                            .padding(.horizontal)
-                                        Text("Done")
-                                            .fontWeight(.semibold)
-                                            .foregroundStyle(Color.white)
-                                    }
-                                    .padding()
-                                }
+
+                Button {
+                    dismiss()
+                    DispatchQueue.main.async {
+                        isCoverPresented = false
+                    }
+                } label: {
+                    ZStack {
+                        Rectangle()
+                            .frame(height: 55)
+                            .frame(maxWidth: .infinity)
+                            .cornerRadius(25)
+                            .foregroundStyle(Color.accentColor)
+                            .glassEffect()
+                            .padding(.horizontal)
+                        Text("Done")
+                            .fontWeight(.semibold)
+                            .foregroundStyle(Color.white)
+                    }
+                    .padding()
+                }
                 .onAppear {
                     updateWPMFromBindings()
                     updateScores()
@@ -154,29 +160,20 @@ struct ReviewView: View {
                 .onChange(of: WPM) { _, _ in updateScores() }
                 .onChange(of: LGBW) { _, _ in updateScores() }
                 .onChange(of: CIS) { _, _ in updateScores() }
-                .onChange(of: elapsedTime) { _, _ in
-                    updateWPMFromBindings()
-                    updateScores()
-                }
-                .onChange(of: wordCount) { _, _ in
-                    updateWPMFromBindings()
-                    updateScores()
-                }
-                .onChange(of: deriative) { _, newValue in
-                    CIS = Int(newValue.rounded())
-                    updateScores()
-                }
+                .onChange(of: elapsedTime) { _, _ in updateWPMFromBindings(); updateScores() }
+                .onChange(of: wordCount) { _, _ in updateWPMFromBindings(); updateScores() }
+                .onChange(of: deriative) { _, newValue in CIS = Int(newValue.rounded()); updateScores() }
                 .navigationTitle("Review")
             }
             .navigationBarBackButtonHidden(true)
         }
     }
+
     struct SemiCircleGauge: View {
         var progress: Double
         var lineWidth: CGFloat = 16
         var label: String? = nil
         var highlight: ClosedRange<Double>? = nil
-
         var minLabel: String? = nil
         var maxLabel: String? = nil
         var valueLabel: String? = nil
@@ -187,19 +184,15 @@ struct ReviewView: View {
                 let totalHeight = geo.size.height
                 let lineThickness = max(10, min(16, geo.size.height * 2))
                 let clamped = max(0.0, min(1.0, progress))
-                let centerX = totalWidth / 2
-                let delta = abs(clamped - 0.5)
-                let extent = (totalWidth / 2) * delta * 2
-                let isRight = clamped >= 0.5
                 let indicatorX = clamped * totalWidth
+                let isRight = clamped >= 0.5
 
                 let highlightFrame: (x: CGFloat, width: CGFloat)? = {
                     guard let r = highlight else { return nil }
-                    let start = CGFloat(max(0.0, min(1.0, r.lowerBound))) * totalWidth
-                    let end = CGFloat(max(0.0, min(1.0, r.upperBound))) * totalWidth
-                    let minX = min(start, end)
-                    let w = max(0, end - start)
-                    return (x: minX + w / 2, width: w)
+                    let start = CGFloat(r.lowerBound) * totalWidth
+                    let end = CGFloat(r.upperBound) * totalWidth
+                    let w = end - start
+                    return (x: start + w/2, width: w)
                 }()
 
                 ZStack {
@@ -226,21 +219,20 @@ struct ReviewView: View {
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                             .position(x: 8, y: totalHeight/2 + lineThickness/2 + 10)
-                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     if let maxLabel {
                         Text(maxLabel)
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                             .position(x: totalWidth - 8, y: totalHeight/2 + lineThickness/2 + 10)
-                            .frame(maxWidth: .infinity, alignment: .trailing)
                     }
 
                     if let valueLabel {
                         Text(valueLabel)
                             .font(.caption)
                             .foregroundStyle(.primary)
-                            .position(x: min(max(12, indicatorX), totalWidth - 12), y: max(0, totalHeight/2 - lineThickness/2 - 10))
+                            .position(x: min(max(12, indicatorX), totalWidth - 12),
+                                      y: max(0, totalHeight/2 - lineThickness/2 - 10))
                     }
 
                     if let label {
@@ -255,18 +247,7 @@ struct ReviewView: View {
                         }
                     }
                 }
-                .frame(width: geo.size.width, height: geo.size.height)
             }
         }
     }
-}
-
-#Preview {
-    ReviewView(
-        LGBW: .constant(5),
-        elapsedTime: .constant(120),
-        wordCount: .constant(240),
-        deriative: .constant(82.0)
-    )
-    .environmentObject(RecordingStore())
 }

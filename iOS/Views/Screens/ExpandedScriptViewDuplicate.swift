@@ -11,7 +11,7 @@ import FoundationModels
 struct Screen22: View {
     @Binding var title: String
     @Binding var script: String
-    
+
     @State private var initialTitle: String = ""
     @State private var initialScript: String = ""
     @State private var hasInitializedPlaceholders: Bool = false
@@ -82,11 +82,11 @@ struct Screen22: View {
                         .font(.title)
                         .fontWeight(.bold)
                         .padding()
-                        .onTapGesture {
-                        }
-                        .onChange(of: title) { _, _ in
-                        }
                     
+                    ZStack(alignment: .topLeading) {
+                        TextEditor(text: $script)
+                            .focused($isEditingScript)
+                            .padding(.horizontal)
                     ZStack(alignment: .topLeading) {
                         TextEditor(text: $script)
                             .focused($isEditingScript)
@@ -112,24 +112,19 @@ struct Screen22: View {
                                 .allowsHitTesting(false)
                         }
                     }
-                    
-                    Spacer()
-                }
-            }
-            .onAppear {
+                if !hasInitializedPlaceholders {
+                    initialTitle = title
+                    initialScript = script
+                    title = ""
+                    script = ""
                 if !hasInitializedPlaceholders {
                     initialTitle = title
                     initialScript = script
                     title = ""
                     script = ""
                     hasInitializedPlaceholders = true
-                }
-                wordCount = script.split { $0.isWhitespace }.count
-            }
-            .alert("Rewrite Failed", isPresented: Binding(
-                get: { rewriteError != nil },
                 set: { if !$0 { rewriteError = nil } }
-            )) {
+                wordCount = script.split { $0.isWhitespace }.count
                 Button("OK", role: .cancel) {}
             } message: {
                 Text(rewriteError ?? "Unknown error")
@@ -165,13 +160,13 @@ struct Screen22: View {
                     Button {
                         showScreent = true
                     } label: {
-                        Image(systemName: "music.microphone")
+                        Image(systemName: "play.fill")
                     }
+                    .padding()
                 }
                 
-                ToolbarItemGroup(placement: .keyboard) {
+                        Image(systemName: "music.microphone")
                     Button {
-                        showPromptDialog = true
                     } label: {
                         Image(systemName: "wand.and.stars")
                     }
@@ -185,7 +180,7 @@ struct Screen22: View {
                         Image(systemName: "checkmark")
                     }
                 }
-            }
+                        isEditingTitle = false
         }
         .overlay(alignment: .bottom) {
             if showEstimate && !isEditingScript && !isTyping {
@@ -209,12 +204,12 @@ struct Screen22: View {
             }
         }
         .fullScreenCover(isPresented: $showScreent) {
-            Screen3Teleprompter(title: $title, script: $script, WPM: $WPM, timer: timer)
+            Screen3Teleprompter(title: $title, script: $script, WPM: $WPM, timer: timer, isPresented: $showScreent)
         }
         .onDisappear {
             typingResetTask?.cancel()
         }
-    }
+            Screen3Teleprompter(title: $title, script: $script, WPM: $WPM, timer: timer)
 }
 
 #Preview {
@@ -223,3 +218,4 @@ struct Screen22: View {
         script: .constant("This is a test script.")
     )
 }
+

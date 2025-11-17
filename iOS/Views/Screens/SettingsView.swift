@@ -93,8 +93,8 @@ struct Settings: View {
                     }
                 }
                 
-                Section(header: Text("Teleprompter Font size")) {
-                    Picker("Font size", selection: Binding(
+                Section(header: Text("Teleprompter Font Size")) {
+                    Picker("Font Size", selection: Binding(
                         get: { fontChoice },
                         set: { newChoice in
                             fontChoice = newChoice
@@ -112,12 +112,11 @@ struct Settings: View {
                             Text(choice.title).tag(choice)
                         }
                     }
-                    .pickerStyle(.segmented)
                     
                     if fontChoice == .custom {
                         VStack(alignment: .leading, spacing: 8) {
                             HStack {
-                                Text("Custom size")
+                                Text("Custom Size")
                                 Spacer()
                                 Text("\(Int(customSize)) pt")
                                     .monospacedDigit()

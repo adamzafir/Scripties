@@ -139,8 +139,9 @@ struct Screen2: View {
                             Text("Keywords")
                         }
                     } label: {
-                        Image(systemName: "music.microphone")
+                        Image(systemName: "play.fill")
                     }
+                    .padding()
                 }
                 
                 ToolbarItemGroup(placement: .keyboard) {
@@ -161,7 +162,6 @@ struct Screen2: View {
             }
         }
         .overlay(alignment: .bottom) {
-            // Hide while typing or when editor is focused
             if showEstimate && !isEditingScript && !isTyping {
                 VStack {
                     Text("""
@@ -183,7 +183,7 @@ struct Screen2: View {
             }
         }
         .fullScreenCover(isPresented: $showScreent) {
-            Screen3Teleprompter(title: $title, script: $script, WPM: $WPM, timer: timer)
+            Screen3Teleprompter(title: $title, script: $script, WPM: $WPM, timer: timer, isPresented: $showScreent)
         }
         .fullScreenCover(isPresented: $showScreen) {
             Screen3Keywords(title: $title, script: $script)
