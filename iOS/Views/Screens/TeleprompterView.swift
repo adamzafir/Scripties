@@ -39,53 +39,45 @@ private func isSubsequence(_ small: [String], in big: [String]) -> Bool {
     return false
 }
 
+
 struct Screen3Teleprompter: View {
     private enum FontSizeChoice: Hashable, CaseIterable, Identifiable {
-           case extraSmall
-           case small
-           case `default`
-           case large
-           case massive
-           case custom
-           
-           var id: Self { self }
-           
-           var title: String {
-               switch self {
-               case .extraSmall: return "XS"
-               case .small: return "S"
-               case .default: return "Default"
-               case .large: return "L"
-               case .massive: return "XL"
-               case .custom: return "Custom"
-               }
-           }
-           
-           var presetValue: Double? {
-               switch self {
-               case .extraSmall: return 10
-               case .small: return 20
-               case .default: return 28
-               case .large: return 40
-               case .massive: return 50
-               case .custom: return nil
-               }
-           }
-           
-           static func fromStored(_ value: Double) -> FontSizeChoice {
-               switch value {
-               case 10: return .extraSmall
-               case 20: return .small
-               case 28: return .default
-               case 40: return .large
-               case 50: return .massive
-               default: return .custom
-               }
-           }
-       }
-       
-       @State private var fontChoice: FontSizeChoice = .default
-       @State private var customSize: Double = 28
+        case extraSmall, small, `default`, large, massive, custom
+        var id: Self { self }
+        var title: String {
+            switch self {
+            case .extraSmall: return "XS"
+            case .small: return "S"
+            case .default: return "Default"
+            case .large: return "L"
+            case .massive: return "XL"
+            case .custom: return "Custom"
+            }
+        }
+        var presetValue: Double? {
+            switch self {
+            case .extraSmall: return 10
+            case .small: return 20
+            case .default: return 28
+            case .large: return 40
+            case .massive: return 50
+            case .custom: return nil
+            }
+        }
+        static func fromStored(_ value: Double) -> FontSizeChoice {
+            switch value {
+            case 10: return .extraSmall
+            case 20: return .small
+            case 28: return .default
+            case 40: return .large
+            case 50: return .massive
+            default: return .custom
+            }
+        }
+    }
+
+    @State private var fontChoice: FontSizeChoice = .default
+    @State private var customSize: Double = 28
     @EnvironmentObject private var recordingStore: RecordingStore
     @State private var showAccessory = false
     let synthesiser = AVSpeechSynthesizer()
@@ -94,27 +86,22 @@ struct Screen3Teleprompter: View {
     @State var transcription = ""
     @State var isRecording = false
     @Environment(\.dismiss) private var dismiss
-
     @Binding var title: String
     @Binding var script: String
     @State var scriptLines: [String] = []
     @State private var isLoading = true
     @AppStorage("fontSize") var fontSize: Double = 28
-    @Binding var WPM :Int
-
+    @Binding var WPM: Int
     @State private var tokensPerLine: [[String]] = []
     @State private var currentLineIndex: Int = 0
     @State private var lastAdvanceTime: Date = .distantPast
     @State private var navigateToScreen4 = false
-
     @State var secondsPerWord: [Double] = []
     @State var scriptWords: [String] = []
     @State var timer: TimerManager
     @State var transscriptionChangeCount: Int = 0
-
     @State private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
     @State private var recognitionTask: SFSpeechRecognitionTask?
-
     @State private var elapsedTime: Int = 0
     @State private var wordCount: Int = 0
     @State private var LGBW: Int = 0
@@ -124,7 +111,6 @@ struct Screen3Teleprompter: View {
     @State private var lastSilenceStartTime: Date? = nil
     @State private var silenceDurations: [TimeInterval] = []
     @State private var wallTimer: Timer? = nil
-
     @State var deviation: Double = 0
     private let silenceThreshold: Float = -40.0
     private let minSilenceDuration: TimeInterval = 0.25
@@ -139,17 +125,32 @@ struct Screen3Teleprompter: View {
         currentLineIndex = min(currentLineIndex, max(0, scriptLines.count - 1))
     }
 
+    private func computeConsistency(from stdDev: Double) -> Double {
+        let cis = 100 / (1 + stdDev)
+        return max(0, min(100, cis))
+    }
+
     private func tryAdvance(using recognizedTokens: [String], scrollProxy: ScrollViewProxy) {
         guard currentLineIndex < tokensPerLine.count else { return }
         let now = Date()
         if now.timeIntervalSince(lastAdvanceTime) < 0.3 { return }
-        let expected = tokensPerLine[currentLineIndex]
-        if expected.isEmpty || isSubsequence(expected, in: recognizedTokens) {
-            let nextIndex = currentLineIndex + 1
-            if nextIndex <= scriptLines.count {
-                currentLineIndex = min(nextIndex, scriptLines.count - 1)
-                lastAdvanceTime = now
-                withAnimation(.easeInOut) { scrollProxy.scrollTo(currentLineIndex, anchor: .top) }
+        let expectedTokens = tokensPerLine[currentLineIndex]
+        guard let lastWord = expectedTokens.last else {
+            advanceLine(scrollProxy, now: now)
+            return
+        }
+        if recognizedTokens.contains(lastWord) {
+            advanceLine(scrollProxy, now: now)
+        }
+    }
+
+    private func advanceLine(_ scrollProxy: ScrollViewProxy, now: Date) {
+        let nextIndex = currentLineIndex + 1
+        if nextIndex < scriptLines.count {
+            currentLineIndex = nextIndex
+            lastAdvanceTime = now
+            withAnimation(.easeInOut) {
+                scrollProxy.scrollTo(currentLineIndex, anchor: .top)
             }
         }
     }
@@ -346,6 +347,12 @@ struct Screen3Teleprompter: View {
                             stopSilenceTracking()
                             let longest = max(LGBWSeconds, silenceDurations.max() ?? 0)
                             LGBW = Int(longest.rounded())
+                            if !secondsPerWord.isEmpty {
+                                let std = secondsPerWord.standardDeviation()
+                                deviation = computeConsistency(from: std)
+                            } else {
+                                deviation = 0
+                            }
                             navigateToScreen4 = true
                         }
                     } label: {
@@ -354,6 +361,7 @@ struct Screen3Teleprompter: View {
                     .sensoryFeedback(.selection, trigger: showAccessory)
                     .frame(maxWidth: .infinity, alignment: .center)
                 }
+            }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
@@ -390,31 +398,29 @@ struct Screen3Teleprompter: View {
                 }
             }
 
-                Text(transcription.isEmpty ? "" : transcription)
-                    .lineLimit(3)
-                    .multilineTextAlignment(.leading)
-                    .padding(.horizontal, 16)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
-
-            .onAppear {
-                Task {
-                    scriptWords = script.components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }
-                    wordCount = script.split { $0.isWhitespace }.count
-                    recomputeLines()
-                    isLoading = false
-                }
-            }
-            .onChange(of: fontSize) { _, _ in recomputeLines() }
-            .onChange(of: script) { _, _ in
-                recomputeLines()
-                wordCount = script.split { $0.isWhitespace }.count
-            }
-
-            .navigationTitle(title)
-            .navigationBarTitleDisplayMode(.inline)
-            .padding(.vertical, 8)
-            }
-            .navigationBarBackButtonHidden(true)
+            Text(transcription.isEmpty ? "" : transcription)
+                .lineLimit(3)
+                .multilineTextAlignment(.leading)
+                .padding(.horizontal, 16)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .onAppear {
+            Task {
+                scriptWords = script.components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }
+                wordCount = script.split { $0.isWhitespace }.count
+                recomputeLines()
+                isLoading = false
+            }
+        }
+        .onChange(of: fontSize) { _, _ in recomputeLines() }
+        .onChange(of: script) { _, _ in
+            recomputeLines()
+            wordCount = script.split { $0.isWhitespace }.count
+        }
+        .navigationTitle(title)
+        .navigationBarTitleDisplayMode(.inline)
+        .padding(.vertical, 8)
+        .navigationBarBackButtonHidden(true)
     }
+}
+
