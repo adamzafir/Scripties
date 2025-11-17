@@ -152,11 +152,12 @@ struct Screen5: View {
                         }
                     } label: {
                         let isPlaying = audioPlayer?.isPlaying == true
-                        Label(isPlaying ? "" : "", systemImage: isPlaying ? "pause.fill" : "play.fill")
+                        // Show play when paused, pause when playing
+                        Image(systemName: isPlaying ? "pause.fill" : "play.fill")
                             .font(.headline)
-                            
+                            .accessibilityLabel(isPlaying ? "Pause" : "Play")
                     }
-                    .buttonStyle(.borderedProminent)
+                    // .buttonStyle(.plain) // uncomment if you want a totally plain button
                 }
                 .padding(.bottom, 8)
 
