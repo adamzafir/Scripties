@@ -10,7 +10,7 @@ struct Screen1: View {
                     Form {
                         ForEach($viewModel.scriptItems) { $item in
                             NavigationLink {
-                                Screen2(title: $item.title, script: $item.scriptText)
+                                Screen22(title: $item.title, script: $item.scriptText)
                             } label: {
                                 Text(item.title)
                             }
