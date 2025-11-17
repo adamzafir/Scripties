@@ -130,8 +130,9 @@ struct Screen22: View {
                     Button {
                         showScreent = true
                     } label: {
-                        Image(systemName: "music.microphone")
+                        Image(systemName: "play.fill")
                     }
+                    .padding()
                 }
                 
                 ToolbarItemGroup(placement: .keyboard) {

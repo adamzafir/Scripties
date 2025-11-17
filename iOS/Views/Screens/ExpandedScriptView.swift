@@ -139,8 +139,9 @@ struct Screen2: View {
                             Text("Keywords")
                         }
                     } label: {
-                        Image(systemName: "music.microphone")
+                        Image(systemName: "play.fill")
                     }
+                    .padding()
                 }
                 
                 ToolbarItemGroup(placement: .keyboard) {
