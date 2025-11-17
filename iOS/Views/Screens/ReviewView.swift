@@ -207,7 +207,7 @@ struct ReviewView: View {
                         .foregroundColor(.red)
             
 #endif
-                Form {
+                
                     Section("Result") {
                         DisclosureGroup(isExpanded: $isWPMExpanded) {
                             SemiCircleGauge(
@@ -296,7 +296,7 @@ struct ReviewView: View {
             }
             .navigationBarBackButtonHidden(true)
         }
-    }
+    
 
     // MARK: - Gauge
     struct SemiCircleGauge: View {
@@ -387,7 +387,8 @@ struct ReviewView: View {
         LGBW: .constant(5),
         elapsedTime: .constant(120),
         wordCount: .constant(240),
-        deriative: .constant(70.0)
+        deriative: .constant(70.0),
+        isCoverPresented: .constant(false)
     )
     .environmentObject(RecordingStore())
 }
