@@ -10,11 +10,6 @@ struct Screen5: View {
     @State private var duration: TimeInterval = 0
     @State private var progressTimer: Timer?
     @State private var isScrubbing = false
-<<<<<<< HEAD
-    // Keep recordings internally to detect the most recent, but do not show them
-=======
-    @Binding var scoreTwo: Double
->>>>>>> main
     @State private var audios: [URL] = []
     @State private var selectedURL: URL? = nil
     @State private var lastPreparedURL: URL? = nil
@@ -52,7 +47,6 @@ struct Screen5: View {
     }
 
     private func prepare(url: URL) {
-        // Stop any existing player and reset state
         audioPlayer?.stop()
         audioPlayer = nil
         duration = 0
@@ -60,7 +54,6 @@ struct Screen5: View {
 
         configureAudioSessionForPlayback()
 
-        // Verify the file exists and is non-empty
         guard FileManager.default.fileExists(atPath: url.path) else {
             print("Prepare failed: file does not exist at \(url)")
             return
@@ -74,7 +67,6 @@ struct Screen5: View {
             selectedURL = url
             lastPreparedURL = url
 
-            // Always reset to the start to avoid stale positions
             currentTime = 0
             audioPlayer?.currentTime = 0
 
@@ -105,7 +97,6 @@ struct Screen5: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 16) {
-                // Progress slider & timestamps
                 VStack(spacing: 8) {
                     Slider(value: Binding(
                         get: { duration > 0 ? currentTime : 0 },
@@ -132,9 +123,7 @@ struct Screen5: View {
                     .monospacedDigit()
                 }
 
-                // Playback controls
                 HStack(spacing: 24) {
-                    // Back 15s
                     Button {
                         let newTime = max(0, currentTime - 15)
                         currentTime = newTime
@@ -143,7 +132,6 @@ struct Screen5: View {
                         Label("", systemImage: "gobackward.15")
                     }
 
-                    // Play/Pause
                     Button {
                         configureAudioSessionForPlayback()
 
@@ -153,18 +141,15 @@ struct Screen5: View {
                                 progressTimer?.invalidate()
                                 progressTimer = nil
                             } else {
-                                // Ensure we aren't resuming some stale URL; if no URL yet, prepare best
                                 if lastPreparedURL == nil {
                                     refreshAndPrepareBest()
                                 }
-                                // Start from 0 to avoid any end-of-file resumes
                                 currentTime = 0
                                 audioPlayer?.currentTime = 0
                                 audioPlayer?.play()
                                 startProgressTimer()
                             }
                         } else {
-                            // No prepared player yet; pick and prepare the best URL, then play
                             refreshAndPrepareBest()
                             if audioPlayer != nil {
                                 currentTime = 0
@@ -181,7 +166,6 @@ struct Screen5: View {
                             .font(.headline)
                     }
 
-                    // Forward 15s
                     Button {
                         let newTime = min(duration, currentTime + 15)
                         currentTime = newTime
@@ -198,14 +182,12 @@ struct Screen5: View {
             .navigationTitle("Review")
             .onAppear {
                 configureAudioSessionForPlayback()
-                // Clear any stale state
                 progressTimer?.invalidate()
                 progressTimer = nil
                 audioPlayer = nil
                 currentTime = 0
                 duration = 0
                 lastPreparedURL = nil
-                // Prepare the best candidate so duration is correct and we start from 0
                 refreshAndPrepareBest()
             }
             .onDisappear {
@@ -240,10 +222,6 @@ struct Screen5: View {
 }
 
 #Preview {
-<<<<<<< HEAD
     Screen5(recordingURL: nil)
-=======
-    Screen5(recordingURL: nil, scoreTwo: .constant(67))
         .environmentObject(RecordingStore())
->>>>>>> main
 }
