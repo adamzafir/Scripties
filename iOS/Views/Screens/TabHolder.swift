@@ -25,6 +25,21 @@ struct TabHolder: View {
                         .navigationTitle("Settings")
                 }
             }
+
+            Tab("Add", systemImage: "plus", value: Tabs.add, role: .search) {
+                Color.clear
+                    .onAppear {
+                        
+                        let newItem = ScriptItem(
+                            id: UUID(),
+                            title: "Untitled Script",
+                            scriptText: "Type something..."
+                        )
+                        viewModel.scriptItems.append(newItem)
+                        selectedTab = .scripts
+                        
+                    }
+            }
         }
         .navigationBarBackButtonHidden(true)
     }
