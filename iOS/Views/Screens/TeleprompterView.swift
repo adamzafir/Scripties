@@ -40,6 +40,54 @@ private func isSubsequence(_ small: [String], in big: [String]) -> Bool {
 }
 
 struct Screen3Teleprompter: View {
+    private enum FontSizeChoice: Hashable, CaseIterable, Identifiable {
+        case extraSmall
+        case small
+        case `default`
+        case large
+        case massive
+        case custom
+        
+        var id: Self { self }
+        
+        var title: String {
+            switch self {
+            case .extraSmall: return "XS"
+            case .small: return "S"
+            case .default: return "Default"
+            case .large: return "L"
+            case .massive: return "XL"
+            case .custom: return "Custom"
+            }
+        }
+        
+        var presetValue: Double? {
+            switch self {
+            case .extraSmall: return 10
+            case .small: return 20
+            case .default: return 28
+            case .large: return 40
+            case .massive: return 50
+            case .custom: return nil
+            }
+        }
+        
+        static func fromStored(_ value: Double) -> FontSizeChoice {
+            switch value {
+            case 10: return .extraSmall
+            case 20: return .small
+            case 28: return .default
+            case 40: return .large
+            case 50: return .massive
+            default: return .custom
+            }
+        }
+    }
+    
+    @State private var fontChoice: FontSizeChoice = .default
+    @State private var customSize: Double = 28
+    
+
     @EnvironmentObject private var recordingStore: RecordingStore
     @State private var showAccessory = false
     let synthesiser = AVSpeechSynthesizer()
@@ -266,15 +314,7 @@ struct Screen3Teleprompter: View {
                         }
                     }
                 }
-
-                Spacer()
-
-                VStack {
-                    #if DEBUG
-                    Text("DEBUG: \(secondsPerWord.description)")
-                        .font(.caption)
-                        .foregroundColor(.red)
-                    #endif
+                
                     Button {
                         let newValue = !isRecording
                         isRecording = newValue
@@ -336,4 +376,4 @@ struct Screen3Teleprompter: View {
             .navigationBarBackButtonHidden(true)
         }
     }
-}
+
