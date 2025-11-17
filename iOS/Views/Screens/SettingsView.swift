@@ -135,7 +135,6 @@ struct Settings: View {
                 }
                 Section(header: Text("Beta Features")){
                     HStack{
-            
                         Toggle("Enable Beta Feature", isOn: $isBeta)
                     }
                     
