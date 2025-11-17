@@ -3,14 +3,13 @@ import SwiftUI
 struct Screen1: View {
     @ObservedObject var viewModel: Screen2ViewModel
     @AppStorage("betashit") private var isBeta: Bool = false
+    @State private var selectedID: ScriptItem.ID? = nil
     
     var body: some View {
         NavigationStack {
             ZStack {
-                // Main content
                 Group {
                     if viewModel.scriptItems.isEmpty {
-                        // Empty state centered
                         VStack(spacing: 8) {
                             Text("No Scripts")
                                 .font(.headline)
@@ -21,10 +20,9 @@ struct Screen1: View {
                         }
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                     } else {
-                        // Show scripts in a Form
                         Form {
                             ForEach($viewModel.scriptItems) { $item in
-                                NavigationLink {
+                                NavigationLink(tag: item.id, selection: $selectedID) {
                                     if isBeta {
                                         Screen2(title: $item.title, script: $item.scriptText)
                                     } else {
@@ -39,11 +37,11 @@ struct Screen1: View {
                     }
                 }
                 
-                // Keep the floating Add Script button where it was
                 VStack {
                     Spacer()
                     Button {
                         viewModel.addNewScriptAtFront()
+                        selectedID = viewModel.scriptItems.first?.id
                     } label: {
                         VStack {
                             Text("Add Script")
