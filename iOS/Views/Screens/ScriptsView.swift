@@ -12,13 +12,11 @@ struct Screen1: View {
                         ForEach($viewModel.scriptItems) { $item in
                             NavigationLink {
                                 if isBeta {
-                                    // Navigate to Screen 2.5 when beta is enabled
-                                    Screen2_5(title: $item.title, script: $item.scriptText)
+                                    Screen22(title: $item.title, script: $item.scriptText)
                                 } else {
                                     // Navigate to Screen 2 when beta is disabled
                                     Screen2(title: $item.title, script: $item.scriptText)
                                 }
-                            } label: {
                                 Text(item.title)
                             }
                         }
