@@ -1,4 +1,3 @@
-
 import SwiftUI
 
 struct ReviewView: View {
@@ -8,6 +7,8 @@ struct ReviewView: View {
     @State private var score: Int = 2
     @State private var scoreTwo: Double = 67
     @State private var showInfo: Bool = false
+    @State private var isWPMExpanded: Bool = false
+    @State private var isConsistencyExpanded: Bool = false
     @Binding var elapsedTime: Int
     @Binding var wordCount: Int
     @Binding var deriative: Double
@@ -82,20 +83,42 @@ struct ReviewView: View {
 #endif
                 Form{
                     Section("Result"){
-                        LabeledContent {
-                            Text(String(WPM))
+                        DisclosureGroup(isExpanded: $isWPMExpanded) {
+                            SemiCircleGauge(
+                                progress: max(0.0, min(1.0, Double(WPM) / 240.0)),
+                                highlight: (100.0/240.0)...(120.0/240.0),
+                                minLabel: "0",
+                                maxLabel: "240",
+                                valueLabel: "\(WPM)"
+                            )
+                            .frame(height: 80)
+                            .padding(.top, 8)
                         } label: {
-                            Text("Words per minute")
+                            HStack {
+                                Text("Words per minute")
+                                Spacer()
+                                Text("\(WPM)")
+                                    .foregroundStyle(.secondary)
+                            }
                         }
-                        LabeledContent {
-                            Text(String(LGBW))
+
+                        DisclosureGroup(isExpanded: $isConsistencyExpanded) {
+                            SemiCircleGauge(
+                                progress: max(0.0, min(1.0, Double(CIS) / 100.0)),
+                                highlight: (75.0/100.0)...(85.0/100.0),
+                                minLabel: "0%",
+                                maxLabel: "100%",
+                                valueLabel: "\(CIS)%"
+                            )
+                            .frame(height: 80)
+                            .padding(.top, 8)
                         } label: {
-                            Text("Longest gap between words (seconds)")
-                        }
-                        LabeledContent {
-                            Text(String(deriative))
-                        } label: {
-                            Text("Consistency in speech (%)")
+                            HStack {
+                                Text("Consistency in speech (%)")
+                                Spacer()
+                                Text("\(Int(deriative.rounded()))%")
+                                    .foregroundStyle(.secondary)
+                            }
                         }
                     }
                     .onChange(of: WPM) { _, _ in updateScores() }
@@ -109,59 +132,12 @@ struct ReviewView: View {
                         updateWPMFromBindings()
                         updateScores()
                     }
-                    
-                    Section("Score"){
-                        VStack {
-                            TabView {
-                                VStack(spacing: 4) {
-                                    HStack {
-                                        Spacer()
-                                        Text("\(WPM) WPM")
-                                            .font(.system(size: 16, weight: .semibold))
-                                            .foregroundStyle(.primary)
-                                    }
-                                    SemiCircleGauge(
-                                        progress: max(0.0, min(1.0, Double(WPM) / 240.0)),
-                                        highlight: (100.0/240.0)...(120.0/240.0),
-                                        minLabel: "0",
-                                        maxLabel: "240",
-                                        valueLabel: "\(WPM)"
-                                    )
-                                    .frame(height: 60)
-                                    .padding(.top, 8)
-                                }
-                                .padding(.horizontal)
-                                
-                              
-                                
-                                VStack(spacing: 4) {
-                                    HStack {
-                                        Spacer()
-                                        Text("\(CIS)% Consistency")
-                                            .font(.system(size: 16, weight: .semibold))
-                                            .foregroundStyle(.primary)
-                                    }
-                                    SemiCircleGauge(
-                                        progress: max(0.0, min(1.0, Double(CIS) / 100.0)),
-                                        highlight: (75.0/100.0)...(85.0/100.0),
-                                        minLabel: "0%",
-                                        maxLabel: "100%",
-                                        valueLabel: "\(CIS)%"
-                                    )
-                                    .frame(height: 60)
-                                    .padding(.top, 8)
-                                }
-                                .padding(.horizontal)
-                              
-                            }
-                            .tabViewStyle(.page)
-                            .indexViewStyle(.page(backgroundDisplayMode: .always))
-                            
-                        }
-                        .frame(maxWidth: .infinity, minHeight: 200, alignment: .center)
-                        .listRowInsets(EdgeInsets(top: 16, leading: 16, bottom: 24, trailing: 16))
-                        
+                    .onChange(of: deriative) { _, newValue in
+                        CIS = Int(newValue.rounded())
+                        updateScores()
                     }
+                    
+                    
                     
                     
                 }
@@ -297,4 +273,3 @@ struct ReviewView: View {
     )
     
 }
-
