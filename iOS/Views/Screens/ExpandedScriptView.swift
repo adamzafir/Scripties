@@ -170,6 +170,7 @@ struct Screen2: View {
                         
                         """)
                     .font(.headline)
+                    .monospacedDigit()
                     .padding(.horizontal, 16)
                     .padding(.top)
                     .glassEffect()

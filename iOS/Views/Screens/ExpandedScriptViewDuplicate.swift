@@ -88,12 +88,14 @@ struct Screen22: View {
                                 }
                             }
                         
+                        // Placeholder: shows only when empty and not focused, greyed out
                         if script.isEmpty && !isEditingScript {
-                            Text("Start typing your script...")
-                                .foregroundStyle(.secondary)
+                            Text("type something")
+                                .foregroundColor(.secondary)
                                 .padding(.horizontal, 20)
                                 .padding(.top, 8)
                                 .allowsHitTesting(false)
+                                .accessibilityHidden(true)
                         }
                     }
                 }
@@ -169,8 +171,9 @@ struct Screen22: View {
                         Estimated Time: \(wrdEstimateString(for: wordCount, wpm: WPM))
                         """)
                     .font(.headline)
+                    .monospacedDigit()
                     .padding(.horizontal, 16)
-                    .padding(.top)
+                    .padding()
                     .glassEffect()
                 }
                 .shadow(color: Color.black.opacity(0.1), radius: 12, x: 0, y: 4)
@@ -199,6 +202,6 @@ struct Screen22: View {
 #Preview {
     Screen22(
         title: .constant("untitled"),
-        script: .constant("This is a test script.")
+        script: .constant("")
     )
 }

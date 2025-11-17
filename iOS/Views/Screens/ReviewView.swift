@@ -75,6 +75,7 @@ struct ReviewView: View {
 #if DEBUG
                 Text("DEBUG: Elapsed Time: \(elapsedTime)")
                     .font(.caption)
+                    .monospacedDigit()
                     .foregroundColor(.red)
                     .padding(.top, 10)
 #endif
@@ -100,6 +101,7 @@ struct ReviewView: View {
                                 Text("Words per minute")
                                 Spacer()
                                 Text("\(WPM)")
+                                    .monospacedDigit()
                                     .foregroundStyle(.secondary)
                             }
                         }
@@ -124,6 +126,7 @@ struct ReviewView: View {
                                 Text("Consistency in speech (%)")
                                 Spacer()
                                 Text("\(CIS)%")
+                                    .monospacedDigit()
                                     .foregroundStyle(.secondary)
                             }
                         }
@@ -217,12 +220,14 @@ struct ReviewView: View {
                     if let minLabel {
                         Text(minLabel)
                             .font(.caption2)
+                            .monospacedDigit()
                             .foregroundStyle(.secondary)
                             .position(x: 8, y: totalHeight/2 + lineThickness/2 + 10)
                     }
                     if let maxLabel {
                         Text(maxLabel)
                             .font(.caption2)
+                            .monospacedDigit()
                             .foregroundStyle(.secondary)
                             .position(x: totalWidth - 8, y: totalHeight/2 + lineThickness/2 + 10)
                     }
@@ -230,6 +235,7 @@ struct ReviewView: View {
                     if let valueLabel {
                         Text(valueLabel)
                             .font(.caption)
+                            .monospacedDigit()
                             .foregroundStyle(.primary)
                             .position(x: min(max(12, indicatorX), totalWidth - 12),
                                       y: max(0, totalHeight/2 - lineThickness/2 - 10))
