@@ -7,29 +7,36 @@ enum Tabs: Hashable {
 }
 
 struct TabHolder: View {
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
     @State private var selectedTab: Tabs = .scripts
     @StateObject private var viewModel = Screen2ViewModel()
     var body: some View {
-        TabView(selection: $selectedTab) {
-
-            Tab("Scripts", systemImage: "text.document", value: Tabs.scripts) {
-                NavigationStack {
-                    Screen1(viewModel: viewModel)
-                        .navigationTitle("Scripts")
+        Group {  // <-- THIS IS THE GROUP!
+            if hasCompletedOnboarding {
+                // Show main app
+                TabView(selection: $selectedTab) {
+                    Tab("Scripts", systemImage: "text.document", value: Tabs.scripts) {
+                        NavigationStack {
+                            Screen1(viewModel: viewModel)
+                                .navigationTitle("Scripts")
+                        }
+                    }
+                    
+                    Tab("Settings", systemImage: "gear", value: Tabs.settings) {
+                        NavigationStack {
+                            Settings()
+                                .navigationTitle("Settings")
+                        }
+                    }
                 }
-            }
-
-            Tab("Settings", systemImage: "gear", value: Tabs.settings) {
-                NavigationStack {
-                    Settings()
-                        .navigationTitle("Settings")
-                }
+                .navigationBarBackButtonHidden(true)
+            } else {
+                // Show onboarding on first launch
+                OnboardingView()
             }
         }
-        .navigationBarBackButtonHidden(true)
     }
 }
-
-#Preview {
+#Preview{
     TabHolder()
 }
