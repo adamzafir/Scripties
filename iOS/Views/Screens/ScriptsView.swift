@@ -25,7 +25,7 @@ struct Screen1: View {
                     }
                 }
                 VStack {
-                    Spacer()
+                    
                     Button {
                         viewModel.addNewScriptAtFront()
                     } label: {
