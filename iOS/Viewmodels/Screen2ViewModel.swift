@@ -6,6 +6,15 @@ struct ScriptItem: Identifiable, Codable {
     var id: UUID
     var title: String
     var scriptText: String
+    var lastAccessed: Date
+
+    // Backward-compatible init if needed elsewhere
+    init(id: UUID = UUID(), title: String, scriptText: String, lastAccessed: Date = Date()) {
+        self.id = id
+        self.title = title
+        self.scriptText = scriptText
+        self.lastAccessed = lastAccessed
+    }
 }
 
 class Screen2ViewModel: ObservableObject {
@@ -13,7 +22,8 @@ class Screen2ViewModel: ObservableObject {
         ScriptItem(
             id: UUID(),
             title: "Demo Script",
-            scriptText: "Progress begins when people unite with purpose. By listening carefully, acting responsibly, and supporting one another, we create space for real improvement. Let us commit to steady effort and shared accountability so each choice we make builds a stronger tomorrow."
+            scriptText: "Progress begins when people unite with purpose. By listening carefully, acting responsibly, and supporting one another, we create space for real improvement. Let us commit to steady effort and shared accountability so each choice we make builds a stronger tomorrow.",
+            lastAccessed: Date()
         )
     ]
     
@@ -22,17 +32,16 @@ class Screen2ViewModel: ObservableObject {
     private let fileURL: URL
 
     init() {
-        // Decide on file location in Documents directory
         let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
         self.fileURL = docs.appendingPathComponent("scripts.json")
         
-        // Load from disk if available
         load()
+        sortByRecency()
         
-        // Autosave on any changes
         $scriptItems
             .debounce(for: .milliseconds(250), scheduler: DispatchQueue.main)
             .sink { [weak self] _ in
+                self?.sortByRecency()
                 self?.save()
             }
             .store(in: &cancellables)
@@ -52,8 +61,35 @@ class Screen2ViewModel: ObservableObject {
             untitledCount += 1
         }
 
-        let newItem = ScriptItem(id: UUID(), title: finalTitle, scriptText: scriptText)
+        let newItem = ScriptItem(
+            id: UUID(),
+            title: finalTitle,
+            scriptText: scriptText,
+            lastAccessed: Date()
+        )
         scriptItems.insert(newItem, at: 0)
+        sortByRecency()
+        save()
+    }
+    
+    func markAccessed(id: UUID) {
+        guard let idx = scriptItems.firstIndex(where: { $0.id == id }) else { return }
+        scriptItems[idx].lastAccessed = Date()
+        sortByRecency()
+        save()
+    }
+    
+    func updateScript(id: UUID, title: String? = nil, scriptText: String? = nil) {
+        guard let idx = scriptItems.firstIndex(where: { $0.id == id }) else { return }
+        if let title { scriptItems[idx].title = title }
+        if let scriptText { scriptItems[idx].scriptText = scriptText }
+        scriptItems[idx].lastAccessed = Date()
+        sortByRecency()
+        save()
+    }
+    
+    private func sortByRecency() {
+        scriptItems.sort { $0.lastAccessed > $1.lastAccessed }
     }
     
     // MARK: - Persistence
@@ -72,11 +108,24 @@ class Screen2ViewModel: ObservableObject {
             let fm = FileManager.default
             guard fm.fileExists(atPath: fileURL.path) else { return }
             let data = try Data(contentsOf: fileURL)
-            let decoded = try JSONDecoder().decode([ScriptItem].self, from: data)
-            self.scriptItems = decoded
-            // Recompute untitledCount based on existing items
+            // Try decoding with lastAccessed. If it fails (older file), migrate.
+            if let decoded = try? JSONDecoder().decode([ScriptItem].self, from: data) {
+                self.scriptItems = decoded
+            } else {
+                // Migration path: older JSON without lastAccessed
+                struct OldScriptItem: Identifiable, Codable {
+                    var id: UUID
+                    var title: String
+                    var scriptText: String
+                }
+                let old = try JSONDecoder().decode([OldScriptItem].self, from: data)
+                self.scriptItems = old.map { ScriptItem(id: $0.id, title: $0.title, scriptText: $0.scriptText, lastAccessed: Date.distantPast) }
+                save() // write new schema
+            }
+            sortByRecency()
+            // Recompute untitledCount
             let untitledBase = "Untitled Script"
-            let maxSuffix = decoded.compactMap { item -> Int? in
+            let maxSuffix = scriptItems.compactMap { item -> Int? in
                 if item.title == untitledBase { return 1 }
                 if item.title.hasPrefix(untitledBase + " ") {
                     let suffix = item.title.dropFirst((untitledBase + " ").count)
@@ -90,4 +139,3 @@ class Screen2ViewModel: ObservableObject {
         }
     }
 }
-

@@ -271,11 +271,12 @@ struct Screen3Teleprompter: View {
                 ReviewView(LGBW: $LGBW, elapsedTime: $elapsedTime, wordCount: $wordCount, deriative: $deviation, isCoverPresented: $isPresented)
             } label: { EmptyView() }
 
-            VStack {
+            VStack(alignment: .leading, spacing: 12) {
                 if isLoading {
                     ProgressView("Loading...")
                         .progressViewStyle(CircularProgressViewStyle())
                         .padding()
+                        .frame(maxWidth: .infinity, alignment: .center)
                 } else {
                     ScrollViewReader { proxy in
                         ScrollView {
@@ -288,6 +289,7 @@ struct Screen3Teleprompter: View {
                                         .background(index == currentLineIndex ? Color.primary.opacity(0.08) : Color.clear)
                                 }
                             }
+                            .padding(.horizontal, 16)
                             .frame(maxWidth: .infinity, alignment: .leading)
                         }
                         .onChange(of: currentLineIndex) { _, n in
@@ -313,14 +315,15 @@ struct Screen3Teleprompter: View {
                     }
                 }
 
-                Spacer()
+                Spacer(minLength: 8)
 
-                VStack {
+                VStack(spacing: 8) {
                     #if DEBUG
                     Text("DEBUG: \(secondsPerWord.description)")
                         .font(.caption)
                         .monospacedDigit()
                         .foregroundColor(.red)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     #endif
                     Button {
                         let newValue = !isRecording
@@ -349,6 +352,7 @@ struct Screen3Teleprompter: View {
                         RecordButtonView(isRecording: $isRecording)
                     }
                     .sensoryFeedback(.selection, trigger: showAccessory)
+                    .frame(maxWidth: .infinity, alignment: .center)
                 }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -389,6 +393,8 @@ struct Screen3Teleprompter: View {
                 Text(transcription.isEmpty ? "" : transcription)
                     .lineLimit(3)
                     .multilineTextAlignment(.leading)
+                    .padding(.horizontal, 16)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
 
             .onAppear {
@@ -406,9 +412,9 @@ struct Screen3Teleprompter: View {
             }
 
             .navigationTitle(title)
-            .padding()
+            .navigationBarTitleDisplayMode(.inline)
+            .padding(.vertical, 8)
             }
             .navigationBarBackButtonHidden(true)
         }
     }
-

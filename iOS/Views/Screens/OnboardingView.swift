@@ -210,7 +210,7 @@ struct OnboardingPageView: View {
                 Text(page.title)
                     .font(.system(size: 28, weight: .bold))
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal)
+                    .padding(.horizontal, 16)
                     .foregroundStyle(
                         LinearGradient(
                             colors: [.primary, page.highlightColor],

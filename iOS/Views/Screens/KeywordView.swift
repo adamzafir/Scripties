@@ -40,21 +40,26 @@ struct Screen3Keywords: View {
     var body: some View {
         NavigationStack {
            
-            VStack(spacing: 20) {
+            VStack(alignment: .leading, spacing: 16) {
                 if isLoading {
                     Spacer()
                     ZStack {
-                        VStack(spacing: 4) {
+                        VStack(spacing: 8) {
                             ProgressView("Loading...")
                                 .progressViewStyle(CircularProgressViewStyle())
-                                .padding()
+                                .padding(.bottom, 4)
                             Text("Powered By")
                                 .fontWeight(.medium)
                                 .font(.title3)
+                                .multilineTextAlignment(.center)
+                                .frame(maxWidth: .infinity, alignment: .center)
                             Text("Avyan Intelligence")
                                 .font(.system(size: 35, weight: .semibold))
                                 .appleIntelligenceGradient()
+                                .multilineTextAlignment(.center)
+                                .frame(maxWidth: .infinity, alignment: .center)
                         }
+                        .padding(.horizontal, 16)
                         VStack {
                             Spacer()
                             GlowEffect()
@@ -64,26 +69,27 @@ struct Screen3Keywords: View {
                     Spacer()
                 } else {
                     ScrollView {
-                        VStack(spacing: 12) {
+                        VStack(alignment: .leading, spacing: 12) {
                             Text("Keywords:")
                                 .font(.title2.bold())
-                                .frame(maxWidth: .infinity, alignment: .center)
+                                .frame(maxWidth: .infinity, alignment: .leading)
                             
                             ForEach(response3, id: \.self) { word in
                                 Text(word)
                                     .font(.title2.bold())
                                     .padding(5)
-                                    .frame(maxWidth: .infinity, alignment: .center)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
                             }
                         }
-                        .padding()
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
                     }
                 }
                 
-                Spacer()
+                Spacer(minLength: 8)
                 
                 VStack(spacing: 12) {
-                    HStack {
+                    HStack(alignment: .top) {
                         Button {
                             let newValue = !isRecording
                             isRecording = newValue
@@ -136,12 +142,14 @@ struct Screen3Keywords: View {
                             .font(.body)
                             .lineLimit(3)
                             .multilineTextAlignment(.leading)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                    .padding(.horizontal)
+                    .padding(.horizontal, 16)
                 }
             }
-            .padding()
+            .padding(.vertical, 12)
             .navigationTitle($title)
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button(action: { dismiss() }) {
