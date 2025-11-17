@@ -107,4 +107,5 @@ struct Screen4: View {
         wordCount: .constant(120),
         deriative: .constant(0.75)
     )
+    .environmentObject(RecordingStore())
 }

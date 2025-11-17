@@ -84,7 +84,6 @@ struct Acknowledgements: View {
                     Image("cookeddogmemeimage")
                         .resizable()
                         .scaledToFit()
-                        .padding()
                         .opacity(imageOpacity)
                         .allowsHitTesting(false)
                         .transition(.opacity)

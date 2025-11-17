@@ -125,14 +125,6 @@ struct Screen5: View {
 
                 HStack(spacing: 24) {
                     Button {
-                        let newTime = max(0, currentTime - 15)
-                        currentTime = newTime
-                        audioPlayer?.currentTime = newTime
-                    } label: {
-                        Label("", systemImage: "gobackward.15")
-                    }
-
-                    Button {
                         configureAudioSessionForPlayback()
 
                         if let player = audioPlayer {
@@ -144,16 +136,14 @@ struct Screen5: View {
                                 if lastPreparedURL == nil {
                                     refreshAndPrepareBest()
                                 }
-                                currentTime = 0
-                                audioPlayer?.currentTime = 0
+                                audioPlayer?.currentTime = currentTime
                                 audioPlayer?.play()
                                 startProgressTimer()
                             }
                         } else {
                             refreshAndPrepareBest()
                             if audioPlayer != nil {
-                                currentTime = 0
-                                audioPlayer?.currentTime = 0
+                                audioPlayer?.currentTime = currentTime
                                 audioPlayer?.play()
                                 startProgressTimer()
                             } else {
@@ -164,15 +154,9 @@ struct Screen5: View {
                         let isPlaying = audioPlayer?.isPlaying == true
                         Label(isPlaying ? "" : "", systemImage: isPlaying ? "pause.fill" : "play.fill")
                             .font(.headline)
+                            
                     }
-
-                    Button {
-                        let newTime = min(duration, currentTime + 15)
-                        currentTime = newTime
-                        audioPlayer?.currentTime = newTime
-                    } label: {
-                        Label("", systemImage: "goforward.15")
-                    }
+                    .buttonStyle(.borderedProminent)
                 }
                 .padding(.bottom, 8)
 
