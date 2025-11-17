@@ -1,10 +1,18 @@
+//
+//  ExpandedScriptViewDuplicate.swift
+//  yapLONGER
+//
+//  Created by T Krobot on 17/11/25.
+//
+
 import SwiftUI
 import FoundationModels
 
-struct Screen2: View {
+struct Screen22: View {
     @Binding var title: String
     @Binding var script: String
-    @State private var showScreen = false
+    
+    
     @State private var showScreent = false
     @FocusState private var isEditingScript: Bool
     
@@ -127,19 +135,13 @@ struct Screen2: View {
             }
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Menu {
-                        Button {
-                            showScreent = true
-                        } label: {
-                            Text("Teleprompter")
-                        }
-                        Button {
-                            showScreen = true
-                        } label: {
-                            Text("Keywords")
-                        }
+                    Button {
+                        showScreent = true
                     } label: {
                         Image(systemName: "music.microphone")
+                            .font(.system(size: 24, weight: .regular)) // Bigger icon
+                            .imageScale(.large)
+                            .padding(.horizontal, 4) // Slightly larger tap target
                     }
                 }
                 
@@ -185,9 +187,6 @@ struct Screen2: View {
         .fullScreenCover(isPresented: $showScreent) {
             Screen3Teleprompter(title: $title, script: $script, WPM: $WPM, timer: timer)
         }
-        .fullScreenCover(isPresented: $showScreen) {
-            Screen3Keywords(title: $title, script: $script)
-        }
         .onDisappear {
             typingResetTask?.cancel()
         }
@@ -195,7 +194,7 @@ struct Screen2: View {
 }
 
 #Preview {
-    Screen2(
+    Screen22(
         title: .constant("untitled"),
         script: .constant("This is a test script.")
     )

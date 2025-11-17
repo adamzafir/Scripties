@@ -2,7 +2,8 @@ import SwiftUI
 
 struct Screen1: View {
     @ObservedObject var viewModel: Screen2ViewModel
-
+    @AppStorage("betashit") private var isBeta: Bool = false
+    
     var body: some View {
         NavigationStack {
             ZStack {
@@ -10,8 +11,12 @@ struct Screen1: View {
                     Form {
                         ForEach($viewModel.scriptItems) { $item in
                             NavigationLink {
-                                Screen2(title: $item.title, script: $item.scriptText)
-                            } label: {
+                                if isBeta {
+                                    Screen22(title: $item.title, script: $item.scriptText)
+                                } else {
+                                    // Navigate to Screen 2 when beta is disabled
+                                    Screen2(title: $item.title, script: $item.scriptText)
+                                }
                                 Text(item.title)
                             }
                         }
@@ -46,9 +51,5 @@ struct Screen1: View {
     private func deleteItems(at offsets: IndexSet) {
         viewModel.scriptItems.remove(atOffsets: offsets)
     }
-}
-
-#Preview {
-    Screen1(viewModel: Screen2ViewModel())
 }
 

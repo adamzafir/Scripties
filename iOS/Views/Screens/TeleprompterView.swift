@@ -304,10 +304,12 @@ struct Screen3Teleprompter: View {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button(action: { dismiss() }) {
-                        Label("Back", systemImage: "chevron.backward")
+                        Image(systemName: "xmark")
+                            .font(.system(size: 16, weight: .semibold))
                     }
                 }
             }
+            .navigationBarBackButtonHidden(true)
             .onChange(of: isRecording) { _, recording in
                 if recording {
                     // Start file recording
