@@ -304,6 +304,41 @@ struct Screen3Teleprompter: View {
                     }
                     .sensoryFeedback(.selection, trigger: showAccessory)
                 }
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Menu {
+                        Picker("Font Size", selection: $fontChoice) {
+                            ForEach(FontSizeChoice.allCases) { choice in
+                                Text(choice.title).tag(choice)
+                            }
+                        }
+                        .onChange(of: fontChoice) { _, newValue in
+                            if let v = newValue.presetValue {
+                                fontSize = v
+                                customSize = v
+                            }
+                        }
+
+                        if fontChoice == .custom {
+                            Slider(value: $customSize, in: 10...60, step: 1) {
+                                Text("Custom Size")
+                            }
+                            .onChange(of: customSize) { _, v in
+                                fontSize = v
+                            }
+                        }
+                    } label: {
+                        Image(systemName: "textformat.size")
+                    }
+                }
+
+                ToolbarItem(placement: .topBarLeading) {
+                    Button(action: { dismiss() }) {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 16, weight: .semibold))
+                    }
+                }
+            }
 
                 Text(transcription.isEmpty ? "" : transcription)
                     .lineLimit(3)
