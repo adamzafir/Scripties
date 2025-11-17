@@ -3,6 +3,7 @@ import SwiftUI
 struct Screen1: View {
     @ObservedObject var viewModel: Screen2ViewModel
     @AppStorage("betashit") private var isBeta: Bool = false
+    
     var body: some View {
         NavigationStack {
             ZStack {
@@ -10,7 +11,13 @@ struct Screen1: View {
                     Form {
                         ForEach($viewModel.scriptItems) { $item in
                             NavigationLink {
-                                Screen2(title: $item.title, script: $item.scriptText)
+                                if isBeta {
+                                    // Navigate to Screen 2.5 when beta is enabled
+                                    Screen2_5(title: $item.title, script: $item.scriptText)
+                                } else {
+                                    // Navigate to Screen 2 when beta is disabled
+                                    Screen2(title: $item.title, script: $item.scriptText)
+                                }
                             } label: {
                                 Text(item.title)
                             }
