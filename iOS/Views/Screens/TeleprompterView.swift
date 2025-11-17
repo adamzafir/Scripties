@@ -7,34 +7,24 @@ func splitIntoLinesByWidth(_ text: String, font: UIFont, maxWidth: CGFloat) -> [
     let words = text.components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }
     var lines: [String] = []
     var currentLine = ""
-
     for word in words {
         let testLine = currentLine.isEmpty ? word : "\(currentLine) \(word)"
         let size = (testLine as NSString).size(withAttributes: [.font: font])
-
         if size.width <= maxWidth {
             currentLine = testLine
         } else {
-            if !currentLine.isEmpty {
-                lines.append(currentLine)
-            }
+            if !currentLine.isEmpty { lines.append(currentLine) }
             currentLine = word
         }
     }
-
-    if !currentLine.isEmpty {
-        lines.append(currentLine)
-    }
-
+    if !currentLine.isEmpty { lines.append(currentLine) }
     return lines
 }
 
 private func normalizeAndTokenize(_ text: String) -> [String] {
     let lowered = text.lowercased()
     let stripped = lowered.unicodeScalars.map { CharacterSet.punctuationCharacters.contains($0) ? " " : String($0) }.joined()
-    return stripped
-        .components(separatedBy: .whitespacesAndNewlines)
-        .filter { !$0.isEmpty }
+    return stripped.components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }
 }
 
 private func isSubsequence(_ small: [String], in big: [String]) -> Bool {
@@ -76,10 +66,12 @@ struct Screen3Teleprompter: View {
     @State var timer: TimerManager
     @State var transscriptionChangeCount: Int = 0
 
+    @State private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
+    @State private var recognitionTask: SFSpeechRecognitionTask?
+
     @State private var elapsedTime: Int = 0
     @State private var wordCount: Int = 0
     @State private var LGBW: Int = 0
-
     @State private var LGBWSeconds: TimeInterval = 0
     @State private var meteringTimer: Timer? = nil
     @State private var isCurrentlySilent: Bool = true
@@ -88,11 +80,9 @@ struct Screen3Teleprompter: View {
     @State private var wallTimer: Timer? = nil
 
     @State var deviation: Double = 0
-
     private let silenceThreshold: Float = -40.0
     private let minSilenceDuration: TimeInterval = 0.25
     private let meteringInterval: TimeInterval = 0.05
-
     @Binding var isPresented: Bool
 
     private func recomputeLines() {
@@ -102,20 +92,18 @@ struct Screen3Teleprompter: View {
         tokensPerLine = scriptLines.map { normalizeAndTokenize($0) }
         currentLineIndex = min(currentLineIndex, max(0, scriptLines.count - 1))
     }
+
     private func tryAdvance(using recognizedTokens: [String], scrollProxy: ScrollViewProxy) {
         guard currentLineIndex < tokensPerLine.count else { return }
         let now = Date()
         if now.timeIntervalSince(lastAdvanceTime) < 0.3 { return }
-
         let expected = tokensPerLine[currentLineIndex]
-        if let last = expected.last, recognizedTokens.contains(last) {
+        if expected.isEmpty || isSubsequence(expected, in: recognizedTokens) {
             let nextIndex = currentLineIndex + 1
             if nextIndex <= scriptLines.count {
                 currentLineIndex = min(nextIndex, scriptLines.count - 1)
                 lastAdvanceTime = now
-                withAnimation(.easeInOut) {
-                    scrollProxy.scrollTo(currentLineIndex, anchor: .top)
-                }
+                withAnimation(.easeInOut) { scrollProxy.scrollTo(currentLineIndex, anchor: .top) }
             }
         }
     }
@@ -137,7 +125,6 @@ struct Screen3Teleprompter: View {
         lastSilenceStartTime = Date()
         silenceDurations.removeAll()
         LGBWSeconds = 0
-
         meteringTimer?.invalidate()
         meteringTimer = Timer.scheduledTimer(withTimeInterval: meteringInterval, repeats: true) { _ in }
         RunLoop.current.add(meteringTimer!, forMode: .common)
@@ -192,19 +179,51 @@ struct Screen3Teleprompter: View {
         return db.isFinite ? db : -120.0
     }
 
+    private func startSpeechRecognition() {
+        guard recognitionTask == nil, recognitionRequest == nil else { return }
+        guard let recogniser = speechRecogniser, recogniser.isAvailable else { return }
+        let audioSession = AVAudioSession.sharedInstance()
+        try? audioSession.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .allowBluetooth])
+        try? audioSession.setActive(true)
+
+        let request = SFSpeechAudioBufferRecognitionRequest()
+        request.shouldReportPartialResults = true
+        recognitionRequest = request
+
+        let inputNode = audioEngine.inputNode
+        let format = inputNode.outputFormat(forBus: 0)
+        inputNode.removeTap(onBus: 0)
+        inputNode.installTap(onBus: 0, bufferSize: 1024, format: format) { buffer, _ in
+            request.append(buffer)
+            let level = dBLevel(from: buffer)
+            handleLevel(level)
+        }
+
+        audioEngine.prepare()
+        try? audioEngine.start()
+
+        recognitionTask = recogniser.recognitionTask(with: request) { result, error in
+            if let result { transcription = result.bestTranscription.formattedString }
+            if error != nil { stopSpeechRecognition() }
+        }
+    }
+
+    private func stopSpeechRecognition() {
+        audioEngine.stop()
+        audioEngine.inputNode.removeTap(onBus: 0)
+        audioEngine.reset()
+        recognitionRequest?.endAudio()
+        recognitionTask?.cancel()
+        recognitionTask = nil
+        recognitionRequest = nil
+        try? AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
+    }
+
     var body: some View {
         NavigationStack {
             NavigationLink(isActive: $navigateToScreen4) {
-                ReviewView(
-                    LGBW: $LGBW,
-                    elapsedTime: $elapsedTime,
-                    wordCount: $wordCount,
-                    deriative: $deviation,
-                    isCoverPresented: $isPresented
-                )
-            } label: {
-                EmptyView()
-            }
+                ReviewView(LGBW: $LGBW, elapsedTime: $elapsedTime, wordCount: $wordCount, deriative: $deviation, isCoverPresented: $isPresented)
+            } label: { EmptyView() }
 
             VStack {
                 if isLoading {
@@ -226,23 +245,17 @@ struct Screen3Teleprompter: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                         }
                         .onChange(of: currentLineIndex) { _, n in
-                            withAnimation(.easeInOut) {
-                                proxy.scrollTo(n, anchor: .top)
-                            }
+                            withAnimation(.easeInOut) { proxy.scrollTo(n, anchor: .top) }
                         }
                         .onAppear {
-                            if !scriptLines.isEmpty {
-                                proxy.scrollTo(0, anchor: .top)
-                            }
+                            if !scriptLines.isEmpty { proxy.scrollTo(0, anchor: .top) }
                         }
                         .onChange(of: transcription) { _, newValue in
                             let tokens = normalizeAndTokenize(newValue)
                             tryAdvance(using: tokens, scrollProxy: proxy)
-
                             if !scriptWords.isEmpty && transcription.contains(scriptWords[0]) {
                                 transscriptionChangeCount += 1
                                 scriptWords.remove(at: 0)
-
                                 if transscriptionChangeCount % 5 == 0 {
                                     let t = timer.elapsedSeconds
                                     secondsPerWord.append(t)
@@ -257,14 +270,34 @@ struct Screen3Teleprompter: View {
                 Spacer()
 
                 HStack {
-#if DEBUG
+                    #if DEBUG
                     Text("DEBUG: \(secondsPerWord.description)")
                         .font(.caption)
                         .foregroundColor(.red)
-#endif
+                    #endif
                     Button {
-                        isRecording.toggle()
+                        let newValue = !isRecording
+                        isRecording = newValue
                         showAccessory.toggle()
+                        if newValue {
+                            timer.stop()
+                            timer.reset()
+                            recordingStore.startRecording()
+                            startWallClockTimer()
+                            SFSpeechRecognizer.requestAuthorization { _ in }
+                            Task { _ = await AVAudioApplication.requestRecordPermission() }
+                            startSilenceTracking()
+                            startSpeechRecognition()
+                        } else {
+                            recordingStore.stopRecording()
+                            stopSpeechRecognition()
+                            stopWallClockTimer()
+                            finalizeSilenceIfNeeded()
+                            stopSilenceTracking()
+                            let longest = max(LGBWSeconds, silenceDurations.max() ?? 0)
+                            LGBW = Int(longest.rounded())
+                            navigateToScreen4 = true
+                        }
                     } label: {
                         RecordButtonView(isRecording: $isRecording)
                     }
@@ -278,14 +311,12 @@ struct Screen3Teleprompter: View {
 
             .onAppear {
                 Task {
-                    scriptWords = script.components(separatedBy: .whitespacesAndNewlines)
-                        .filter { !$0.isEmpty }
+                    scriptWords = script.components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }
                     wordCount = script.split { $0.isWhitespace }.count
                     recomputeLines()
                     isLoading = false
                 }
             }
-
             .onChange(of: fontSize) { _, _ in recomputeLines() }
             .onChange(of: script) { _, _ in
                 recomputeLines()
@@ -302,87 +333,7 @@ struct Screen3Teleprompter: View {
                     }
                 }
             }
-
             .navigationBarBackButtonHidden(true)
-
-            .onChange(of: isRecording) { _, recording in
-                if recording {
-                    recordingStore.startRecording()
-
-                    startWallClockTimer()
-                    secondsPerWord.removeAll()
-                    silenceDurations.removeAll()
-                    LGBWSeconds = 0
-                    transscriptionChangeCount = 0
-
-                    scriptWords = script.components(separatedBy: .whitespacesAndNewlines)
-                        .filter { !$0.isEmpty }
-
-                    timer.reset()
-                    timer.start()
-
-                    SFSpeechRecognizer.requestAuthorization { _ in }
-                    Task { _ = await AVAudioApplication.requestRecordPermission() }
-                    guard let recogniser = speechRecogniser, recogniser.isAvailable else { return }
-
-                    let audioSession = AVAudioSession.sharedInstance()
-                    try? audioSession.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .allowBluetooth])
-                    try? audioSession.setActive(true)
-
-                    let request = SFSpeechAudioBufferRecognitionRequest()
-                    request.shouldReportPartialResults = true
-
-                    let inputNode = audioEngine.inputNode
-                    let format = inputNode.outputFormat(forBus: 0)
-                    inputNode.removeTap(onBus: 0)
-
-                    startSilenceTracking()
-
-                    inputNode.installTap(onBus: 0, bufferSize: 1024, format: format) { buffer, _ in
-                        request.append(buffer)
-                        let level = dBLevel(from: buffer)
-                        handleLevel(level)
-                    }
-
-                    audioEngine.prepare()
-                    try? audioEngine.start()
-
-                    recogniser.recognitionTask(with: request) { result, _ in
-                        if let result {
-                            transcription = result.bestTranscription.formattedString
-                        }
-                    }
-
-                } else {
-                    recordingStore.stopRecording()
-                    audioEngine.stop()
-                    audioEngine.inputNode.removeTap(onBus: 0)
-
-                    stopWallClockTimer()
-                    finalizeSilenceIfNeeded()
-                    stopSilenceTracking()
-
-                    timer.stop()
-
-                    if timer.elapsedSeconds > 0 {
-                        secondsPerWord.append(timer.elapsedSeconds)
-                    }
-
-                    if !secondsPerWord.isEmpty {
-                        deviation = secondsPerWord.standardDeviation(from: Double(WPM))
-                    } else {
-                        deviation = 0
-                    }
-
-                    let computedCIS = max(0, min(100, 100 - (deviation * 2.2)))
-                    deviation = computedCIS
-
-                    let longest = max(LGBWSeconds, silenceDurations.max() ?? 0)
-                    LGBW = Int(longest.rounded())
-
-                    navigateToScreen4 = true
-                }
-            }
         }
     }
 }
