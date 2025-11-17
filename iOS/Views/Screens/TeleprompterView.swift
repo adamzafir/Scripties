@@ -269,7 +269,7 @@ struct Screen3Teleprompter: View {
 
                 Spacer()
 
-                HStack {
+                VStack {
                     #if DEBUG
                     Text("DEBUG: \(secondsPerWord.description)")
                         .font(.caption)
@@ -304,7 +304,7 @@ struct Screen3Teleprompter: View {
                     .sensoryFeedback(.selection, trigger: showAccessory)
                 }
 
-                Text(transcription.isEmpty ? "..." : transcription)
+                Text(transcription.isEmpty ? "" : transcription)
                     .lineLimit(3)
                     .multilineTextAlignment(.leading)
             }

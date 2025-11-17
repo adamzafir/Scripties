@@ -1,13 +1,25 @@
+//
+//  ExpandedScriptViewDuplicate.swift
+//  yapLONGER
+//
+//  Created by T Krobot on 17/11/25.
+//
+
 import SwiftUI
 import FoundationModels
 
 struct Screen22: View {
     @Binding var title: String
     @Binding var script: String
+
+    @State private var initialTitle: String = ""
+    @State private var initialScript: String = ""
+    @State private var hasInitializedPlaceholders: Bool = false
     
-    
+    @State private var myText: String = ""
     @State private var showScreent = false
     @FocusState private var isEditingScript: Bool
+    @FocusState private var isEditingTitle: Bool
     
     @State private var rewriting = false
     @State private var rewritePrompt = """
@@ -16,14 +28,12 @@ struct Screen22: View {
     @State var wordCount: Int = 0
     @State private var showPromptDialog = false
     @State private var rewriteError: String? = nil
-    
-    // Added to satisfy Screen3Teleprompter requirements
+
     @State private var WPM: Int = 120
     @State private var timer = TimerManager()
     @State private var isLoading = false
     @State private var showEstimate = true
     
-    // Typing detection (debounced)
     @State private var isTyping = false
     @State private var typingResetTask: Task<Void, Never>? = nil
     
@@ -66,35 +76,55 @@ struct Screen22: View {
                     }
                     Spacer()
                 } else {
-                    TextField("Untitled Script", text: $title)
+                    
+                    TextField("", text: $title, prompt: Text(initialTitle.isEmpty ? "Untitled Script" : initialTitle).foregroundStyle(.secondary))
+                        .focused($isEditingTitle)
                         .font(.title)
                         .fontWeight(.bold)
                         .padding()
                     
-                    TextEditor(text: $script)
-                        .focused($isEditingScript)
-                        .padding(.horizontal)
-                        .frame(maxHeight: .infinity)
-                    
-                    Spacer()
-                }
-            }
-            .onAppear {
-                wordCount =  script.split { $0.isWhitespace }.count
-            }
-            .onChange(of: script) { _, newValue in
-                wordCount = newValue.split { $0.isWhitespace }.count
-                isTyping = true
-                typingResetTask?.cancel()
-                typingResetTask = Task {
-                    try? await Task.sleep(nanoseconds: 700_000_000)
-                    await MainActor.run { isTyping = false }
-                }
-            }
-            .alert("Rewrite Failed", isPresented: Binding(
-                get: { rewriteError != nil },
+                    ZStack(alignment: .topLeading) {
+                        TextEditor(text: $script)
+                            .focused($isEditingScript)
+                            .padding(.horizontal)
+                    ZStack(alignment: .topLeading) {
+                        TextEditor(text: $script)
+                            .focused($isEditingScript)
+                            .padding(.horizontal)
+                            .frame(maxHeight: .infinity)
+                            .background(Color.clear)
+                            .onChange(of: script) { _, newValue in
+                                wordCount = newValue.split { $0.isWhitespace }.count
+                                // Mark as typing and debounce reset
+                                isTyping = true
+                                typingResetTask?.cancel()
+                                typingResetTask = Task {
+                                    try? await Task.sleep(nanoseconds: 700_000_000)
+                                    await MainActor.run { isTyping = false }
+                                }
+                            }
+                        
+                        if script.isEmpty && !isEditingScript {
+                            Text(initialScript.isEmpty ? "Start typing your script..." : initialScript)
+                                .foregroundStyle(.secondary)
+                                .padding(.horizontal, 20)
+                                .padding(.top, 8)
+                                .allowsHitTesting(false)
+                        }
+                    }
+                if !hasInitializedPlaceholders {
+                    initialTitle = title
+                    initialScript = script
+                    title = ""
+                    script = ""
+                if !hasInitializedPlaceholders {
+                    initialTitle = title
+                    initialScript = script
+                    title = ""
+                    script = ""
+                    hasInitializedPlaceholders = true
                 set: { if !$0 { rewriteError = nil } }
-            )) {
+                wordCount = script.split { $0.isWhitespace }.count
                 Button("OK", role: .cancel) {}
             } message: {
                 Text(rewriteError ?? "Unknown error")
@@ -130,13 +160,13 @@ struct Screen22: View {
                     Button {
                         showScreent = true
                     } label: {
-                        Image(systemName: "music.microphone")
+                        Image(systemName: "play.fill")
                     }
+                    .padding()
                 }
                 
-                ToolbarItemGroup(placement: .keyboard) {
+                        Image(systemName: "music.microphone")
                     Button {
-                        showPromptDialog = true
                     } label: {
                         Image(systemName: "wand.and.stars")
                     }
@@ -145,11 +175,12 @@ struct Screen22: View {
                     
                     Button {
                         isEditingScript = false
+                        isEditingTitle = false
                     } label: {
                         Image(systemName: "checkmark")
                     }
                 }
-            }
+                        isEditingTitle = false
         }
         .overlay(alignment: .bottom) {
             if showEstimate && !isEditingScript && !isTyping {
@@ -178,7 +209,7 @@ struct Screen22: View {
         .onDisappear {
             typingResetTask?.cancel()
         }
-    }
+            Screen3Teleprompter(title: $title, script: $script, WPM: $WPM, timer: timer)
 }
 
 #Preview {
@@ -187,3 +218,4 @@ struct Screen22: View {
         script: .constant("This is a test script.")
     )
 }
+

@@ -103,7 +103,7 @@ struct OnboardingView: View {
                 HStack(spacing: 20) {
                     if currentPage > 0 {
                         Button(action: {
-                            withAnimation(.spring(response: 0.3)) {
+                            withAnimation(.spring(response: 0.8)) {
                                 currentPage -= 1
                             }
                         }) {
@@ -117,6 +117,7 @@ struct OnboardingView: View {
                             .frame(width: 100, height: 50)
                             .background(Color.gray.opacity(0.2))
                             .cornerRadius(12)
+                            .padding()
                         }
                     } else {
                         Spacer()
@@ -137,6 +138,7 @@ struct OnboardingView: View {
                             Text(currentPage == pages.count - 1 ? "Get Started" : "Next")
                                 .font(.headline)
                                 .fontWeight(.semibold)
+                                
                             if currentPage < pages.count - 1 {
                                 Image(systemName: "chevron.right")
                                     .font(.headline)
@@ -157,6 +159,7 @@ struct OnboardingView: View {
                         .cornerRadius(12)
                         .shadow(color: pages[currentPage].highlightColor.opacity(0.4), radius: 8, x: 0, y: 4)
                     }
+                    .padding()
                 }
             }
         }
