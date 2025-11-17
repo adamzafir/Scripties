@@ -32,7 +32,8 @@ struct Settings: View {
     }
     
     @AppStorage("fontSize") private var fontSize: Double = 28
-    
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
+    @State private var showReplayAlert = false
     
     private enum FontSizeChoice: Hashable, CaseIterable, Identifiable {
         case extraSmall
@@ -138,6 +139,16 @@ struct Settings: View {
                         Toggle("Enable Beta Feature", isOn: $isBeta)
                     }
                     
+                }
+                Section(header: Text("Tutorial")) {
+                    Button {
+                        showReplayAlert = true
+                    } label: {
+                        HStack {
+                            Image(systemName: "arrow.counterclockwise")
+                            Text("Replay Onboarding")
+                        }
+                    }
                 }
                 NavigationLink {
                     Acknowledgements()

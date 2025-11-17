@@ -124,7 +124,6 @@ struct OnboardingView: View {
                     }
                     
                     Spacer()
-                    
                     Button(action: {
                         if currentPage < pages.count - 1 {
                             withAnimation(.spring(response: 0.3)) {
@@ -159,8 +158,6 @@ struct OnboardingView: View {
                         .shadow(color: pages[currentPage].highlightColor.opacity(0.4), radius: 8, x: 0, y: 4)
                     }
                 }
-                .padding(.horizontal, 30)
-                .padding(.bottom, 30)
             }
         }
     }
