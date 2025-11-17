@@ -1,3 +1,4 @@
+
 import SwiftUI
 
 struct ReviewView: View {
@@ -236,12 +237,6 @@ struct ReviewView: View {
                         .fill(Color.gray.opacity(0.25))
                         .frame(width: totalWidth, height: lineThickness)
                         .position(x: totalWidth/2, y: totalHeight/2)
-
-                    // Center marker - vertical tick
-                    Capsule()
-                        .fill(Color.secondary)
-                        .frame(width: 2, height: max(lineThickness, 1))
-                        .position(x: centerX, y: totalHeight/2)
 
                     // Value indicator - vertical line positioned along the horizontal baseline
                     Capsule()

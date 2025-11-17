@@ -202,7 +202,7 @@ struct Screen3Teleprompter: View {
     var body: some View {
         NavigationStack {
             NavigationLink(isActive: $navigateToScreen4) {
-                Screen4(LGBW: $LGBW, elapsedTime: $elapsedTime, wordCount: $wordCount, deriative: $deviation)
+                ReviewView(LGBW: $LGBW, elapsedTime: $elapsedTime, wordCount: $wordCount, deriative: $deviation)
             } label: {
                 EmptyView()
             }
