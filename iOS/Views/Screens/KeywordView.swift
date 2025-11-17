@@ -32,6 +32,10 @@ struct Screen3Keywords: View {
     
     @State private var isLoading = true
     @State private var navigateToScreen4 = false
+
+    // Speech recognition lifecycle
+    @State private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
+    @State private var recognitionTask: SFSpeechRecognitionTask?
     
     var body: some View {
         NavigationStack {
@@ -81,8 +85,48 @@ struct Screen3Keywords: View {
                 VStack(spacing: 12) {
                     HStack {
                         Button {
-                            isRecording.toggle()
+                            let newValue = !isRecording
+                            isRecording = newValue
                             showAccessory.toggle()
+                            if newValue {
+                                // Start
+                                recordingStore.startRecording()
+                                SFSpeechRecognizer.requestAuthorization { _ in }
+                                Task { _ = await AVAudioApplication.requestRecordPermission() }
+                                guard let recogniser = speechRecogniser, recogniser.isAvailable else { return }
+                                
+                                let audioSession = AVAudioSession.sharedInstance()
+                                try? audioSession.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .allowBluetooth])
+                                try? audioSession.setActive(true)
+                                
+                                let request = SFSpeechAudioBufferRecognitionRequest()
+                                request.shouldReportPartialResults = true
+                                recognitionRequest = request
+                                
+                                let inputNode = audioEngine.inputNode
+                                let format = inputNode.outputFormat(forBus: 0)
+                                
+                                inputNode.removeTap(onBus: 0)
+                                inputNode.installTap(onBus: 0, bufferSize: 1024, format: format) { buffer, _ in
+                                    request.append(buffer)
+                                }
+                                audioEngine.prepare()
+                                try? audioEngine.start()
+                                
+                                recognitionTask = recogniser.recognitionTask(with: request) { result, error in
+                                    if let result {
+                                        transcription = result.bestTranscription.formattedString
+                                    }
+                                    if error != nil {
+                                        stopSpeechRecognition()
+                                    }
+                                }
+                            } else {
+                                // Stop
+                                recordingStore.stopRecording()
+                                stopSpeechRecognition()
+                                navigateToScreen4 = true
+                            }
                         } label: {
                             RecordButtonView(isRecording: $isRecording)
                         }
@@ -114,52 +158,18 @@ struct Screen3Keywords: View {
                     isLoading = false
                 }
             }
-            .onChange(of: isRecording) { recording in
-                if recording {
-                    // Start file recording
-                    recordingStore.startRecording()
-                    
-                    // Start speech recognition
-                    SFSpeechRecognizer.requestAuthorization { status in
-                        guard status == .authorized else { return }
-                    }
-                    Task {
-                        let micGranted = await AVAudioApplication.requestRecordPermission()
-                        guard micGranted else { return }
-                    }
-                    guard let recogniser = speechRecogniser, recogniser.isAvailable else { return }
-                    
-                    let audioSession = AVAudioSession.sharedInstance()
-                    try? audioSession.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .allowBluetooth])
-                    try? audioSession.setActive(true)
-                    
-                    let request = SFSpeechAudioBufferRecognitionRequest()
-                    request.shouldReportPartialResults = true
-                    
-                    let inputNode = audioEngine.inputNode
-                    let format = inputNode.outputFormat(forBus: 0)
-                    
-                    inputNode.removeTap(onBus: 0)
-                    inputNode.installTap(onBus: 0, bufferSize: 1024, format: format) { buffer, _ in
-                        request.append(buffer)
-                    }
-                    audioEngine.prepare()
-                    try? audioEngine.start()
-                    
-                    recogniser.recognitionTask(with: request) { result, _ in
-                        if let result {
-                            transcription = result.bestTranscription.formattedString
-                        }
-                    }
-                } else {
-                    // Stop both
-                    recordingStore.stopRecording()
-                    audioEngine.stop()
-                    audioEngine.inputNode.removeTap(onBus: 0)
-                    navigateToScreen4 = true
-                }
-            }
         }
+    }
+
+    private func stopSpeechRecognition() {
+        audioEngine.stop()
+        audioEngine.inputNode.removeTap(onBus: 0)
+        audioEngine.reset()
+        recognitionRequest?.endAudio()
+        recognitionTask?.cancel()
+        recognitionTask = nil
+        recognitionRequest = nil
+        try? AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
     }
 }
 

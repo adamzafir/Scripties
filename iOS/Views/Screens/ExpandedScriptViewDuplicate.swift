@@ -139,9 +139,6 @@ struct Screen22: View {
                         showScreent = true
                     } label: {
                         Image(systemName: "music.microphone")
-                            .font(.system(size: 24, weight: .regular)) // Bigger icon
-                            .imageScale(.large)
-                            .padding(.horizontal, 4) // Slightly larger tap target
                     }
                 }
                 

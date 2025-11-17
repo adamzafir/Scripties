@@ -10,7 +10,6 @@ struct TabHolder: View {
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
     @State private var selectedTab: Tabs = .scripts
     @StateObject private var viewModel = Screen2ViewModel()
-    
     var body: some View {
         Group {  // <-- THIS IS THE GROUP!
             if hasCompletedOnboarding {

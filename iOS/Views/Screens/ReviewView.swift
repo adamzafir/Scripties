@@ -258,6 +258,23 @@ struct ReviewView: View {
 
                     Screen5()
                 }
+                NavigationLink {
+                                    TabHolder()
+                                } label: {
+                                    ZStack {
+                                        Rectangle()
+                                            .frame(height: 55)
+                                            .frame(maxWidth: .infinity)
+                                            .cornerRadius(25)
+                                            .foregroundStyle(Color.accentColor)
+                                            .glassEffect()
+                                            .padding(.horizontal)
+                                        Text("Done")
+                                            .fontWeight(.semibold)
+                                            .foregroundStyle(Color.white)
+                                    }
+                                    .padding()
+                                }
                 .onAppear {
                     updateWPMFromBindings()
                     updateScores()

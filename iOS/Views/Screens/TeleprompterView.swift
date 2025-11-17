@@ -72,7 +72,11 @@ struct Screen3Teleprompter: View {
     @State var scriptWords: [String] = []
     @State var timer: TimerManager
     @State var transscriptionChangeCount: Int = 0
-    
+
+    // Speech recognition lifecycle
+    @State private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
+    @State private var recognitionTask: SFSpeechRecognitionTask?
+
     // Metrics required by Screen4
     @State private var elapsedTime: Int = 0
     @State private var wordCount: Int = 0
@@ -138,7 +142,6 @@ struct Screen3Teleprompter: View {
         lastSilenceStartTime = Date()
         silenceDurations.removeAll()
         LGBWSeconds = 0
-        // meteringTimer not needed if we compute dB in the input tap; we keep this for parity if needed
         meteringTimer?.invalidate()
         meteringTimer = Timer.scheduledTimer(withTimeInterval: meteringInterval, repeats: true) { _ in
             // No-op: metering is driven by input tap callback where we compute level dB from buffers
@@ -197,6 +200,59 @@ struct Screen3Teleprompter: View {
         let rms = sqrtf(sum)
         let db = 20.0 * log10f(max(rms, 1e-7))
         return db.isFinite ? db : -120.0
+    }
+
+    // MARK: - Speech lifecycle helpers
+    private func startSpeechRecognition() {
+        guard recognitionTask == nil, recognitionRequest == nil else { return }
+        guard let recogniser = speechRecogniser, recogniser.isAvailable else { return }
+
+        let audioSession = AVAudioSession.sharedInstance()
+        try? audioSession.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .allowBluetooth])
+        try? audioSession.setActive(true)
+
+        let request = SFSpeechAudioBufferRecognitionRequest()
+        request.shouldReportPartialResults = true
+        recognitionRequest = request
+
+        let inputNode = audioEngine.inputNode
+        let format = inputNode.outputFormat(forBus: 0)
+
+        inputNode.removeTap(onBus: 0)
+        inputNode.installTap(onBus: 0, bufferSize: 1024, format: format) { buffer, _ in
+            request.append(buffer)
+            // Compute dB level for silence detection
+            let level = dBLevel(from: buffer)
+            handleLevel(level)
+        }
+
+        audioEngine.prepare()
+        try? audioEngine.start()
+
+        recognitionTask = recogniser.recognitionTask(with: request) { result, error in
+            if let result {
+                transcription = result.bestTranscription.formattedString
+            }
+            if error != nil {
+                // Clean up on failure
+                stopSpeechRecognition()
+            }
+        }
+    }
+
+    private func stopSpeechRecognition() {
+        audioEngine.stop()
+        audioEngine.inputNode.removeTap(onBus: 0)
+        audioEngine.reset()
+
+        recognitionRequest?.endAudio()
+        recognitionTask?.cancel()
+
+        recognitionTask = nil
+        recognitionRequest = nil
+
+        // Optional: release audio session for other audio
+        try? AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
     }
     
     var body: some View {
@@ -264,15 +320,31 @@ struct Screen3Teleprompter: View {
                         .padding(.top, 10)
                     #endif
                     Button {
-                        isRecording.toggle()
+                        let newValue = !isRecording
+                        isRecording = newValue
                         showAccessory.toggle()
-                        if isRecording {
+                        if newValue {
+                            // Start
                             timer.stop()
                             timer.reset()
+                            recordingStore.startRecording()
+                            startWallClockTimer()
+                            SFSpeechRecognizer.requestAuthorization { _ in }
+                            Task {
+                                _ = await AVAudioApplication.requestRecordPermission()
+                            }
+                            startSilenceTracking()
+                            startSpeechRecognition()
                         } else {
-                            timer.start()
-                            self.deviation = secondsPerWord.standardDeviation(from: Double(WPM))
-                            print(deviation)
+                            // Stop
+                            recordingStore.stopRecording()
+                            stopSpeechRecognition()
+                            stopWallClockTimer()
+                            finalizeSilenceIfNeeded()
+                            stopSilenceTracking()
+                            let longest = max(LGBWSeconds, silenceDurations.max() ?? 0)
+                            LGBW = Int(longest.rounded())
+                            navigateToScreen4 = true
                         }
                     } label: {
                         RecordButtonView(isRecording: $isRecording)
@@ -311,63 +383,7 @@ struct Screen3Teleprompter: View {
             }
             .navigationBarBackButtonHidden(true)
             .onChange(of: isRecording) { _, recording in
-                if recording {
-                    // Start file recording
-                    recordingStore.startRecording()
-                    // Start clocks
-                    startWallClockTimer()
-                    // Request speech recognition
-                    SFSpeechRecognizer.requestAuthorization { status in
-                        guard status == .authorized else { return }
-                    }
-                    Task {
-                        let micGranted = await AVAudioApplication.requestRecordPermission()
-                        guard micGranted else { return }
-                    }
-                    guard let recogniser = speechRecogniser, recogniser.isAvailable else { return }
-                    
-                    let audioSession = AVAudioSession.sharedInstance()
-                    try? audioSession.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .allowBluetooth])
-                    try? audioSession.setActive(true)
-                    
-                    let request = SFSpeechAudioBufferRecognitionRequest()
-                    request.shouldReportPartialResults = true
-                    
-                    let inputNode = audioEngine.inputNode
-                    let format = inputNode.outputFormat(forBus: 0)
-                    
-                    inputNode.removeTap(onBus: 0)
-                    // Start silence tracking before installing tap
-                    startSilenceTracking()
-                    inputNode.installTap(onBus: 0, bufferSize: 1024, format: format) { buffer, _ in
-                        // Feed speech recognition
-                        request.append(buffer)
-                        // Compute dB level for silence detection
-                        let level = dBLevel(from: buffer)
-                        handleLevel(level)
-                    }
-                    audioEngine.prepare()
-                    try? audioEngine.start()
-                    
-                    recogniser.recognitionTask(with: request) { result, _ in
-                        if let result {
-                            transcription = result.bestTranscription.formattedString
-                        }
-                    }
-                } else {
-                    // Stop both recordings and metering
-                    recordingStore.stopRecording()
-                    audioEngine.stop()
-                    audioEngine.inputNode.removeTap(onBus: 0)
-                    stopWallClockTimer()
-                    finalizeSilenceIfNeeded()
-                    stopSilenceTracking()
-                    // Finalize metrics
-                    let longest = max(LGBWSeconds, silenceDurations.max() ?? 0)
-                    LGBW = Int(longest.rounded())
-                    // elapsedTime already tracked via wall timer
-                    navigateToScreen4 = true
-                }
+                // No-op: handled inline in the button action to avoid races
             }
         }
     }
