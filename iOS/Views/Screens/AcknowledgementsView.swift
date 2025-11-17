@@ -58,6 +58,13 @@ struct Acknowledgements: View {
             ZStack {
                 VStack {
                     List {
+                        Section(header: Text("People")) {
+                            ListItem(sfSymbol: "person.fill.turn.down", title: "Adam", subtitle: "The only iPhone user.")
+                            ListItem(sfSymbol: "shoeprints.fill", title: "Divya", subtitle: "The one who threw the shoe.")
+                            ListItem(sfSymbol: "sharedwithyou", title: "Yap Long", subtitle: "The inspiration behind the app.")
+                            ListItem(sfSymbol: "figure.walk.motion.trianglebadge.exclamationmark", title: "Avyan", subtitle: "Our Mentor, the cooked one.")
+                            ListItem(sfSymbol: "figure.2.circle.fill", title: "The Friends We Made Along the Way", subtitle: "Thank you to everyone who helped with this app!")
+                        }
                         Section(header: Text("Tools")) {
                             ListItem(sfSymbol: "hammer.fill", title: "Xcode", subtitle: "Development IDE")
                             ListItem(sfSymbol: "paintbrush.fill", title: "Figma", subtitle: "UI design")
