@@ -4,7 +4,7 @@ import FoundationModels
 struct Screen22: View {
     @Binding var title: String
     @Binding var script: String
-
+    
     @FocusState private var isEditingScript: Bool
     @FocusState private var isEditingTitle: Bool
     
@@ -141,17 +141,22 @@ struct Screen22: View {
                         Button { showScreent = true } label: {
                             Image(systemName: "play.fill")
                         }
-                        
-                        Button { showPromptDialog = true } label: {
-                            Image(systemName: "wand.and.stars")
-                        }
-                        
-                        Button {
-                            isEditingScript = false
-                            isEditingTitle = false
-                        } label: {
-                            Image(systemName: "checkmark")
-                        }
+                    }
+                }
+                
+                ToolbarItemGroup(placement: .keyboard) {
+                    Button {
+                        showPromptDialog = true
+                    } label: {
+                        Image(systemName: "wand.and.stars")
+                    }
+                    
+                    Spacer()
+                    
+                    Button {
+                        isEditingScript = false
+                    } label: {
+                        Image(systemName: "checkmark")
                     }
                 }
             }
