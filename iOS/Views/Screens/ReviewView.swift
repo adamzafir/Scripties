@@ -15,11 +15,9 @@ struct ReviewView: View {
     
     private func wpmPercentage(_ wpm: Int) -> Double {
         if wpm <= 120 {
-            
             let pct = 100 + (wpm - 120)
             return Double(max(0, min(100, pct)))
         } else {
-            
             let pct = 100 + (wpm - 120)
             return Double(max(0, min(200, pct)))
         }
@@ -27,7 +25,6 @@ struct ReviewView: View {
     
     private func lgbwPercentage(_ lgbw: Int) -> Double {
         if lgbw <= 5 { return 100 }
-        
         let over = min(10, max(6, lgbw))
         let stepsAbove5 = over - 5
         let pct = 100 - stepsAbove5 * 20
@@ -45,7 +42,6 @@ struct ReviewView: View {
     }
     
     private func computeScoreThreePoint(wpmPct: Double, lgbwPct: Double, cisPct: Double) -> Int {
-        
         let wpmIsIdeal = Int(round(wpmPct)) == 100
         let lgbwIsIdeal = Int(round(lgbwPct)) == 100
         let cisIsIdeal = CIS >= 80 && CIS <= 85
@@ -56,14 +52,12 @@ struct ReviewView: View {
         let wpmPct = wpmPercentage(WPM)
         let lgbwPct = lgbwPercentage(LGBW)
         let cisPct = cisPercentage(CIS)
-        
         let overall = (wpmPct + lgbwPct + cisPct) / 3.0
         scoreTwo = max(0, min(100, overall))
         score = computeScoreThreePoint(wpmPct: wpmPct, lgbwPct: lgbwPct, cisPct: cisPct)
     }
     
     private func updateWPMFromBindings() {
-        // Compute words per minute safely from wordCount and elapsedTime (seconds)
         guard elapsedTime > 0 else {
             WPM = 0
             return
@@ -85,14 +79,19 @@ struct ReviewView: View {
                     Section("Result"){
                         DisclosureGroup(isExpanded: $isWPMExpanded) {
                             SemiCircleGauge(
-                                progress: max(0.0, min(1.0, Double(WPM) / 240.0)),
-                                highlight: (100.0/240.0)...(120.0/240.0),
+                                progress: max(0.0, min(1.0, Double(WPM) / 180.0)),
+                                highlight: (100.0/180.0)...(120.0/180.0),
                                 minLabel: "0",
-                                maxLabel: "240",
+                                maxLabel: "180 wpm",
                                 valueLabel: "\(WPM)"
                             )
                             .frame(height: 80)
                             .padding(.top, 8)
+                            
+                            Text("Best WPM is 120. The green band shows the ideal range.")
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                                .padding(.top, 4)
                         } label: {
                             HStack {
                                 Text("Words per minute")
@@ -112,6 +111,11 @@ struct ReviewView: View {
                             )
                             .frame(height: 80)
                             .padding(.top, 8)
+                            
+                            Text("Best consistency (CIS) is 80–85%. The green band shows the ideal range.")
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                                .padding(.top, 4)
                         } label: {
                             HStack {
                                 Text("Consistency in speech (%)")
@@ -136,29 +140,11 @@ struct ReviewView: View {
                         CIS = Int(newValue.rounded())
                         updateScores()
                     }
-                    
-                    
-                    
-                    
+                    Screen5()
                 }
                 .onAppear {
                     updateWPMFromBindings()
                     updateScores()
-                }
-                .toolbar {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button {
-                            showInfo = true
-                        } label: {
-                            Image(systemName: "info.circle")
-                        }
-                        .accessibilityLabel("Show scoring info")
-                    }
-                }
-                .alert("Scoring tips", isPresented: $showInfo) {
-                    Button("OK", role: .cancel) { }
-                } message: {
-                    Text("Best WPM is 120. Best consistency (CIS) is 80–85%. Best score is shown in green in the bar below.")
                 }
                 .navigationTitle("Review")
             }
@@ -184,10 +170,9 @@ struct ReviewView: View {
                 let totalHeight = geo.size.height
                 let lineThickness = max(10, min(16, geo.size.height * 2))
                 let clamped = max(0.0, min(1.0, progress))
-                // Interpret 0.5 as the center ("100%"), <0.5 goes left, >0.5 goes right
                 let centerX = totalWidth / 2
-                let delta = abs(clamped - 0.5) // 0..0.5
-                let extent = (totalWidth / 2) * delta * 2 // maps 0..0.5 -> 0..half width
+                let delta = abs(clamped - 0.5)
+                let extent = (totalWidth / 2) * delta * 2
                 let isRight = clamped >= 0.5
                 let indicatorX = clamped * totalWidth
                 
@@ -201,27 +186,23 @@ struct ReviewView: View {
                 }()
                 
                 ZStack {
-                    // Highlight band (if any)
                     if let hf = highlightFrame, hf.width > 0 {
                         Capsule()
                             .fill(Color.green.opacity(0.25))
                             .frame(width: hf.width, height: lineThickness)
                             .position(x: hf.x, y: totalHeight/2)
                     }
-                    // Baseline - horizontal
                     Capsule()
                         .fill(Color.gray.opacity(0.25))
                         .frame(width: totalWidth, height: lineThickness)
                         .position(x: totalWidth/2, y: totalHeight/2)
 
-                    // Value indicator - vertical line positioned along the horizontal baseline
                     Capsule()
                         .fill(isRight ? Color.blue : Color.orange)
                         .frame(width: 3, height: max(lineThickness, 20))
                         .position(x: indicatorX, y: totalHeight/2)
                         .animation(.easeInOut(duration: 0.4), value: clamped)
                     
-                    // Min/Max labels at ends of the gauge
                     if let minLabel {
                         Text(minLabel)
                             .font(.caption2)
@@ -237,7 +218,6 @@ struct ReviewView: View {
                             .frame(maxWidth: .infinity, alignment: .trailing)
                     }
                     
-                    // Value label above the indicator
                     if let valueLabel {
                         Text(valueLabel)
                             .font(.caption)
@@ -271,5 +251,5 @@ struct ReviewView: View {
         wordCount: .constant(240),
         deriative: .constant(82.0)
     )
-    
+    .environmentObject(RecordingStore())
 }
