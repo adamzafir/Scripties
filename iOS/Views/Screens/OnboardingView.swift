@@ -99,18 +99,6 @@ struct OnboardingView: View {
                 .indexViewStyle(.page(backgroundDisplayMode: .always))
                 
                 Spacer()
-                
-                // Page indicators with custom styling
-                HStack(spacing: 8) {
-                    ForEach(0..<pages.count, id: \.self) { index in
-                        Circle()
-                            .fill(index == currentPage ? pages[currentPage].highlightColor : Color.gray.opacity(0.3))
-                            .frame(width: index == currentPage ? 10 : 8, height: index == currentPage ? 10 : 8)
-                            .animation(.spring(response: 0.3), value: currentPage)
-                    }
-                }
-                .padding(.bottom, 8)
-                
                 // Navigation buttons
                 HStack(spacing: 20) {
                     if currentPage > 0 {

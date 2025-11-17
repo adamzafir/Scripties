@@ -18,6 +18,8 @@ struct Screen1: View {
                                     Screen2(title: $item.title, script: $item.scriptText)
                                 }
                                 Text(item.title)
+                            } label: {
+                                Text("Untitled Script")
                             }
                         }
                         .onDelete(perform: deleteItems)
