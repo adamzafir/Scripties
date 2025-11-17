@@ -72,6 +72,8 @@ struct Screen22: View {
                         .padding()
                     
                     ZStack(alignment: .topLeading) {
+                        
+                        // TEXT EDITOR
                         TextEditor(text: $script)
                             .focused($isEditingScript)
                             .padding(.horizontal)
@@ -88,14 +90,12 @@ struct Screen22: View {
                                 }
                             }
                         
-                        // Placeholder: shows only when empty and not focused, greyed out
                         if script.isEmpty && !isEditingScript {
-                            Text("type something")
+                            Text("Write something inspiring...")
                                 .foregroundColor(.secondary)
                                 .padding(.horizontal, 20)
                                 .padding(.top, 8)
                                 .allowsHitTesting(false)
-                                .accessibilityHidden(true)
                         }
                     }
                 }
@@ -205,3 +205,4 @@ struct Screen22: View {
         script: .constant("")
     )
 }
+

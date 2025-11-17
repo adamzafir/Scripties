@@ -38,7 +38,7 @@ class Screen2ViewModel: ObservableObject {
             .store(in: &cancellables)
     }
 
-    func addNewScriptAtFront(title: String? = nil, scriptText: String = "Type something...") {
+    func addNewScriptAtFront(title: String? = nil, scriptText: String = "") {
         let providedTitle = title?.trimmingCharacters(in: .whitespacesAndNewlines)
         let finalTitle: String
         if let t = providedTitle, !t.isEmpty {
