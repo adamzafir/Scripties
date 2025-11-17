@@ -7,11 +7,11 @@ func splitIntoLinesByWidth(_ text: String, font: UIFont, maxWidth: CGFloat) -> [
     let words = text.components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }
     var lines: [String] = []
     var currentLine = ""
-    
+
     for word in words {
         let testLine = currentLine.isEmpty ? word : "\(currentLine) \(word)"
         let size = (testLine as NSString).size(withAttributes: [.font: font])
-        
+
         if size.width <= maxWidth {
             currentLine = testLine
         } else {
@@ -21,11 +21,11 @@ func splitIntoLinesByWidth(_ text: String, font: UIFont, maxWidth: CGFloat) -> [
             currentLine = word
         }
     }
-    
+
     if !currentLine.isEmpty {
         lines.append(currentLine)
     }
-    
+
     return lines
 }
 
@@ -58,39 +58,43 @@ struct Screen3Teleprompter: View {
     @State var transcription = ""
     @State var isRecording = false
     @Environment(\.dismiss) private var dismiss
+
     @Binding var title: String
     @Binding var script: String
     @State var scriptLines: [String] = []
     @State private var isLoading = true
     @AppStorage("fontSize") var fontSize: Double = 28
     @Binding var WPM :Int
+
     @State private var tokensPerLine: [[String]] = []
     @State private var currentLineIndex: Int = 0
     @State private var lastAdvanceTime: Date = .distantPast
     @State private var navigateToScreen4 = false
+
     @State var secondsPerWord: [Double] = []
     @State var scriptWords: [String] = []
     @State var timer: TimerManager
     @State var transscriptionChangeCount: Int = 0
-    
-    // Metrics required by Screen4
+
     @State private var elapsedTime: Int = 0
     @State private var wordCount: Int = 0
-    @State private var LGBW: Int = 0 // Longest Gap Between Words, in seconds (rounded)
-    // Internal tracking for silence detection
+    @State private var LGBW: Int = 0
+
     @State private var LGBWSeconds: TimeInterval = 0
     @State private var meteringTimer: Timer? = nil
     @State private var isCurrentlySilent: Bool = true
     @State private var lastSilenceStartTime: Date? = nil
     @State private var silenceDurations: [TimeInterval] = []
     @State private var wallTimer: Timer? = nil
+
     @State var deviation: Double = 0
-    
-    // Tuning parameters for silence detection (AudioRecorderView parity)
-    private let silenceThreshold: Float = -40.0 // dB regarded as silence
-    private let minSilenceDuration: TimeInterval = 0.25 // ignore very short blips
-    private let meteringInterval: TimeInterval = 0.05 // 20 Hz sampling
-    
+
+    private let silenceThreshold: Float = -40.0
+    private let minSilenceDuration: TimeInterval = 0.25
+    private let meteringInterval: TimeInterval = 0.05
+
+    @Binding var isPresented: Bool
+
     private func recomputeLines() {
         let font = UIFont.systemFont(ofSize: CGFloat(fontSize))
         let maxWidth = UIScreen.main.bounds.width - 32
@@ -98,14 +102,13 @@ struct Screen3Teleprompter: View {
         tokensPerLine = scriptLines.map { normalizeAndTokenize($0) }
         currentLineIndex = min(currentLineIndex, max(0, scriptLines.count - 1))
     }
-    
     private func tryAdvance(using recognizedTokens: [String], scrollProxy: ScrollViewProxy) {
         guard currentLineIndex < tokensPerLine.count else { return }
         let now = Date()
         if now.timeIntervalSince(lastAdvanceTime) < 0.3 { return }
-        
+
         let expected = tokensPerLine[currentLineIndex]
-        if expected.isEmpty || isSubsequence(expected, in: recognizedTokens) {
+        if let last = expected.last, recognizedTokens.contains(last) {
             let nextIndex = currentLineIndex + 1
             if nextIndex <= scriptLines.count {
                 currentLineIndex = min(nextIndex, scriptLines.count - 1)
@@ -116,51 +119,43 @@ struct Screen3Teleprompter: View {
             }
         }
     }
-    
-    // MARK: - Wall clock timer
+
     private func startWallClockTimer() {
         wallTimer?.invalidate()
         elapsedTime = 0
-        wallTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
-            elapsedTime += 1
-        }
+        wallTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in elapsedTime += 1 }
         RunLoop.current.add(wallTimer!, forMode: .common)
     }
-    
+
     private func stopWallClockTimer() {
         wallTimer?.invalidate()
         wallTimer = nil
     }
-    
-    // MARK: - Silence tracking via AVAudioEngine metering
+
     private func startSilenceTracking() {
         isCurrentlySilent = true
         lastSilenceStartTime = Date()
         silenceDurations.removeAll()
         LGBWSeconds = 0
-        // meteringTimer not needed if we compute dB in the input tap; we keep this for parity if needed
+
         meteringTimer?.invalidate()
-        meteringTimer = Timer.scheduledTimer(withTimeInterval: meteringInterval, repeats: true) { _ in
-            // No-op: metering is driven by input tap callback where we compute level dB from buffers
-        }
+        meteringTimer = Timer.scheduledTimer(withTimeInterval: meteringInterval, repeats: true) { _ in }
         RunLoop.current.add(meteringTimer!, forMode: .common)
     }
-    
+
     private func stopSilenceTracking() {
         meteringTimer?.invalidate()
         meteringTimer = nil
     }
-    
+
     private func handleLevel(_ levelDB: Float) {
         let now = Date()
         if levelDB <= silenceThreshold {
-            // Silence
             if !isCurrentlySilent {
                 isCurrentlySilent = true
                 lastSilenceStartTime = now
             }
         } else {
-            // Speaking
             if isCurrentlySilent {
                 isCurrentlySilent = false
                 if let silenceStart = lastSilenceStartTime {
@@ -174,7 +169,7 @@ struct Screen3Teleprompter: View {
             }
         }
     }
-    
+
     private func finalizeSilenceIfNeeded() {
         if isCurrentlySilent, let silenceStart = lastSilenceStartTime {
             let duration = Date().timeIntervalSince(silenceStart)
@@ -184,8 +179,7 @@ struct Screen3Teleprompter: View {
             }
         }
     }
-    
-    // Compute RMS -> dB from audio buffer
+
     private func dBLevel(from buffer: AVAudioPCMBuffer) -> Float {
         guard let channelData = buffer.floatChannelData else { return -120.0 }
         let channel = channelData[0]
@@ -193,19 +187,25 @@ struct Screen3Teleprompter: View {
         if frameLength == 0 { return -120.0 }
         var sum: Float = 0.0
         vDSP_measqv(channel, 1, &sum, vDSP_Length(frameLength))
-        // sum is mean square
         let rms = sqrtf(sum)
         let db = 20.0 * log10f(max(rms, 1e-7))
         return db.isFinite ? db : -120.0
     }
-    
+
     var body: some View {
         NavigationStack {
             NavigationLink(isActive: $navigateToScreen4) {
-                ReviewView(LGBW: $LGBW, elapsedTime: $elapsedTime, wordCount: $wordCount, deriative: $deviation)
+                ReviewView(
+                    LGBW: $LGBW,
+                    elapsedTime: $elapsedTime,
+                    wordCount: $wordCount,
+                    deriative: $deviation,
+                    isCoverPresented: $isPresented
+                )
             } label: {
                 EmptyView()
             }
+
             VStack {
                 if isLoading {
                     ProgressView("Loading...")
@@ -225,9 +225,9 @@ struct Screen3Teleprompter: View {
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
                         }
-                        .onChange(of: currentLineIndex) { _, newValue in
+                        .onChange(of: currentLineIndex) { _, n in
                             withAnimation(.easeInOut) {
-                                proxy.scrollTo(newValue, anchor: .top)
+                                proxy.scrollTo(n, anchor: .top)
                             }
                         }
                         .onAppear {
@@ -238,67 +238,60 @@ struct Screen3Teleprompter: View {
                         .onChange(of: transcription) { _, newValue in
                             let tokens = normalizeAndTokenize(newValue)
                             tryAdvance(using: tokens, scrollProxy: proxy)
-                            
+
                             if !scriptWords.isEmpty && transcription.contains(scriptWords[0]) {
                                 transscriptionChangeCount += 1
                                 scriptWords.remove(at: 0)
+
                                 if transscriptionChangeCount % 5 == 0 {
-                                    let chunkTime = timer.elapsedSeconds
-                                    secondsPerWord.append(chunkTime)
+                                    let t = timer.elapsedSeconds
+                                    secondsPerWord.append(t)
                                     timer.reset()
                                     timer.start()
                                 }
-                                
                             }
                         }
                     }
                 }
-                
+
                 Spacer()
-                
+
                 HStack {
-                    #if DEBUG
+#if DEBUG
                     Text("DEBUG: \(secondsPerWord.description)")
                         .font(.caption)
                         .foregroundColor(.red)
-                        .padding(.top, 10)
-                    #endif
+#endif
                     Button {
                         isRecording.toggle()
                         showAccessory.toggle()
-                        if isRecording {
-                            timer.stop()
-                            timer.reset()
-                        } else {
-                            timer.start()
-                            self.deviation = secondsPerWord.standardDeviation(from: Double(WPM))
-                            print(deviation)
-                        }
                     } label: {
                         RecordButtonView(isRecording: $isRecording)
                     }
                     .sensoryFeedback(.selection, trigger: showAccessory)
                 }
-                
+
                 Text(transcription.isEmpty ? "..." : transcription)
                     .lineLimit(3)
                     .multilineTextAlignment(.leading)
             }
+
             .onAppear {
                 Task {
-                    scriptWords = script.components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }
+                    scriptWords = script.components(separatedBy: .whitespacesAndNewlines)
+                        .filter { !$0.isEmpty }
                     wordCount = script.split { $0.isWhitespace }.count
                     recomputeLines()
                     isLoading = false
                 }
             }
-            .onChange(of: fontSize) { _, _ in
-                recomputeLines()
-            }
+
+            .onChange(of: fontSize) { _, _ in recomputeLines() }
             .onChange(of: script) { _, _ in
                 recomputeLines()
                 wordCount = script.split { $0.isWhitespace }.count
             }
+
             .navigationTitle(title)
             .padding()
             .toolbar {
@@ -309,63 +302,84 @@ struct Screen3Teleprompter: View {
                     }
                 }
             }
+
             .navigationBarBackButtonHidden(true)
+
             .onChange(of: isRecording) { _, recording in
                 if recording {
-                    // Start file recording
                     recordingStore.startRecording()
-                    // Start clocks
+
                     startWallClockTimer()
-                    // Request speech recognition
-                    SFSpeechRecognizer.requestAuthorization { status in
-                        guard status == .authorized else { return }
-                    }
-                    Task {
-                        let micGranted = await AVAudioApplication.requestRecordPermission()
-                        guard micGranted else { return }
-                    }
+                    secondsPerWord.removeAll()
+                    silenceDurations.removeAll()
+                    LGBWSeconds = 0
+                    transscriptionChangeCount = 0
+
+                    scriptWords = script.components(separatedBy: .whitespacesAndNewlines)
+                        .filter { !$0.isEmpty }
+
+                    timer.reset()
+                    timer.start()
+
+                    SFSpeechRecognizer.requestAuthorization { _ in }
+                    Task { _ = await AVAudioApplication.requestRecordPermission() }
                     guard let recogniser = speechRecogniser, recogniser.isAvailable else { return }
-                    
+
                     let audioSession = AVAudioSession.sharedInstance()
                     try? audioSession.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .allowBluetooth])
                     try? audioSession.setActive(true)
-                    
+
                     let request = SFSpeechAudioBufferRecognitionRequest()
                     request.shouldReportPartialResults = true
-                    
+
                     let inputNode = audioEngine.inputNode
                     let format = inputNode.outputFormat(forBus: 0)
-                    
                     inputNode.removeTap(onBus: 0)
-                    // Start silence tracking before installing tap
+
                     startSilenceTracking()
+
                     inputNode.installTap(onBus: 0, bufferSize: 1024, format: format) { buffer, _ in
-                        // Feed speech recognition
                         request.append(buffer)
-                        // Compute dB level for silence detection
                         let level = dBLevel(from: buffer)
                         handleLevel(level)
                     }
+
                     audioEngine.prepare()
                     try? audioEngine.start()
-                    
+
                     recogniser.recognitionTask(with: request) { result, _ in
                         if let result {
                             transcription = result.bestTranscription.formattedString
                         }
                     }
+
                 } else {
-                    // Stop both recordings and metering
                     recordingStore.stopRecording()
                     audioEngine.stop()
                     audioEngine.inputNode.removeTap(onBus: 0)
+
                     stopWallClockTimer()
                     finalizeSilenceIfNeeded()
                     stopSilenceTracking()
-                    // Finalize metrics
+
+                    timer.stop()
+
+                    if timer.elapsedSeconds > 0 {
+                        secondsPerWord.append(timer.elapsedSeconds)
+                    }
+
+                    if !secondsPerWord.isEmpty {
+                        deviation = secondsPerWord.standardDeviation(from: Double(WPM))
+                    } else {
+                        deviation = 0
+                    }
+
+                    let computedCIS = max(0, min(100, 100 - (deviation * 2.2)))
+                    deviation = computedCIS
+
                     let longest = max(LGBWSeconds, silenceDurations.max() ?? 0)
                     LGBW = Int(longest.rounded())
-                    // elapsedTime already tracked via wall timer
+
                     navigateToScreen4 = true
                 }
             }
