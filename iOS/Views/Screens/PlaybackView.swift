@@ -13,6 +13,7 @@ struct Screen5: View {
     @State private var audios: [URL] = []
     @State private var selectedURL: URL? = nil
     @State private var lastPreparedURL: URL? = nil
+    @State private var isPlaying = false  // Track the play/pause state
 
     private func configureAudioSessionForPlayback() {
         do {
@@ -132,6 +133,7 @@ struct Screen5: View {
                                 player.pause()
                                 progressTimer?.invalidate()
                                 progressTimer = nil
+                                isPlaying = false  // Update the play state
                             } else {
                                 if lastPreparedURL == nil {
                                     refreshAndPrepareBest()
@@ -139,6 +141,7 @@ struct Screen5: View {
                                 audioPlayer?.currentTime = currentTime
                                 audioPlayer?.play()
                                 startProgressTimer()
+                                isPlaying = true  // Update the play state
                             }
                         } else {
                             refreshAndPrepareBest()
@@ -146,13 +149,12 @@ struct Screen5: View {
                                 audioPlayer?.currentTime = currentTime
                                 audioPlayer?.play()
                                 startProgressTimer()
+                                isPlaying = true  // Update the play state
                             } else {
                                 print("No recording available to play.")
                             }
                         }
                     } label: {
-                        let isPlaying = audioPlayer?.isPlaying == true
-                        // Show play when paused, pause when playing
                         Image(systemName: isPlaying ? "pause.fill" : "play.fill")
                             .font(.headline)
                             .accessibilityLabel(isPlaying ? "Pause" : "Play")
