@@ -4,7 +4,6 @@ import FoundationModels
 struct Screen2: View {
     @Binding var title: String
     @Binding var script: String
-    
     @State private var showScreen = false
     @State private var showScreent = false
     @FocusState private var isEditingScript: Bool

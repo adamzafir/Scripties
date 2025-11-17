@@ -2,7 +2,7 @@ import SwiftUI
 
 struct Screen1: View {
     @ObservedObject var viewModel: Screen2ViewModel
-
+    @AppStorage("betashit") private var isBeta: Bool = false
     var body: some View {
         NavigationStack {
             ZStack {
@@ -46,9 +46,5 @@ struct Screen1: View {
     private func deleteItems(at offsets: IndexSet) {
         viewModel.scriptItems.remove(atOffsets: offsets)
     }
-}
-
-#Preview {
-    Screen1(viewModel: Screen2ViewModel())
 }
 
