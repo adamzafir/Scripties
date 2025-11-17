@@ -12,7 +12,7 @@ struct ReviewView: View {
     @Binding var elapsedTime: Int
     @Binding var wordCount: Int
     @Binding var deriative: Double
-    
+
     private func wpmPercentage(_ wpm: Int) -> Double {
         if wpm <= 120 {
             let pct = 100 + (wpm - 120)
@@ -22,7 +22,7 @@ struct ReviewView: View {
             return Double(max(0, min(200, pct)))
         }
     }
-    
+
     private func lgbwPercentage(_ lgbw: Int) -> Double {
         if lgbw <= 5 { return 100 }
         let over = min(10, max(6, lgbw))
@@ -30,7 +30,7 @@ struct ReviewView: View {
         let pct = 100 - stepsAbove5 * 20
         return Double(max(0, pct))
     }
-    
+
     private func cisPercentage(_ cis: Int) -> Double {
         if cis >= 80 && cis <= 85 { return 100 }
         if cis > 85 {
@@ -40,14 +40,14 @@ struct ReviewView: View {
         }
         return Double(max(0, min(100, cis)))
     }
-    
+
     private func computeScoreThreePoint(wpmPct: Double, lgbwPct: Double, cisPct: Double) -> Int {
         let wpmIsIdeal = Int(round(wpmPct)) == 100
         let lgbwIsIdeal = Int(round(lgbwPct)) == 100
         let cisIsIdeal = CIS >= 80 && CIS <= 85
         return (wpmIsIdeal && lgbwIsIdeal && cisIsIdeal) ? 3 : 2
     }
-    
+
     private func updateScores() {
         let wpmPct = wpmPercentage(WPM)
         let lgbwPct = lgbwPercentage(LGBW)
@@ -56,7 +56,7 @@ struct ReviewView: View {
         scoreTwo = max(0, min(100, overall))
         score = computeScoreThreePoint(wpmPct: wpmPct, lgbwPct: lgbwPct, cisPct: cisPct)
     }
-    
+
     private func updateWPMFromBindings() {
         guard elapsedTime > 0 else {
             WPM = 0
@@ -66,6 +66,7 @@ struct ReviewView: View {
         let computed = Int(round(Double(wordCount) / minutes))
         WPM = max(0, computed)
     }
+
     var body: some View {
         NavigationStack {
             VStack {
@@ -75,8 +76,8 @@ struct ReviewView: View {
                     .foregroundColor(.red)
                     .padding(.top, 10)
 #endif
-                Form{
-                    Section("Result"){
+                Form {
+                    Section("Result") {
                         DisclosureGroup(isExpanded: $isWPMExpanded) {
                             SemiCircleGauge(
                                 progress: max(0.0, min(1.0, Double(WPM) / 180.0)),
@@ -87,7 +88,7 @@ struct ReviewView: View {
                             )
                             .frame(height: 80)
                             .padding(.top, 8)
-                            
+
                             Text("Best WPM is 120. The green band shows the ideal range.")
                                 .font(.footnote)
                                 .foregroundStyle(.secondary)
@@ -111,7 +112,7 @@ struct ReviewView: View {
                             )
                             .frame(height: 80)
                             .padding(.top, 8)
-                            
+
                             Text("Best consistency (CIS) is 80–85%. The green band shows the ideal range.")
                                 .font(.footnote)
                                 .foregroundStyle(.secondary)
@@ -125,25 +126,27 @@ struct ReviewView: View {
                             }
                         }
                     }
-                    .onChange(of: WPM) { _, _ in updateScores() }
-                    .onChange(of: LGBW) { _, _ in updateScores() }
-                    .onChange(of: CIS) { _, _ in updateScores() }
-                    .onChange(of: elapsedTime) { _, _ in
-                        updateWPMFromBindings()
-                        updateScores()
-                    }
-                    .onChange(of: wordCount) { _, _ in
-                        updateWPMFromBindings()
-                        updateScores()
-                    }
-                    .onChange(of: deriative) { _, newValue in
-                        CIS = Int(newValue.rounded())
-                        updateScores()
-                    }
+
                     Screen5()
                 }
                 .onAppear {
                     updateWPMFromBindings()
+                    updateScores()
+                    CIS = Int(deriative.rounded())
+                }
+                .onChange(of: WPM) { _, _ in updateScores() }
+                .onChange(of: LGBW) { _, _ in updateScores() }
+                .onChange(of: CIS) { _, _ in updateScores() }
+                .onChange(of: elapsedTime) { _, _ in
+                    updateWPMFromBindings()
+                    updateScores()
+                }
+                .onChange(of: wordCount) { _, _ in
+                    updateWPMFromBindings()
+                    updateScores()
+                }
+                .onChange(of: deriative) { _, newValue in
+                    CIS = Int(newValue.rounded())
                     updateScores()
                 }
                 .navigationTitle("Review")
@@ -151,19 +154,16 @@ struct ReviewView: View {
             .navigationBarBackButtonHidden(true)
         }
     }
-    
-    
     struct SemiCircleGauge: View {
-        
         var progress: Double
         var lineWidth: CGFloat = 16
         var label: String? = nil
         var highlight: ClosedRange<Double>? = nil
-        
+
         var minLabel: String? = nil
         var maxLabel: String? = nil
         var valueLabel: String? = nil
-        
+
         var body: some View {
             GeometryReader { geo in
                 let totalWidth = geo.size.width
@@ -175,7 +175,7 @@ struct ReviewView: View {
                 let extent = (totalWidth / 2) * delta * 2
                 let isRight = clamped >= 0.5
                 let indicatorX = clamped * totalWidth
-                
+
                 let highlightFrame: (x: CGFloat, width: CGFloat)? = {
                     guard let r = highlight else { return nil }
                     let start = CGFloat(max(0.0, min(1.0, r.lowerBound))) * totalWidth
@@ -184,7 +184,7 @@ struct ReviewView: View {
                     let w = max(0, end - start)
                     return (x: minX + w / 2, width: w)
                 }()
-                
+
                 ZStack {
                     if let hf = highlightFrame, hf.width > 0 {
                         Capsule()
@@ -192,6 +192,7 @@ struct ReviewView: View {
                             .frame(width: hf.width, height: lineThickness)
                             .position(x: hf.x, y: totalHeight/2)
                     }
+
                     Capsule()
                         .fill(Color.gray.opacity(0.25))
                         .frame(width: totalWidth, height: lineThickness)
@@ -202,7 +203,7 @@ struct ReviewView: View {
                         .frame(width: 3, height: max(lineThickness, 20))
                         .position(x: indicatorX, y: totalHeight/2)
                         .animation(.easeInOut(duration: 0.4), value: clamped)
-                    
+
                     if let minLabel {
                         Text(minLabel)
                             .font(.caption2)
@@ -217,14 +218,14 @@ struct ReviewView: View {
                             .position(x: totalWidth - 8, y: totalHeight/2 + lineThickness/2 + 10)
                             .frame(maxWidth: .infinity, alignment: .trailing)
                     }
-                    
+
                     if let valueLabel {
                         Text(valueLabel)
                             .font(.caption)
                             .foregroundStyle(.primary)
                             .position(x: min(max(12, indicatorX), totalWidth - 12), y: max(0, totalHeight/2 - lineThickness/2 - 10))
                     }
-                    
+
                     if let label {
                         VStack {
                             HStack {
@@ -241,10 +242,9 @@ struct ReviewView: View {
             }
         }
     }
-    
 }
 
-#Preview("Screen4") {
+#Preview {
     ReviewView(
         LGBW: .constant(5),
         elapsedTime: .constant(120),
