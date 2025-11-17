@@ -12,7 +12,7 @@ struct Settings: View {
             case .system: return "Default"
             case .light: return "Light"
             case .dark: return "Dark"
-            
+                
             }
         }
     }
@@ -32,7 +32,8 @@ struct Settings: View {
     }
     
     @AppStorage("fontSize") private var fontSize: Double = 28
-    
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
+    @State private var showReplayAlert = false
     
     private enum FontSizeChoice: Hashable, CaseIterable, Identifiable {
         case extraSmall
@@ -135,7 +136,6 @@ struct Settings: View {
                 }
                 Section(header: Text("Beta Features")){
                     HStack{
-            
                         Toggle("Enable Beta Feature", isOn: $isBeta)
                     }
                     

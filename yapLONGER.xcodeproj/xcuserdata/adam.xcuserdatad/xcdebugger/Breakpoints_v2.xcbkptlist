@@ -46,8 +46,8 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "35"
             endingLineNumber = "35"
-            landmarkName = "AudioPlaybackCoordinator"
-            landmarkType = "3">
+            landmarkName = "playSound(named:withExtension:)"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

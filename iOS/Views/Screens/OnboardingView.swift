@@ -99,18 +99,6 @@ struct OnboardingView: View {
                 .indexViewStyle(.page(backgroundDisplayMode: .always))
                 
                 Spacer()
-                
-                // Page indicators with custom styling
-                HStack(spacing: 8) {
-                    ForEach(0..<pages.count, id: \.self) { index in
-                        Circle()
-                            .fill(index == currentPage ? pages[currentPage].highlightColor : Color.gray.opacity(0.3))
-                            .frame(width: index == currentPage ? 10 : 8, height: index == currentPage ? 10 : 8)
-                            .animation(.spring(response: 0.3), value: currentPage)
-                    }
-                }
-                .padding(.bottom, 8)
-                
                 // Navigation buttons
                 HStack(spacing: 20) {
                     if currentPage > 0 {
@@ -136,7 +124,6 @@ struct OnboardingView: View {
                     }
                     
                     Spacer()
-                    
                     Button(action: {
                         if currentPage < pages.count - 1 {
                             withAnimation(.spring(response: 0.3)) {
@@ -171,8 +158,6 @@ struct OnboardingView: View {
                         .shadow(color: pages[currentPage].highlightColor.opacity(0.4), radius: 8, x: 0, y: 4)
                     }
                 }
-                .padding(.horizontal, 30)
-                .padding(.bottom, 30)
             }
         }
     }

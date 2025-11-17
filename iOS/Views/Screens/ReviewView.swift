@@ -162,7 +162,6 @@ struct ReviewView: View {
     }
 
     private func updateWPMFromBindings() {
-        // Compute words per minute safely from wordCount and elapsedTime (seconds)
         guard elapsedTime > 0 else {
             WPM = 0
             return
@@ -206,162 +205,82 @@ struct ReviewView: View {
                         .foregroundColor(.red)
             
 #endif
-                Section("Result") {
-                    DisclosureGroup(isExpanded: $isWPMExpanded) {
-                        SemiCircleGauge(
-                            progress: max(0.0, min(1.0, Double(WPM) / 240.0)),
-                            highlight: (100.0/240.0)...(120.0/240.0),
-                            minLabel: "0",
-                            maxLabel: "240",
-                            valueLabel: "\(WPM)"
-                        )
-                        .frame(height: 80)
-                        .padding(.top, 8)
-                    } label: {
-                        HStack {
-                            Text("Words per minute")
-                            Spacer()
-                            Text("\(WPM)")
+                Form {
+                    Section("Result") {
+                        DisclosureGroup(isExpanded: $isWPMExpanded) {
+                            SemiCircleGauge(
+                                progress: max(0.0, min(1.0, Double(WPM) / 180.0)),
+                                highlight: (100.0/180.0)...(120.0/180.0),
+                                minLabel: "0",
+                                maxLabel: "180 wpm",
+                                valueLabel: "\(WPM)"
+                            )
+                            .frame(height: 80)
+                            .padding(.top, 8)
+
+                            Text("Best WPM is 120. The green band shows the ideal range.")
+                                .font(.footnote)
                                 .foregroundStyle(.secondary)
-                        }
-                    }
-
-                    DisclosureGroup(isExpanded: $isConsistencyExpanded) {
-                        SemiCircleGauge(
-                            progress: max(0.0, min(1.0, Double(CIS) / 100.0)),
-                            highlight: (75.0/100.0)...(85.0/100.0),
-                            minLabel: "0%",
-                            maxLabel: "100%",
-                            valueLabel: "\(CIS)%"
-                        )
-                        .frame(height: 80)
-                        .padding(.top, 8)
-                    } label: {
-                        HStack {
-                            Text("Consistency in speech (%)")
-                            Spacer()
-                            Text("\(Int(deriative.rounded()))%")
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                }
-                Section("Playback") {
-                    VStack(spacing: 8) {
-                        Slider(
-                            value: Binding(
-                                get: { duration > 0 ? currentTime : 0 },
-                                set: { newValue in
-                                    currentTime = min(max(0, newValue), duration)
-                                }
-                            ),
-                            in: 0...max(duration, 0.001),
-                            onEditingChanged: { editing in
-                                isScrubbing = editing
-                                if !editing, let player = audioPlayer {
-                                    player.currentTime = currentTime
-                                    if player.isPlaying {
-                                        startProgressTimer()
-                                    }
-                                }
-                            }
-                        )
-
-                        HStack {
-                            Text(formatTime(currentTime))
-                            Spacer()
-                            Text(formatTime(duration))
-                        }
-                        .font(.caption)
-                        .monospacedDigit()
-
-                        Button {
-                            configureAudioSessionForPlayback()
-
-                            if let player = audioPlayer {
-                                if player.isPlaying {
-                                    player.pause()
-                                    progressTimer?.invalidate()
-                                    progressTimer = nil
-                                    isPlaying = false
-                                } else {
-                                    if lastPreparedURL == nil {
-                                        refreshAndPrepareBest()
-                                    }
-                                    audioPlayer?.currentTime = currentTime
-                                    audioPlayer?.play()
-                                    startProgressTimer()
-                                    isPlaying = true
-                                }
-                            } else {
-                                refreshAndPrepareBest()
-                                if audioPlayer != nil {
-                                    audioPlayer?.currentTime = currentTime
-                                    audioPlayer?.play()
-                                    startProgressTimer()
-                                    isPlaying = true
-                                } else {
-                                    print("No recording available to play.")
-                                }
-                            }
+                                .padding(.top, 4)
                         } label: {
-                            Label(isPlaying ? "Pause" : "Play", systemImage: isPlaying ? "pause.fill" : "play.fill")
+                            HStack {
+                                Text("Words per minute")
+                                Spacer()
+                                Text("\(WPM)")
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+
+                        DisclosureGroup(isExpanded: $isConsistencyExpanded) {
+                            SemiCircleGauge(
+                                progress: max(0.0, min(1.0, Double(CIS) / 100.0)),
+                                highlight: (75.0/100.0)...(85.0/100.0),
+                                minLabel: "0%",
+                                maxLabel: "100%",
+                                valueLabel: "\(CIS)%"
+                            )
+                            .frame(height: 80)
+                            .padding(.top, 8)
+
+                            Text("Best consistency (CIS) is 80–85%. The green band shows the ideal range.")
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                                .padding(.top, 4)
+                        } label: {
+                            HStack {
+                                Text("Consistency in speech (%)")
+                                Spacer()
+                                Text("\(Int(deriative.rounded()))%")
+                                    .foregroundStyle(.secondary)
+                            }
                         }
                     }
-                }
 
-           
-            }
-            .navigationTitle("Review")
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showInfo = true
-                    } label: {
-                        Image(systemName: "info.circle")
-                    }
-                    .accessibilityLabel("Show scoring info")
+                    Screen5()
                 }
-            }
-            .alert("Scoring tips", isPresented: $showInfo) {
-                Button("OK", role: .cancel) { }
-            } message: {
-                Text("Best WPM is 120. Best consistency (CIS) is 80–85%. Best score is shown in green in the bar below.")
-            }
-            .onAppear {
-                if !isRunningInPreviews {
-                    configureAudioSessionForPlayback()
-                    progressTimer?.invalidate()
-                    progressTimer = nil
-                    audioPlayer = nil
-                    currentTime = 0
-                    duration = 0
-                    lastPreparedURL = nil
-                    refreshAndPrepareBest()
+                .onAppear {
+                    updateWPMFromBindings()
+                    updateScores()
+                    CIS = Int(deriative.rounded())
                 }
-
-                updateWPMFromBindings()
-                updateScores()
-                CIS = Int(deriative.rounded())
+                .onChange(of: WPM) { _, _ in updateScores() }
+                .onChange(of: LGBW) { _, _ in updateScores() }
+                .onChange(of: CIS) { _, _ in updateScores() }
+                .onChange(of: elapsedTime) { _, _ in
+                    updateWPMFromBindings()
+                    updateScores()
+                }
+                .onChange(of: wordCount) { _, _ in
+                    updateWPMFromBindings()
+                    updateScores()
+                }
+                .onChange(of: deriative) { _, newValue in
+                    CIS = Int(newValue.rounded())
+                    updateScores()
+                }
+                .navigationTitle("Review")
             }
-            .onDisappear {
-                progressTimer?.invalidate()
-                progressTimer = nil
-            }
-            .onChange(of: WPM) { _, _ in updateScores() }
-            .onChange(of: LGBW) { _, _ in updateScores() }
-            .onChange(of: CIS) { _, _ in updateScores() }
-            .onChange(of: elapsedTime) { _, _ in
-                updateWPMFromBindings()
-                updateScores()
-            }
-            .onChange(of: wordCount) { _, _ in
-                updateWPMFromBindings()
-                updateScores()
-            }
-            .onChange(of: deriative) { _, newValue in
-                CIS = Int(newValue.rounded())
-                updateScores()
-            }
+            .navigationBarBackButtonHidden(true)
         }
     }
 
@@ -382,6 +301,9 @@ struct ReviewView: View {
                 let totalHeight = geo.size.height
                 let lineThickness = max(10, min(16, geo.size.height * 2))
                 let clamped = max(0.0, min(1.0, progress))
+                let centerX = totalWidth / 2
+                let delta = abs(clamped - 0.5)
+                let extent = (totalWidth / 2) * delta * 2
                 let isRight = clamped >= 0.5
                 let indicatorX = clamped * totalWidth
 
@@ -453,7 +375,7 @@ struct ReviewView: View {
     }
 }
 
-#Preview("Screen4") {
+#Preview {
     ReviewView(
         LGBW: .constant(5),
         elapsedTime: .constant(120),
