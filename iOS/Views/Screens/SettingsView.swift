@@ -16,7 +16,7 @@ struct Settings: View {
             }
         }
     }
-    
+    @AppStorage("betashit") private var isBeta: Bool = false
     @AppStorage("appColorScheme") private var storedFlavorRawValue: String = ColourScheme.system.rawValue
     
     private var storedColourScheme: ColourScheme {
@@ -132,6 +132,13 @@ struct Settings: View {
                         }
                         .transition(.opacity.combined(with: .move(edge: .top)))
                     }
+                }
+                Section(header: Text("Beta Features")){
+                    HStack{
+            
+                        Toggle("Enable Beta Feature", isOn: $betaFeatureIsOn)
+                    }
+                    
                 }
                 NavigationLink {
                     Acknowledgements()
