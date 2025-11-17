@@ -12,7 +12,7 @@ struct Settings: View {
             case .system: return "Default"
             case .light: return "Light"
             case .dark: return "Dark"
-            
+                
             }
         }
     }
@@ -139,16 +139,6 @@ struct Settings: View {
                         Toggle("Enable Beta Feature", isOn: $isBeta)
                     }
                     
-                }
-                Section(header: Text("Tutorial")) {
-                    Button {
-                        showReplayAlert = true
-                    } label: {
-                        HStack {
-                            Image(systemName: "arrow.counterclockwise")
-                            Text("Replay Onboarding")
-                        }
-                    }
                 }
                 NavigationLink {
                     Acknowledgements()
