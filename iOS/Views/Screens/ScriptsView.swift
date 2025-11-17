@@ -17,10 +17,12 @@ struct Screen1: View {
                                     // Navigate to Screen 2 when beta is disabled
                                     Screen2(title: $item.title, script: $item.scriptText)
                                 }
-                                Text(item.title)
+                                } label: {
+                                    Text(item.title)
+                                }
                             }
-                        }
                         .onDelete(perform: deleteItems)
+                        }
                     }
                 }
                 VStack {
@@ -46,7 +48,6 @@ struct Screen1: View {
             }
             .navigationTitle("Scripts")
         }
-    }
     
     private func deleteItems(at offsets: IndexSet) {
         viewModel.scriptItems.remove(atOffsets: offsets)
