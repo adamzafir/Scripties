@@ -83,11 +83,10 @@ struct Screen2: View {
             }
             .onChange(of: script) { _, newValue in
                 wordCount = newValue.split { $0.isWhitespace }.count
-                // Mark as typing and debounce reset
                 isTyping = true
                 typingResetTask?.cancel()
                 typingResetTask = Task {
-                    try? await Task.sleep(nanoseconds: 700_000_000) // ~0.7s after last change
+                    try? await Task.sleep(nanoseconds: 700_000_000)
                     await MainActor.run { isTyping = false }
                 }
             }
@@ -133,11 +132,11 @@ struct Screen2: View {
                         } label: {
                             Text("Teleprompter")
                         }
-                        Button {
-                            showScreen = true
-                        } label: {
-                            Text("Keywords")
-                        }
+                        // Button {
+                        //     showScreen = true
+                        // } label: {
+                        //     Text("Keywords") // COMMENTED OUT: beta feature
+                        // }
                     } label: {
                         Image(systemName: "play.fill")
                     }
@@ -170,6 +169,7 @@ struct Screen2: View {
                         
                         """)
                     .font(.headline)
+                    .monospacedDigit()
                     .padding(.horizontal, 16)
                     .padding(.top)
                     .glassEffect()
@@ -183,11 +183,11 @@ struct Screen2: View {
             }
         }
         .fullScreenCover(isPresented: $showScreent) {
-            Screen3Teleprompter(title: $title, script: $script, WPM: $WPM, timer: timer, isPresented: $showScreent)
+            Screen3Teleprompter(title: $title, script: $script, WPM: $WPM, isPresented: $showScreent)
         }
-        .fullScreenCover(isPresented: $showScreen) {
-            Screen3Keywords(title: $title, script: $script)
-        }
+        // .fullScreenCover(isPresented: $showScreen) {
+        //     Screen3Keywords(title: $title, script: $script) // COMMENTED OUT: beta feature
+        // }
         .onDisappear {
             typingResetTask?.cancel()
         }

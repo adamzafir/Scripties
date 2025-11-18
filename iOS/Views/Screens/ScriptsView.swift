@@ -2,7 +2,7 @@ import SwiftUI
 
 struct Screen1: View {
     @ObservedObject var viewModel: Screen2ViewModel
-    @AppStorage("betashit") private var isBeta: Bool = false
+    // @AppStorage("betashit") private var isBeta: Bool = false // COMMENTED OUT: beta flag not used
     @State private var selectedID: ScriptItem.ID? = nil
     
     var body: some View {
@@ -23,11 +23,9 @@ struct Screen1: View {
                         Form {
                             ForEach($viewModel.scriptItems) { $item in
                                 NavigationLink(tag: item.id, selection: $selectedID) {
-                                    if isBeta {
-                                        Screen2(title: $item.title, script: $item.scriptText)
-                                    } else {
-                                        Screen22(title: $item.title, script: $item.scriptText)
-                                    }
+                                    // Always show the main editor; beta/keywords disabled
+                                    Screen22(title: $item.title, script: $item.scriptText)
+                                        .onAppear { viewModel.markAccessed(id: item.id) }
                                 } label: {
                                     Text(item.title)
                                 }

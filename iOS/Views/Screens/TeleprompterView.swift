@@ -3,337 +3,298 @@ import AVFoundation
 import Speech
 import Accelerate
 
-func splitIntoLinesByWidth(_ text: String, font: UIFont, maxWidth: CGFloat) -> [String] {
-    let words = text.components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }
-    var lines: [String] = []
-    var currentLine = ""
-    for word in words {
-        let testLine = currentLine.isEmpty ? word : "\(currentLine) \(word)"
-        let size = (testLine as NSString).size(withAttributes: [.font: font])
-        if size.width <= maxWidth {
-            currentLine = testLine
+private func splitLines(_ text: String, font: UIFont, width: CGFloat) -> [String] {
+    let words = text.split(whereSeparator: \.isWhitespace).map(String.init)
+    var out:[String]=[]
+    var line=""
+    for w in words {
+        let t = line.isEmpty ? w : "\(line) \(w)"
+        if (t as NSString).size(withAttributes:[.font:font]).width <= width {
+            line=t
         } else {
-            if !currentLine.isEmpty { lines.append(currentLine) }
-            currentLine = word
+            if !line.isEmpty { out.append(line) }
+            line=w
         }
     }
-    if !currentLine.isEmpty { lines.append(currentLine) }
-    return lines
+    if !line.isEmpty { out.append(line) }
+    return out
 }
 
-private func normalizeAndTokenize(_ text: String) -> [String] {
-    let lowered = text.lowercased()
-    let stripped = lowered.unicodeScalars.map { CharacterSet.punctuationCharacters.contains($0) ? " " : String($0) }.joined()
-    return stripped.components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }
-}
-
-private func isSubsequence(_ small: [String], in big: [String]) -> Bool {
-    guard !small.isEmpty else { return true }
-    var i = 0
-    for token in big {
-        if token == small[i] {
-            i += 1
-            if i == small.count { return true }
-        }
-    }
-    return false
+private func normTokens(_ s:String)->[String]{
+    s.lowercased()
+     .unicodeScalars
+     .map{ CharacterSet.punctuationCharacters.contains($0) ? " " : String($0) }
+     .joined()
+     .split(whereSeparator:\.isWhitespace)
+     .map(String.init)
 }
 
 struct Screen3Teleprompter: View {
-    @EnvironmentObject private var recordingStore: RecordingStore
-    @State private var showAccessory = false
-    let synthesiser = AVSpeechSynthesizer()
-    let audioEngine = AVAudioEngine()
-    let speechRecogniser = SFSpeechRecognizer(locale: .current)
-    @State var transcription = ""
-    @State var isRecording = false
-    @Environment(\.dismiss) private var dismiss
 
-    @Binding var title: String
-    @Binding var script: String
-    @State var scriptLines: [String] = []
-    @State private var isLoading = true
-    @AppStorage("fontSize") var fontSize: Double = 28
-    @Binding var WPM :Int
-
-    @State private var tokensPerLine: [[String]] = []
-    @State private var currentLineIndex: Int = 0
-    @State private var lastAdvanceTime: Date = .distantPast
-    @State private var navigateToScreen4 = false
-
-    @State var secondsPerWord: [Double] = []
-    @State var scriptWords: [String] = []
-    @State var timer: TimerManager
-    @State var transscriptionChangeCount: Int = 0
-
-    @State private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
-    @State private var recognitionTask: SFSpeechRecognitionTask?
-
-    @State private var elapsedTime: Int = 0
-    @State private var wordCount: Int = 0
-    @State private var LGBW: Int = 0
-    @State private var LGBWSeconds: TimeInterval = 0
-    @State private var meteringTimer: Timer? = nil
-    @State private var isCurrentlySilent: Bool = true
-    @State private var lastSilenceStartTime: Date? = nil
-    @State private var silenceDurations: [TimeInterval] = []
-    @State private var wallTimer: Timer? = nil
-
-    @State var deviation: Double = 0
-    private let silenceThreshold: Float = -40.0
-    private let minSilenceDuration: TimeInterval = 0.25
-    private let meteringInterval: TimeInterval = 0.05
-    @Binding var isPresented: Bool
-
-    private func recomputeLines() {
-        let font = UIFont.systemFont(ofSize: CGFloat(fontSize))
-        let maxWidth = UIScreen.main.bounds.width - 32
-        scriptLines = splitIntoLinesByWidth(script, font: font, maxWidth: maxWidth)
-        tokensPerLine = scriptLines.map { normalizeAndTokenize($0) }
-        currentLineIndex = min(currentLineIndex, max(0, scriptLines.count - 1))
-    }
-
-    private func tryAdvance(using recognizedTokens: [String], scrollProxy: ScrollViewProxy) {
-        guard currentLineIndex < tokensPerLine.count else { return }
-        let now = Date()
-        if now.timeIntervalSince(lastAdvanceTime) < 0.3 { return }
-        let expected = tokensPerLine[currentLineIndex]
-        if expected.isEmpty || isSubsequence(expected, in: recognizedTokens) {
-            let nextIndex = currentLineIndex + 1
-            if nextIndex <= scriptLines.count {
-                currentLineIndex = min(nextIndex, scriptLines.count - 1)
-                lastAdvanceTime = now
-                withAnimation(.easeInOut) { scrollProxy.scrollTo(currentLineIndex, anchor: .top) }
+    private enum FS:Hashable,CaseIterable,Identifiable{
+        case xs,s,def,l,xl,custom
+        var id:Self{self}
+        var t:String{
+            switch self {
+            case .xs:"XS"; case .s:"S"; case .def:"Default"; case .l:"L"; case .xl:"XL"; case .custom:"Custom"
             }
+        }
+        var preset:Double?{
+            switch self{
+            case .xs:10; case .s:20; case .def:28; case .l:40; case .xl:50; default:nil
+            }
+        }
+        static func from(_ v:Double)->FS{
+            switch v{case 10:.xs;case 20:.s;case 28:.def;case 40:.l;case 50:.xl;default:.custom}
         }
     }
 
-    private func startWallClockTimer() {
+    @EnvironmentObject var recordingStore:RecordingStore
+    @Environment(\.dismiss) private var dismiss
+    @Binding var title:String
+    @Binding var script:String
+    @Binding var WPM:Int
+    @Binding var isPresented:Bool
+    
+    @AppStorage("fontSize") private var fontSize:Double = 28
+    @State private var fontChoice:FS = .def
+    @State private var customSize:Double = 28
+
+    @State private var scriptLines:[String]=[]
+    @State private var tokensPerLine:[[String]]=[]
+    @State private var currentLine=0
+
+    @State private var transcription=""
+    @State private var isRecording=false
+    @State private var navigate=false
+    @State private var isLoading=true
+
+    @State private var wallTimer:Timer?
+    @State private var elapsed=0
+    @State private var wordCount=0
+
+    @State private var silenceDurations:[TimeInterval]=[]
+    @State private var LGBWSeconds:TimeInterval=0
+    @State private var isSilent=true
+    @State private var lastSilenceStart:Date?
+
+    @State private var audioEngine=AVAudioEngine()
+    @State private var req:SFSpeechAudioBufferRecognitionRequest?
+    @State private var task:SFSpeechRecognitionTask?
+
+    private let silenceThresh:Float = -40
+    private let minSilence:TimeInterval = 0.25
+    private let recogniser=SFSpeechRecognizer(locale:.current)
+
+    private func recompute() {
+        let f = UIFont.systemFont(ofSize: CGFloat(fontSize))
+        scriptLines = splitLines(script, font:f, width: UIScreen.main.bounds.width - 32)
+        tokensPerLine = scriptLines.map(normTokens)
+    }
+
+    private func startWall(){
         wallTimer?.invalidate()
-        elapsedTime = 0
-        wallTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in elapsedTime += 1 }
-        RunLoop.current.add(wallTimer!, forMode: .common)
+        elapsed=0
+        wallTimer = Timer.scheduledTimer(withTimeInterval:1,repeats:true){_ in elapsed+=1}
+        RunLoop.current.add(wallTimer!, forMode:.common)
     }
 
-    private func stopWallClockTimer() {
+    private func stopWall(){
         wallTimer?.invalidate()
-        wallTimer = nil
+        wallTimer=nil
     }
 
-    private func startSilenceTracking() {
-        isCurrentlySilent = true
-        lastSilenceStartTime = Date()
-        silenceDurations.removeAll()
-        LGBWSeconds = 0
-        meteringTimer?.invalidate()
-        meteringTimer = Timer.scheduledTimer(withTimeInterval: meteringInterval, repeats: true) { _ in }
-        RunLoop.current.add(meteringTimer!, forMode: .common)
-    }
-
-    private func stopSilenceTracking() {
-        meteringTimer?.invalidate()
-        meteringTimer = nil
-    }
-
-    private func handleLevel(_ levelDB: Float) {
-        let now = Date()
-        if levelDB <= silenceThreshold {
-            if !isCurrentlySilent {
-                isCurrentlySilent = true
-                lastSilenceStartTime = now
-            }
+    private func handleLevel(_ db:Float){
+        let now=Date()
+        if db <= silenceThresh {
+            if !isSilent { isSilent=true; lastSilenceStart=now }
         } else {
-            if isCurrentlySilent {
-                isCurrentlySilent = false
-                if let silenceStart = lastSilenceStartTime {
-                    let duration = now.timeIntervalSince(silenceStart)
-                    if duration >= minSilenceDuration {
-                        silenceDurations.append(duration)
-                        if duration > LGBWSeconds { LGBWSeconds = duration }
+            if isSilent {
+                isSilent=false
+                if let st=lastSilenceStart {
+                    let d=now.timeIntervalSince(st)
+                    if d>=minSilence {
+                        silenceDurations.append(d)
+                        if d>LGBWSeconds { LGBWSeconds=d }
                     }
                 }
-                lastSilenceStartTime = nil
             }
         }
     }
 
-    private func finalizeSilenceIfNeeded() {
-        if isCurrentlySilent, let silenceStart = lastSilenceStartTime {
-            let duration = Date().timeIntervalSince(silenceStart)
-            if duration >= minSilenceDuration {
-                silenceDurations.append(duration)
-                if duration > LGBWSeconds { LGBWSeconds = duration }
+    private func finalizeSilence(){
+        if isSilent, let st=lastSilenceStart {
+            let d=Date().timeIntervalSince(st)
+            if d>=minSilence {
+                silenceDurations.append(d)
+                if d>LGBWSeconds { LGBWSeconds=d }
             }
         }
     }
 
-    private func dBLevel(from buffer: AVAudioPCMBuffer) -> Float {
-        guard let channelData = buffer.floatChannelData else { return -120.0 }
-        let channel = channelData[0]
-        let frameLength = Int(buffer.frameLength)
-        if frameLength == 0 { return -120.0 }
-        var sum: Float = 0.0
-        vDSP_measqv(channel, 1, &sum, vDSP_Length(frameLength))
-        let rms = sqrtf(sum)
-        let db = 20.0 * log10f(max(rms, 1e-7))
-        return db.isFinite ? db : -120.0
+    private func dB(_ b:AVAudioPCMBuffer)->Float{
+        guard let cd=b.floatChannelData else{return -120}
+        let c=cd[0]; let n=Int(b.frameLength)
+        if n==0 {return -120}
+        var sum:Float=0
+        vDSP_measqv(c,1,&sum,vDSP_Length(n))
+        let rms=sqrtf(sum)
+        let db=20*log10f(max(rms,1e-7))
+        return db.isFinite ? db : -120
     }
 
-    private func startSpeechRecognition() {
-        guard recognitionTask == nil, recognitionRequest == nil else { return }
-        guard let recogniser = speechRecogniser, recogniser.isAvailable else { return }
-        let audioSession = AVAudioSession.sharedInstance()
-        try? audioSession.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .allowBluetooth])
-        try? audioSession.setActive(true)
+    private func startRecog(){
+        SFSpeechRecognizer.requestAuthorization{_ in}
+        let s=AVAudioSession.sharedInstance()
+        try? s.setCategory(.playAndRecord,mode:.default,options:[.defaultToSpeaker,.allowBluetooth])
+        try? s.setActive(true)
 
-        let request = SFSpeechAudioBufferRecognitionRequest()
-        request.shouldReportPartialResults = true
-        recognitionRequest = request
+        let r=SFSpeechAudioBufferRecognitionRequest()
+        r.shouldReportPartialResults=true
+        req=r
 
-        let inputNode = audioEngine.inputNode
-        let format = inputNode.outputFormat(forBus: 0)
-        inputNode.removeTap(onBus: 0)
-        inputNode.installTap(onBus: 0, bufferSize: 1024, format: format) { buffer, _ in
-            request.append(buffer)
-            let level = dBLevel(from: buffer)
-            handleLevel(level)
+        let input=audioEngine.inputNode
+        let fmt=input.outputFormat(forBus:0)
+        input.removeTap(onBus:0)
+        input.installTap(onBus:0,bufferSize:1024,format:fmt){buf,_ in
+            r.append(buf)
+            self.handleLevel(self.dB(buf))
         }
 
         audioEngine.prepare()
         try? audioEngine.start()
 
-        recognitionTask = recogniser.recognitionTask(with: request) { result, error in
-            if let result { transcription = result.bestTranscription.formattedString }
-            if error != nil { stopSpeechRecognition() }
+        task = recogniser?.recognitionTask(with:r){res,err in
+            if let res { self.transcription=res.bestTranscription.formattedString }
+            if err != nil { self.stopRecog() }
         }
     }
 
-    private func stopSpeechRecognition() {
+    private func stopRecog(){
         audioEngine.stop()
-        audioEngine.inputNode.removeTap(onBus: 0)
+        audioEngine.inputNode.removeTap(onBus:0)
         audioEngine.reset()
-        recognitionRequest?.endAudio()
-        recognitionTask?.cancel()
-        recognitionTask = nil
-        recognitionRequest = nil
-        try? AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
+        req?.endAudio()
+        task?.cancel()
+        req=nil
+        task=nil
+        try? AVAudioSession.sharedInstance().setActive(false)
+    }
+
+    private func tryAdvance(_ tokens:[String], _ proxy:ScrollViewProxy){
+        if currentLine >= tokensPerLine.count { return }
+        guard let last = tokensPerLine[currentLine].last else { return }
+        if tokens.contains(last) {
+            currentLine += 1
+            withAnimation(.easeInOut){
+                proxy.scrollTo(currentLine,anchor:.top)
+            }
+        }
+    }
+
+    private func computeCIS()->Double {
+        if silenceDurations.isEmpty { return 100 }
+        let m=silenceDurations.reduce(0,+)/Double(silenceDurations.count)
+        let v=silenceDurations.reduce(0){$0+pow($1-m,2)}/Double(silenceDurations.count)
+        let sd=sqrt(v)
+        let base=100/(1+sd)
+        let p = LGBWSeconds<=0.5 ? 0 : min(40,(LGBWSeconds-0.5)*25)
+        return max(0,base-p)
     }
 
     var body: some View {
         NavigationStack {
-            NavigationLink(isActive: $navigateToScreen4) {
-                ReviewView(LGBW: $LGBW, elapsedTime: $elapsedTime, wordCount: $wordCount, deriative: $deviation, isCoverPresented: $isPresented)
-            } label: { EmptyView() }
+            NavigationLink("", destination:
+                ReviewView(
+                    LGBW:Binding(get:{Int(LGBWSeconds)},set:{_ in}),
+                    elapsedTime:$elapsed,
+                    wordCount:$wordCount,
+                    deriative:Binding(get:{computeCIS()},set:{_ in}),
+                    isCoverPresented:$isPresented
+                ), isActive:$navigate
+            )
 
             VStack {
                 if isLoading {
                     ProgressView("Loading...")
-                        .progressViewStyle(CircularProgressViewStyle())
-                        .padding()
                 } else {
                     ScrollViewReader { proxy in
                         ScrollView {
-                            VStack(alignment: .leading, spacing: 12) {
-                                ForEach(Array(scriptLines.enumerated()), id: \.offset) { index, line in
-                                    Text(line)
-                                        .font(.system(size: CGFloat(fontSize)))
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                        .id(index)
-                                        .background(index == currentLineIndex ? Color.primary.opacity(0.08) : Color.clear)
+                            VStack(alignment:.leading){
+                                ForEach(Array(scriptLines.enumerated()),id:\.offset){i,l in
+                                    Text(l)
+                                        .font(.system(size:CGFloat(fontSize)))
+                                        .id(i)
+                                        .padding(.vertical,4)
+                                        .background(i==currentLine ? Color.primary.opacity(0.1):.clear)
                                 }
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                            }.padding()
                         }
-                        .onChange(of: currentLineIndex) { _, n in
-                            withAnimation(.easeInOut) { proxy.scrollTo(n, anchor: .top) }
-                        }
-                        .onAppear {
-                            if !scriptLines.isEmpty { proxy.scrollTo(0, anchor: .top) }
-                        }
-                        .onChange(of: transcription) { _, newValue in
-                            let tokens = normalizeAndTokenize(newValue)
-                            tryAdvance(using: tokens, scrollProxy: proxy)
-                            if !scriptWords.isEmpty && transcription.contains(scriptWords[0]) {
-                                transscriptionChangeCount += 1
-                                scriptWords.remove(at: 0)
-                                if transscriptionChangeCount % 5 == 0 {
-                                    let t = timer.elapsedSeconds
-                                    secondsPerWord.append(t)
-                                    timer.reset()
-                                    timer.start()
-                                }
-                            }
+                        .onChange(of: transcription){ _,v in
+                            tryAdvance(normTokens(v),proxy)
                         }
                     }
                 }
 
-                Spacer()
-
-                VStack {
-                    #if DEBUG
-                    Text("DEBUG: \(secondsPerWord.description)")
-                        .font(.caption)
-                        .foregroundColor(.red)
-                    #endif
-                    Button {
-                        let newValue = !isRecording
-                        isRecording = newValue
-                        showAccessory.toggle()
-                        if newValue {
-                            timer.stop()
-                            timer.reset()
-                            recordingStore.startRecording()
-                            startWallClockTimer()
-                            SFSpeechRecognizer.requestAuthorization { _ in }
-                            Task { _ = await AVAudioApplication.requestRecordPermission() }
-                            startSilenceTracking()
-                            startSpeechRecognition()
-                        } else {
-                            recordingStore.stopRecording()
-                            stopSpeechRecognition()
-                            stopWallClockTimer()
-                            finalizeSilenceIfNeeded()
-                            stopSilenceTracking()
-                            let longest = max(LGBWSeconds, silenceDurations.max() ?? 0)
-                            LGBW = Int(longest.rounded())
-                            navigateToScreen4 = true
+                Button {
+                    isRecording.toggle()
+                    if isRecording {
+                        silenceDurations=[]
+                        LGBWSeconds=0
+                        isSilent=true
+                        lastSilenceStart=Date()
+                        recordingStore.startRecording()
+                        startWall()
+                        startRecog()
+                    } else {
+                        recordingStore.stopRecording()
+                        stopRecog()
+                        stopWall()
+                        finalizeSilence()
+                        navigate=true
+                    }
+                } label: {
+                    RecordButtonView(isRecording:$isRecording)
+                }
+                .padding(.bottom,20)
+            }
+            .navigationTitle(title)
+            .toolbar {
+                ToolbarItem(placement:.topBarTrailing){
+                    Menu{
+                        Picker("Font Size",selection:$fontChoice){
+                            ForEach(FS.allCases){c in Text(c.t).tag(c) }
+                        }
+                        .onChange(of:fontChoice){_,v in
+                            if let p=v.preset {
+                                fontSize=p
+                                customSize=p
+                            }
+                        }
+                        if fontChoice == .custom {
+                            Slider(value:$customSize,in:10...60,step:1)
+                                .onChange(of:customSize){_,v in fontSize=v }
                         }
                     } label: {
-                        RecordButtonView(isRecording: $isRecording)
+                        Image(systemName:"textformat.size")
                     }
-                    .sensoryFeedback(.selection, trigger: showAccessory)
                 }
 
-                Text(transcription.isEmpty ? "" : transcription)
-                    .lineLimit(3)
-                    .multilineTextAlignment(.leading)
-            }
-
-            .onAppear {
-                Task {
-                    scriptWords = script.components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }
-                    wordCount = script.split { $0.isWhitespace }.count
-                    recomputeLines()
-                    isLoading = false
-                }
-            }
-            .onChange(of: fontSize) { _, _ in recomputeLines() }
-            .onChange(of: script) { _, _ in
-                recomputeLines()
-                wordCount = script.split { $0.isWhitespace }.count
-            }
-
-            .navigationTitle(title)
-            .padding()
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button(action: { dismiss() }) {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 16, weight: .semibold))
+                ToolbarItem(placement:.topBarLeading){
+                    Button { dismiss() } label: {
+                        Image(systemName:"xmark")
                     }
                 }
             }
-            .navigationBarBackButtonHidden(true)
+            .onAppear{
+                fontChoice = FS.from(fontSize)
+                customSize = fontSize
+                wordCount = script.split(whereSeparator:\.isWhitespace).count
+                recompute()
+                isLoading=false
+            }
+            .onChange(of:fontSize){_,_ in recompute() }
+            .onChange(of:script){_,_ in wordCount = script.split(whereSeparator:\.isWhitespace).count; recompute() }
         }
     }
 }

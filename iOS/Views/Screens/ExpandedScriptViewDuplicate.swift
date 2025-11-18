@@ -4,7 +4,7 @@ import FoundationModels
 struct Screen22: View {
     @Binding var title: String
     @Binding var script: String
-
+    
     @FocusState private var isEditingScript: Bool
     @FocusState private var isEditingTitle: Bool
     
@@ -42,21 +42,26 @@ struct Screen22: View {
     
     var body: some View {
         NavigationStack {
-            VStack {
+            VStack(alignment: .leading, spacing: 0) {
                 if isLoading {
                     Spacer()
                     ZStack {
-                        VStack(spacing: 4) {
+                        VStack(spacing: 8) {
                             ProgressView("Loading...")
                                 .progressViewStyle(CircularProgressViewStyle())
-                                .padding()
+                                .padding(.bottom, 4)
                             Text("Powered By")
                                 .fontWeight(.medium)
                                 .font(.title3)
+                                .multilineTextAlignment(.center)
+                                .frame(maxWidth: .infinity, alignment: .center)
                             Text("Avyan Intelligence")
                                 .font(.system(size: 35, weight: .semibold))
                                 .appleIntelligenceGradient()
+                                .multilineTextAlignment(.center)
+                                .frame(maxWidth: .infinity, alignment: .center)
                         }
+                        .padding(.horizontal, 16)
                         VStack {
                             Spacer()
                             GlowEffect()
@@ -69,13 +74,17 @@ struct Screen22: View {
                         .focused($isEditingTitle)
                         .font(.title)
                         .fontWeight(.bold)
-                        .padding()
+                        .multilineTextAlignment(.leading)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     
                     ZStack(alignment: .topLeading) {
                         TextEditor(text: $script)
                             .focused($isEditingScript)
-                            .padding(.horizontal)
-                            .frame(maxHeight: .infinity)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                             .background(Color.clear)
                             .onChange(of: script) { _, newValue in
                                 wordCount = newValue.split { $0.isWhitespace }.count
@@ -89,10 +98,11 @@ struct Screen22: View {
                             }
                         
                         if script.isEmpty && !isEditingScript {
-                            Text("Start typing your script...")
-                                .foregroundStyle(.secondary)
+                            Text("Write something inspiring...")
+                                .foregroundColor(.secondary)
                                 .padding(.horizontal, 20)
-                                .padding(.top, 8)
+                                .padding(.top, 12)
+                                .frame(maxWidth: .infinity, alignment: .leading)
                                 .allowsHitTesting(false)
                         }
                     }
@@ -136,36 +146,43 @@ struct Screen22: View {
                 Button("Cancel", role: .cancel) {}
             }
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .topBarTrailing) {
                     HStack(spacing: 20) {
                         Button { showScreent = true } label: {
-                            Image(systemName: "play.fill")
+                            Image(systemName: "music.microphone")
                         }
-                        
-                        Button { showPromptDialog = true } label: {
-                            Image(systemName: "wand.and.stars")
-                        }
-                        
-                        Button {
-                            isEditingScript = false
-                            isEditingTitle = false
-                        } label: {
-                            Image(systemName: "checkmark")
-                        }
+                    }
+                }
+                
+                ToolbarItemGroup(placement: .keyboard) {
+                    Button {
+                        showPromptDialog = true
+                    } label: {
+                        Image(systemName: "wand.and.stars")
+                    }
+                    
+                    Spacer()
+                    
+                    Button {
+                        isEditingScript = false
+                    } label: {
+                        Image(systemName: "checkmark")
                     }
                 }
             }
         }
         .overlay(alignment: .bottom) {
             if showEstimate && !isEditingScript && !isTyping {
-                VStack {
+                VStack(spacing: 6) {
                     Text("""
                         Word Count: \(wordCount)
                         Estimated Time: \(wrdEstimateString(for: wordCount, wpm: WPM))
                         """)
                     .font(.headline)
-                    .padding(.horizontal, 16)
-                    .padding(.top)
+                    .multilineTextAlignment(.center)
+                    .monospacedDigit()
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 12)
                     .glassEffect()
                 }
             }
@@ -175,7 +192,6 @@ struct Screen22: View {
                 title: $title,
                 script: $script,
                 WPM: $WPM,
-                timer: timer,
                 isPresented: $showScreent
             )
         }
@@ -188,6 +204,6 @@ struct Screen22: View {
 #Preview {
     Screen22(
         title: .constant("untitled"),
-        script: .constant("This is a test script.")
+        script: .constant("")
     )
 }

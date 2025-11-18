@@ -33,11 +33,11 @@ class TimerManager: ObservableObject {
 
 //standard deviation
 extension Array where Element == Double {
-    func standardDeviation(from reference: Double) -> Double {
-        guard !isEmpty else { return 0.0 }
-        let mean = self.reduce(0.0) { $0 + Double($1) } / Double(count)
-        let variance = self.reduce(0.0) { $0 + pow(Double($1) - mean, 2) } / Double(count)
+    func standardDeviation() -> Double {
+        guard !isEmpty else { return 0 }
 
+        let mean = reduce(0, +) / Double(count)
+        let variance = reduce(0) { $0 + pow($1 - mean, 2) } / Double(count)
         return sqrt(variance)
     }
 }

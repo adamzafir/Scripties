@@ -12,11 +12,10 @@ struct Settings: View {
             case .system: return "Default"
             case .light: return "Light"
             case .dark: return "Dark"
-                
             }
         }
     }
-    @AppStorage("betashit") private var isBeta: Bool = false
+    // @AppStorage("betashit") private var isBeta: Bool = false // COMMENTED OUT: beta flag
     @AppStorage("appColorScheme") private var storedFlavorRawValue: String = ColourScheme.system.rawValue
     
     private var storedColourScheme: ColourScheme {
@@ -99,11 +98,9 @@ struct Settings: View {
                         set: { newChoice in
                             fontChoice = newChoice
                             if let preset = newChoice.presetValue {
-                                
                                 fontSize = preset
                                 customSize = preset
                             } else {
-                                
                                 customSize = min(max(fontSize, 10), 60)
                             }
                         }
@@ -133,12 +130,11 @@ struct Settings: View {
                         .transition(.opacity.combined(with: .move(edge: .top)))
                     }
                 }
-                Section(header: Text("Beta Features")){
-                    HStack{
-                        Toggle("Enable Beta Feature", isOn: $isBeta)
-                    }
-                    
-                }
+                
+                // Section(header: Text("Beta Features")) {
+                //     Toggle("Enable Beta Feature", isOn: $isBeta)
+                // }
+                
                 NavigationLink {
                     Acknowledgements()
                 } label: {
@@ -146,7 +142,6 @@ struct Settings: View {
                 }
             }
             .onAppear {
-                
                 let initialChoice = FontSizeChoice.fromStored(fontSize)
                 fontChoice = initialChoice
                 customSize = initialChoice.presetValue ?? min(max(fontSize, 10), 60)

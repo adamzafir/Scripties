@@ -20,157 +20,52 @@ struct ReviewView: View {
     // MARK: - Scoring state
     @State var WPM = 120
     @Binding var LGBW: Int
-    @State private var CIS = 70
-    @State private var score: Int = 2
-    @State private var scoreTwo: Double = 67
-    @State private var showInfo: Bool = false
-    @State private var isWPMExpanded: Bool = false
-    @State private var isConsistencyExpanded: Bool = false
     @Binding var elapsedTime: Int
     @Binding var wordCount: Int
     @Binding var deriative: Double
     @Binding var isCoverPresented: Bool
     @Environment(\.dismiss) private var dismiss
 
-    // MARK: - Audio helpers
-    private func configureAudioSessionForPlayback() {
-        do {
-            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [])
-            try AVAudioSession.sharedInstance().setActive(true)
-        } catch {
-            print("Audio session setup failed:", error)
-        }
+    @State private var CIS: Int = 0
+    @State private var scoreTwo: Double = 0
+    @State private var score: Int = 2
+    @State private var expandWPM = false
+    @State private var expandCIS = false
+
+    private func computeWPM() {
+        guard elapsedTime > 0 else { WPM = 0; return }
+        let min = Double(elapsedTime) / 60
+        WPM = max(0, Int(round(Double(wordCount) / min)))
     }
 
-    private func startProgressTimer() {
-        progressTimer?.invalidate()
-        let timer = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { _ in
-            guard let player = audioPlayer, !isScrubbing else { return }
-            currentTime = player.currentTime
-            if !player.isPlaying || currentTime >= duration {
-                progressTimer?.invalidate()
-                progressTimer = nil
-            }
-        }
-        progressTimer = timer
-        RunLoop.current.add(timer, forMode: .common)
+    private func wpmPct(_ v: Int) -> Double {
+        if v <= 120 { return Double(max(0, v)) }
+        return Double(min(200, v))
     }
 
-    private func fileSizeString(for url: URL) -> String {
-        let path = url.path
-        if let attrs = try? FileManager.default.attributesOfItem(atPath: path),
-           let size = attrs[.size] as? NSNumber {
-            return "\(size.intValue) bytes"
-        }
-        return "unknown size"
+    private func lgbwPct(_ v: Int) -> Double {
+        if v <= 5 { return 100 }
+        let over = min(10, max(6, v))
+        let steps = over - 5
+        return max(0, 100 - Double(steps) * 20)
     }
 
-    private func prepare(url: URL) {
-        audioPlayer?.stop()
-        audioPlayer = nil
-        duration = 0
-        currentTime = 0
-
-        configureAudioSessionForPlayback()
-
-        guard FileManager.default.fileExists(atPath: url.path) else {
-            print("Prepare failed: file does not exist at \(url)")
-            return
-        }
-
-        do {
-            let player = try AVAudioPlayer(contentsOf: url)
-            player.prepareToPlay()
-            audioPlayer = player
-            duration = player.duration
-            selectedURL = url
-            lastPreparedURL = url
-
-            currentTime = 0
-            audioPlayer?.currentTime = 0
-
-            print("Prepared URL:", url.lastPathComponent, "size:", fileSizeString(for: url), "duration:", duration)
-        } catch {
-            print("Failed to prepare recording:", error, "URL:", url)
-            audioPlayer = nil
-            duration = 0
-            currentTime = 0
-        }
+    private func cisPct(_ v: Int) -> Double {
+        if v >= 80 && v <= 85 { return 100 }
+        if v > 85 { return max(0, 100 - Double(v - 85) * 6) }
+        return Double(max(0, v))
     }
 
-    private func getBestCandidateURL() -> URL? {
-        if let u = recordingURL { return u }
-        if let u = recordingStore.latestRecordingURL { return u }
-        return audios.first
-    }
-
-    private func refreshAndPrepareBest() {
-        getAudios()
-        if let candidate = getBestCandidateURL() {
-            prepare(url: candidate)
-        } else {
-            print("No candidate URL available to prepare.")
-        }
-    }
-
-    // Avoid heavy audio/session work when running in SwiftUI previews
-    private var isRunningInPreviews: Bool {
-        ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
-    }
-
-    // MARK: - Scoring helpers
-    private func wpmPercentage(_ wpm: Int) -> Double {
-        if wpm <= 120 {
-            let pct = 100 + (wpm - 120)
-            return Double(max(0, min(100, pct)))
-        } else {
-            let pct = 100 + (wpm - 120)
-            return Double(max(0, min(200, pct)))
-        }
-    }
-
-    private func lgbwPercentage(_ lgbw: Int) -> Double {
-        if lgbw <= 5 { return 100 }
-        let over = min(10, max(6, lgbw))
-        let stepsAbove5 = over - 5
-        let pct = 100 - stepsAbove5 * 20
-        return Double(max(0, pct))
-    }
-
-    private func cisPercentage(_ cis: Int) -> Double {
-        if cis >= 80 && cis <= 85 { return 100 }
-        if cis > 85 {
-            let over = cis - 85
-            let pct = 100 - over * 6
-            return Double(max(0, min(100, pct)))
-        }
-        return Double(max(0, min(100, cis)))
-    }
-
-    private func computeScoreThreePoint(wpmPct: Double, lgbwPct: Double, cisPct: Double) -> Int {
-        let wpmIsIdeal = Int(round(wpmPct)) == 100
-        let lgbwIsIdeal = Int(round(lgbwPct)) == 100
-        let cisIsIdeal = CIS >= 80 && CIS <= 85
-        return (wpmIsIdeal && lgbwIsIdeal && cisIsIdeal) ? 3 : 2
-    }
-
-    private func updateScores() {
-        let wpmPct = wpmPercentage(WPM)
-        let lgbwPct = lgbwPercentage(LGBW)
-        let cisPct = cisPercentage(CIS)
-        let overall = (wpmPct + lgbwPct + cisPct) / 3.0
-        scoreTwo = max(0, min(100, overall))
-        score = computeScoreThreePoint(wpmPct: wpmPct, lgbwPct: lgbwPct, cisPct: cisPct)
-    }
-
-    private func updateWPMFromBindings() {
-        guard elapsedTime > 0 else {
-            WPM = 0
-            return
-        }
-        let minutes = Double(elapsedTime) / 60.0
-        let computed = Int(round(Double(wordCount) / minutes))
-        WPM = max(0, computed)
+    private func updateScore() {
+        let wp = wpmPct(WPM)
+        let lp = lgbwPct(LGBW)
+        let cp = cisPct(CIS)
+        let total = (wp + lp + cp) / 3
+        scoreTwo = max(0, min(100, total))
+        let idealWPM = Int(round(wp)) == 100
+        let idealLGBW = Int(round(lp)) == 100
+        let idealCIS = CIS >= 80 && CIS <= 85
+        score = (idealWPM && idealLGBW && idealCIS) ? 3 : 2
     }
 
     private func formatTime(_ t: TimeInterval) -> String {
@@ -200,100 +95,79 @@ struct ReviewView: View {
     var body: some View {
         NavigationStack {
             Form {
-#if DEBUG
-                
-                    Text("DEBUG: Elapsed Time: \(elapsedTime)")
-                        .font(.caption)
-                        .foregroundColor(.red)
-            
-#endif
-                
-                    Section("Result") {
-                        DisclosureGroup(isExpanded: $isWPMExpanded) {
-                            SemiCircleGauge(
-                                progress: max(0.0, min(1.0, Double(WPM) / 180.0)),
-                                highlight: (100.0/180.0)...(120.0/180.0),
-                                minLabel: "0",
-                                maxLabel: "180 wpm",
-                                valueLabel: "\(WPM)"
-                            )
-                            .frame(height: 80)
-                            .padding(.top, 8)
+                Section("Result") {
 
-                            Text("Best WPM is 120. The green band shows the ideal range.")
-                                .font(.footnote)
-                                .foregroundStyle(.secondary)
-                                .padding(.top, 4)
-                        } label: {
-                            HStack {
-                                Text("Words per minute")
-                                Spacer()
-                                Text("\(WPM)")
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-
-                        DisclosureGroup(isExpanded: $isConsistencyExpanded) {
-                            SemiCircleGauge(
-                                progress: max(0.0, min(1.0, Double(CIS) / 100.0)),
-                                highlight: (75.0/100.0)...(85.0/100.0),
-                                minLabel: "0%",
-                                maxLabel: "100%",
-                                valueLabel: "\(CIS)%"
-                            )
-                            .frame(height: 80)
-                            .padding(.top, 8)
-
-                            Text("Best consistency (CIS) is 80–85%. The green band shows the ideal range.")
-                                .font(.footnote)
-                                .foregroundStyle(.secondary)
-                                .padding(.top, 4)
-                        } label: {
-                            HStack {
-                                Text("Consistency in speech (%)")
-                                Spacer()
-                                Text("\(CIS)%")
-                                    .foregroundStyle(.secondary)
-                            }
+                    DisclosureGroup(isExpanded: $expandWPM) {
+                        SemiCircleGauge(
+                            progress: max(0, min(1, Double(WPM)/180)),
+                            highlight: (100.0/180)...(120.0/180),
+                            minLabel: "0",
+                            maxLabel: "180",
+                            valueLabel: "\(WPM)"
+                        )
+                        .frame(height: 90)
+                        Text("Best WPM is 120. The green band shows the ideal range.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    } label: {
+                        HStack {
+                            Text("Words Per Minute")
+                            Spacer()
+                            Text("\(WPM)").monospacedDigit().foregroundStyle(.secondary)
                         }
                     }
 
-                    Screen5()
+                    DisclosureGroup(isExpanded: $expandCIS) {
+                        SemiCircleGauge(
+                            progress: max(0,min(1,Double(CIS)/100)),
+                            highlight: (75.0/100)...(85.0/100),
+                            minLabel: "0%",
+                            maxLabel: "100%",
+                            valueLabel: "\(CIS)%"
+                        )
+                        .frame(height: 90)
+                        Text("Best consistency (CIS) is 80–85%. The green band shows the ideal range.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    } label: {
+                        HStack {
+                            Text("Consistency")
+                            Spacer()
+                            Text("\(CIS)%").monospacedDigit().foregroundStyle(.secondary)
+                        }
+                    }
                 }
 
-                Button {
-                    dismiss()
-                    DispatchQueue.main.async {
-                        isCoverPresented = false
-                    }
-                } label: {
-                    ZStack {
-                        Rectangle()
-                            .frame(height: 55)
-                            .frame(maxWidth: .infinity)
-                            .cornerRadius(25)
-                            .foregroundStyle(Color.accentColor)
-                            .glassEffect()
-                            .padding(.horizontal)
-                        Text("Done")
-                            .fontWeight(.semibold)
-                            .foregroundStyle(Color.white)
-                    }
-                    .padding()
-                }
-                .onAppear {
-                    updateWPMFromBindings()
-                    updateScores()
-                    CIS = Int(deriative.rounded())
-                }
-                .onChange(of: WPM) { _, _ in updateScores() }
-                .onChange(of: LGBW) { _, _ in updateScores() }
-                .onChange(of: CIS) { _, _ in updateScores() }
-                .onChange(of: elapsedTime) { _, _ in updateWPMFromBindings(); updateScores() }
-                .onChange(of: wordCount) { _, _ in updateWPMFromBindings(); updateScores() }
-                .onChange(of: deriative) { _, newValue in CIS = Int(newValue.rounded()); updateScores() }
-                .navigationTitle("Review")
+
+                Screen5()
             }
+
+            Button {
+                dismiss()
+                DispatchQueue.main.async { isCoverPresented = false }
+            } label: {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 24)
+                        .frame(height: 55)
+                        .foregroundColor(.accentColor)
+                        .glassEffect()
+                    Text("Done")
+                        .foregroundColor(.white)
+                        .fontWeight(.semibold)
+                }
+                .padding()
+            }
+            .onAppear {
+                computeWPM()
+                CIS = Int(deriative.rounded())
+                updateScore()
+            }
+            .onChange(of: elapsedTime) { _ in computeWPM(); updateScore() }
+            .onChange(of: wordCount) { _ in computeWPM(); updateScore() }
+            .onChange(of: LGBW) { _ in updateScore() }
+            .onChange(of: deriative) { _,v in CIS = Int(v.rounded()); updateScore() }
+
+            .navigationTitle("Review")
             .navigationBarBackButtonHidden(true)
         }
     
@@ -301,80 +175,52 @@ struct ReviewView: View {
     // MARK: - Gauge
     struct SemiCircleGauge: View {
         var progress: Double
-        var lineWidth: CGFloat = 16
+        var lineWidth: CGFloat = 14
         var label: String? = nil
-        var highlight: ClosedRange<Double>? = nil
-        var minLabel: String? = nil
-        var maxLabel: String? = nil
-        var valueLabel: String? = nil
+        var highlight: ClosedRange<Double>?
+        var minLabel: String?
+        var maxLabel: String?
+        var valueLabel: String?
 
         var body: some View {
-            GeometryReader { geo in
-                let totalWidth = geo.size.width
-                let totalHeight = geo.size.height
-                let lineThickness = max(10, min(16, geo.size.height * 2))
-                let clamped = max(0.0, min(1.0, progress))
-                let indicatorX = clamped * totalWidth
-                let isRight = clamped >= 0.5
-
-                let highlightFrame: (x: CGFloat, width: CGFloat)? = {
-                    guard let r = highlight else { return nil }
-                    let start = CGFloat(r.lowerBound) * totalWidth
-                    let end = CGFloat(r.upperBound) * totalWidth
-                    let w = end - start
-                    return (x: start + w/2, width: w)
-                }()
+            GeometryReader { g in
+                let w = g.size.width
+                let h = g.size.height
+                let thick = max(10, min(14, h*2))
+                let x = max(0,min(1,progress))*w
+                let high = highlight.map { r -> (CGFloat,CGFloat) in
+                    let s = CGFloat(r.lowerBound)*w
+                    let e = CGFloat(r.upperBound)*w
+                    return (s,e-s)
+                }
 
                 ZStack {
-                    if let hf = highlightFrame, hf.width > 0 {
+                    if let hframe = high {
                         Capsule()
                             .fill(Color.green.opacity(0.25))
-                            .frame(width: hf.width, height: lineThickness)
-                            .position(x: hf.x, y: totalHeight/2)
+                            .frame(width:hframe.1,height:thick)
+                            .position(x:hframe.0+hframe.1/2,y:h/2)
                     }
 
                     Capsule()
                         .fill(Color.gray.opacity(0.25))
-                        .frame(width: totalWidth, height: lineThickness)
-                        .position(x: totalWidth/2, y: totalHeight/2)
+                        .frame(width:w,height:thick)
+                        .position(x:w/2,y:h/2)
 
                     Capsule()
-                        .fill(isRight ? Color.blue : Color.orange)
-                        .frame(width: 3, height: max(lineThickness, 20))
-                        .position(x: indicatorX, y: totalHeight/2)
-                        .animation(.easeInOut(duration: 0.4), value: clamped)
+                        .fill(progress>=0.5 ? Color.blue : Color.orange)
+                        .frame(width:3,height:max(thick,20))
+                        .position(x:x,y:h/2)
 
-                    if let minLabel {
-                        Text(minLabel)
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                            .position(x: 8, y: totalHeight/2 + lineThickness/2 + 10)
+                    if let min = minLabel {
+                        Text(min).font(.caption2).position(x:10,y:h/2+thick/2+12)
                     }
-                    if let maxLabel {
-                        Text(maxLabel)
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                            .position(x: totalWidth - 8, y: totalHeight/2 + lineThickness/2 + 10)
+                    if let max = maxLabel {
+                        Text(max).font(.caption2).position(x:w-10,y:h/2+thick/2+12)
                     }
 
-                    if let valueLabel {
-                        Text(valueLabel)
-                            .font(.caption)
-                            .foregroundStyle(.primary)
-                            .position(x: min(max(12, indicatorX), totalWidth - 12),
-                                      y: max(0, totalHeight/2 - lineThickness/2 - 10))
-                    }
-
-                    if let label {
-                        VStack {
-                            HStack {
-                                Spacer()
-                                Text(label)
-                                    .font(.system(size: 16, weight: .semibold))
-                                    .foregroundStyle(.primary)
-                            }
-                            Spacer()
-                        }
+                    if let v = valueLabel {
+                        Text(v).font(.caption).position(x:min(max(12,x),w-12),y:h/2-thick/2-10)
                     }
                 }
             }
