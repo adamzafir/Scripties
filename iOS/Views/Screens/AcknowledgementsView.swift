@@ -51,6 +51,11 @@ struct Acknowledgements: View {
     @State private var showImage: Bool = false
     @State private var imageOpacity: Double = 0.0
     @State private var isAnimating: Bool = false
+    @State var adam = false
+    @State var divya = false
+    @State var yaplong = false
+    @State var avyan = false
+    @State var friends = false
     private let fadeInDuration: Double = 3
 
     var body: some View {
@@ -59,18 +64,63 @@ struct Acknowledgements: View {
                 VStack {
                     List {
                         Section(header: Text("People")) {
-                            ListItem(sfSymbol: "person.fill.turn.down", title: "Adam", subtitle: "The only iPhone user.")
-                            ListItem(sfSymbol: "shoeprints.fill", title: "Divya", subtitle: "The one who threw the shoe.")
-                            ListItem(sfSymbol: "sharedwithyou", title: "Yap Long", subtitle: "The inspiration behind the app.")
-                            ListItem(sfSymbol: "figure.walk.motion.trianglebadge.exclamationmark", title: "Avyan", subtitle: "Our Mentor, the cooked one.")
-                            ListItem(sfSymbol: "figure.2.circle.fill", title: "The Friends We Made Along the Way", subtitle: "Thank you to everyone who helped with this app!")
+                            DisclosureGroup(isExpanded: $adam) {
+                                HStack {
+                                    Text("About")
+                                        .font(.title2)
+                                        .fontWeight(.bold)
+                                    Spacer()
+                                }
+                            } label: {
+                                ListItem(sfSymbol: "apple.terminal", title: "Adam", subtitle: "The only iPhone user.")
+                            }
+                             DisclosureGroup(isExpanded: $divya) {
+                                HStack {
+                                    Text("About")
+                                        .font(.title2)
+                                        .fontWeight(.bold)
+                                    Spacer()
+                                }
+                             } label: {
+                                 ListItem(sfSymbol: "shoeprints.fill", title: "Divya", subtitle: "The one who threw the shoe.")
+                             }
+                            DisclosureGroup(isExpanded: $yaplong) {
+                               HStack {
+                                   Text("About")
+                                       .font(.title2)
+                                       .fontWeight(.bold)
+                                   Spacer()
+                               }
+                            } label: {
+                                ListItem(sfSymbol: "sharedwithyou", title: "Yap Long", subtitle: "The inspiration behind the app.")
+                            }
+                            DisclosureGroup(isExpanded: $avyan) {
+                               HStack {
+                                   Text("About")
+                                       .font(.title2)
+                                       .fontWeight(.bold)
+                                   Spacer()
+                               }
+                            } label: {
+                                ListItem(sfSymbol: "figure.walk.motion.trianglebadge.exclamationmark", title: "Avyan", subtitle: "Our Mentor, the cooked one.")
+                            }
+                            DisclosureGroup(isExpanded: $friends) {
+                               HStack {
+                                   Text("About")
+                                       .font(.title2)
+                                       .fontWeight(.bold)
+                                   Spacer()
+                               }
+                            } label: {
+                                ListItem(sfSymbol: "figure.2.circle.fill", title: "The Friends We Made Along the Way", subtitle: "Thank you to everyone who helped with this app!")
+                            }
                         }
                         Section(header: Text("Tools")) {
                             ListItem(sfSymbol: "hammer.fill", title: "Xcode", subtitle: "Development IDE")
                             ListItem(sfSymbol: "paintbrush.fill", title: "Figma", subtitle: "UI design")
                         }
                         Section(header: Text("Packages & Frameworks")) {
-                            ListItem(sfSymbol: "medal.star.fill", title: "Foundation Models", subtitle: "Local device models developed by Apple.")
+                            ListItem(sfSymbol: "apple.intelligence", title: "Foundation Models", subtitle: "Local device models developed by Apple.")
                             ListItem(sfSymbol: "sparkles", title: "Avyan Intelligence", subtitle: "Inspired by Avyan.")
                                 .contentShape(Rectangle())
                                 .onTapGesture {
