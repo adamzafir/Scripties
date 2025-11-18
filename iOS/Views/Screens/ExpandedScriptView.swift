@@ -183,7 +183,7 @@ struct Screen2: View {
             }
         }
         .fullScreenCover(isPresented: $showScreent) {
-            Screen3Teleprompter(title: $title, script: $script, WPM: $WPM, timer: timer, isPresented: $showScreent)
+            Screen3Teleprompter(title: $title, script: $script, WPM: $WPM, isPresented: $showScreent)
         }
         // .fullScreenCover(isPresented: $showScreen) {
         //     Screen3Keywords(title: $title, script: $script) // COMMENTED OUT: beta feature

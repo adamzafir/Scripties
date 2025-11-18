@@ -198,7 +198,6 @@ struct Screen22: View {
                 title: $title,
                 script: $script,
                 WPM: $WPM,
-                timer: timer,
                 isPresented: $showScreent
             )
         }
