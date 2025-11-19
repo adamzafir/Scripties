@@ -47,17 +47,18 @@ final class AudioPlaybackCoordinator: NSObject, ObservableObject, AVAudioPlayerD
 
 struct Acknowledgements: View {
     @StateObject private var audioCoordinator = AudioPlaybackCoordinator()
-
+    
     @State private var showImage: Bool = false
     @State private var imageOpacity: Double = 0.0
     @State private var isAnimating: Bool = false
     @State var adam = false
     @State var divya = false
     @State var yaplong = false
+    @State var ethan = false
     @State var avyan = false
     @State var friends = false
     private let fadeInDuration: Double = 3
-
+    
     var body: some View {
         NavigationStack {
             ZStack {
@@ -82,24 +83,24 @@ struct Acknowledgements: View {
                             } label: {
                                 ListItem(sfSymbol: "apple.terminal", title: "Adam", subtitle: "The only iPhone user.")
                             }
-                             DisclosureGroup(isExpanded: $divya) {
-                                 VStack {
-                                     HStack {
-                                         Text("About")
-                                             .multilineTextAlignment(.leading)
-                                             .font(.title2)
-                                             .fontWeight(.bold)
-                                         Spacer()
-                                     }
-                                     HStack {
-                                         Text("What if the real about was the freinds we made along the way")
-                                             .multilineTextAlignment(.leading)
-                                         Spacer()
-                                     }
-                                 }
-                             } label: {
-                                 ListItem(sfSymbol: "shoeprints.fill", title: "Divya", subtitle: "The one who threw the shoe.")
-                             }
+                            DisclosureGroup(isExpanded: $divya) {
+                                VStack {
+                                    HStack {
+                                        Text("About")
+                                            .multilineTextAlignment(.leading)
+                                            .font(.title2)
+                                            .fontWeight(.bold)
+                                        Spacer()
+                                    }
+                                    HStack {
+                                        Text("What if the real about was the freinds we made along the way")
+                                            .multilineTextAlignment(.leading)
+                                        Spacer()
+                                    }
+                                }
+                            } label: {
+                                ListItem(sfSymbol: "shoeprints.fill", title: "Divya", subtitle: "The one who threw the shoe.")
+                            }
                             DisclosureGroup(isExpanded: $yaplong) {
                                 VStack {
                                     HStack {
@@ -117,6 +118,24 @@ struct Acknowledgements: View {
                                 }
                             } label: {
                                 ListItem(sfSymbol: "sharedwithyou", title: "Yap Long", subtitle: "The inspiration behind the app.")
+                            }
+                            DisclosureGroup(isExpanded: $ethan) {
+                                VStack {
+                                    HStack {
+                                        Text("About")
+                                            .multilineTextAlignment(.leading)
+                                            .font(.title2)
+                                            .fontWeight(.bold)
+                                        Spacer()
+                                    }
+                                    HStack {
+                                        Text("What if the real birthdays were the lunches we had along the way")
+                                            .multilineTextAlignment(.leading)
+                                        Spacer()
+                                    }
+                                }
+                            } label: {
+                                ListItem(sfSymbol: "person.fill", title: "Ethan", subtitle: "The one who left for a birthday party.")
                             }
                             DisclosureGroup(isExpanded: $avyan) {
                                 VStack {
@@ -184,32 +203,32 @@ struct Acknowledgements: View {
                                 }
                         }
                     }
-                }
-
-                if showImage {
-                    Image("cookeddogmemeimage")
-                        .resizable()
-                        .scaledToFit()
-                        .opacity(imageOpacity)
-                        .allowsHitTesting(false)
-                        .transition(.opacity)
-                }
-            }
-            .navigationTitle("Acknowledgements")
-            .onAppear {
-                audioCoordinator.configureSession()
-                audioCoordinator.onDidFinishPlaying = { [weak audioCoordinator] in
-                    withAnimation(.easeOut(duration: 1)) {
-                        imageOpacity = 0.0
-                        isAnimating = false
-                        showImage = false
+                    
+                    if showImage {
+                        Image("cookeddogmemeimage")
+                            .resizable()
+                            .scaledToFit()
+                            .opacity(imageOpacity)
+                            .allowsHitTesting(false)
+                            .transition(.opacity)
                     }
-                    audioCoordinator?.stop()
+                }
+                .navigationTitle("Acknowledgements")
+                .onAppear {
+                    audioCoordinator.configureSession()
+                    audioCoordinator.onDidFinishPlaying = { [weak audioCoordinator] in
+                        withAnimation(.easeOut(duration: 1)) {
+                            imageOpacity = 0.0
+                            isAnimating = false
+                            showImage = false
+                        }
+                        audioCoordinator?.stop()
+                    }
                 }
             }
         }
     }
-
+    
     private func handleTap() {
         guard !isAnimating else { return }
         isAnimating = true
