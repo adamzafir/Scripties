@@ -185,12 +185,6 @@ struct Screen22: View {
                     .padding(.vertical, 12)
                     .glassEffect()
                 }
-                .shadow(color: Color.black.opacity(0.1), radius: 12, x: 0, y: 4)
-                .padding(.horizontal, 16)
-                .padding(.bottom, 8)
-                .frame(maxWidth: .infinity, alignment: .center)
-                .animation(.easeInOut(duration: 0.15), value: isTyping)
-                .animation(.easeInOut(duration: 0.15), value: isEditingScript)
             }
         }
         .fullScreenCover(isPresented: $showScreent) {

@@ -23,7 +23,7 @@ struct OnboardingView: View {
     let pages = [
         OnboardingPage(
             imageName: "text.book.closed.fill",
-            title: "Welcome to Yap Longer",
+            title: "Welcome to Yap Long",
             description: "Your personal speech coach. Write, practice, and perfect your presentations with AI-powered feedback.",
             highlightColor: .blue
         ),
@@ -47,8 +47,8 @@ struct OnboardingView: View {
         ),
         OnboardingPage(
             imageName: "sparkles",
-            title: "Beta Features Available",
-            description: "Enable beta mode in settings to access experimental features and enhanced capabilities.",
+            title: "Special Features Available",
+            description: "Enable features in settings to access different features and enhanced capabilities.",
             highlightColor: .pink
         ),
         OnboardingPage(
@@ -81,8 +81,9 @@ struct OnboardingView: View {
                         Button("Skip") {
                             completeOnboarding()
                         }
-                        .foregroundColor(.primary)
+                        .foregroundColor(.blue)
                         .padding()
+                        
                     }
                 }
                 
