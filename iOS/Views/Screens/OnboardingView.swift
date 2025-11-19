@@ -46,12 +46,6 @@ struct OnboardingView: View {
             highlightColor: .green
         ),
         OnboardingPage(
-            imageName: "sparkles",
-            title: "Special Features Available",
-            description: "Enable features in settings to access different features and enhanced capabilities.",
-            highlightColor: .pink
-        ),
-        OnboardingPage(
             imageName: "checkmark.seal.fill",
             title: "Ready to Practice!",
             description: "Start by creating your first script. Record yourself, get instant feedback, and become a confident speaker.",
