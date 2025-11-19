@@ -14,11 +14,13 @@ struct ListItem: View {
                     Image(systemName: sfSymbol)
                         .font(.system(size: 28, weight: .regular))
                         .foregroundStyle(.secondary)
+                        .frame(width: 30, alignment: .center)
                 } else {
                     Image(systemName: sfSymbol)
                         .font(.system(size: 28, weight: .regular))
                         .foregroundStyle(.secondary)
                         .appleIntelligenceGradient(start: .top)
+                        .frame(width: 30, alignment: .center)
                 }
                 
                 Spacer(minLength: 0)
