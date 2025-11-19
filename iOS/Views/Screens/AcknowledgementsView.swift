@@ -146,7 +146,7 @@ struct Acknowledgements: View {
                                         Spacer()
                                     }
                                     HStack {
-                                        Text("What if the real about was the freinds we made along the way")
+                                        Text("What if the real about was me")
                                             .multilineTextAlignment(.leading)
                                         Spacer()
                                     }
