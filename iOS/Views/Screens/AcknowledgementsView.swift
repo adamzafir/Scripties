@@ -81,7 +81,7 @@ struct Acknowledgements: View {
                                     }
                                 }
                             } label: {
-                                ListItem(sfSymbol: "apple.terminal", title: "Adam", subtitle: "The only iPhone user.")
+                                ListItem(sfSymbol: "apple.terminal", title: "Adam Zafir", subtitle: "The only iPhone user.")
                             }
                             DisclosureGroup(isExpanded: $divya) {
                                 VStack {
@@ -99,7 +99,7 @@ struct Acknowledgements: View {
                                     }
                                 }
                             } label: {
-                                ListItem(sfSymbol: "shoeprints.fill", title: "Divya", subtitle: "The one who threw the shoe.")
+                                ListItem(sfSymbol: "shoeprints.fill", title: "Divya Dharshini", subtitle: "The one who threw the shoe.")
                             }
                             DisclosureGroup(isExpanded: $yaplong) {
                                 VStack {
@@ -117,7 +117,7 @@ struct Acknowledgements: View {
                                     }
                                 }
                             } label: {
-                                ListItem(sfSymbol: "sharedwithyou", title: "Yap Long", subtitle: "The inspiration behind the app.")
+                                ListItem(sfSymbol: "sharedwithyou", title: "Chan Yap Long", subtitle: "The inspiration behind the app.")
                             }
                             DisclosureGroup(isExpanded: $ethan) {
                                 VStack {
@@ -135,7 +135,7 @@ struct Acknowledgements: View {
                                     }
                                 }
                             } label: {
-                                ListItem(sfSymbol: "person.fill", title: "Ethan", subtitle: "The one who left for a birthday party.")
+                                ListItem(sfSymbol: "birthday.cake.fill", title: "Eleftan Soh", subtitle: "The one who left for a birthday party, 'Soh What?'")
                             }
                             DisclosureGroup(isExpanded: $avyan) {
                                 VStack {
@@ -153,7 +153,7 @@ struct Acknowledgements: View {
                                     }
                                 }
                             } label: {
-                                ListItem(sfSymbol: "figure.walk.motion.trianglebadge.exclamationmark", title: "Avyan", subtitle: "Our Mentor, the cooked one.")
+                                ListItem(sfSymbol: "figure.walk.motion.trianglebadge.exclamationmark", title: "Avyan Mehra", subtitle: "Our Mentor, the cooked one.")
                             }
                             DisclosureGroup(isExpanded: $friends) {
                                 VStack {
@@ -171,7 +171,7 @@ struct Acknowledgements: View {
                                     }
                                 }
                             } label: {
-                                ListItem(sfSymbol: "figure.2.circle.fill", title: "The Friends We Made Along the Way", subtitle: "Thank you to everyone who helped with this app!")
+                                ListItem(sfSymbol: "figure.2.circle.fill", title: "The Friends We Made Along The Way", subtitle: "Thank you to everyone who helped with this app!")
                             }
                         }
                         Section(header: Text("Tools")) {

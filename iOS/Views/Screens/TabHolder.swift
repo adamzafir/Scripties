@@ -11,9 +11,8 @@ struct TabHolder: View {
     @State private var selectedTab: Tabs = .scripts
     @StateObject private var viewModel = Screen2ViewModel()
     var body: some View {
-        Group {  // <-- THIS IS THE GROUP!
+        Group {
             if hasCompletedOnboarding {
-                // Show main app
                 TabView(selection: $selectedTab) {
                     Tab("Scripts", systemImage: "text.document", value: Tabs.scripts) {
                         NavigationStack {
@@ -31,7 +30,6 @@ struct TabHolder: View {
                 }
                 .navigationBarBackButtonHidden(true)
             } else {
-                // Show onboarding on first launch
                 OnboardingView()
             }
         }
