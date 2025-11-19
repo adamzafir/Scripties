@@ -100,6 +100,7 @@ struct Acknowledgements: View {
                              } label: {
                                  ListItem(sfSymbol: "shoeprints.fill", title: "Divya", subtitle: "The one who threw the shoe.")
                              }
+                             .monospacedDigit()
                             DisclosureGroup(isExpanded: $yaplong) {
                                 VStack {
                                     HStack {
