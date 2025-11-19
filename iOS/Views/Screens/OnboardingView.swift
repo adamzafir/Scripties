@@ -23,7 +23,7 @@ struct OnboardingView: View {
     let pages = [
         OnboardingPage(
             imageName: "text.book.closed.fill",
-            title: "Welcome to Yap Long",
+            title: "Welcome to Scripties",
             description: "Your personal speech coach. Write, practice, and perfect your presentations with AI-powered feedback.",
             highlightColor: .blue
         ),
