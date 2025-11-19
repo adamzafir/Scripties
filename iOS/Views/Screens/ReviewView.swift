@@ -106,7 +106,7 @@ struct ReviewView: View {
                             valueLabel: "\(WPM)"
                         )
                         .frame(height: 90)
-                        Text("Best WPM is 120. The green band shows the ideal range.")
+                        Text("The best WPM is 120. The green band shows the ideal range.")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                     } label: {
@@ -126,7 +126,7 @@ struct ReviewView: View {
                             valueLabel: "\(CIS)%"
                         )
                         .frame(height: 90)
-                        Text("Best consistency (CIS) is 80–85%. The green band shows the ideal range.")
+                        Text("The best consistency (CIS) is 80–85%. The green band shows the ideal range.")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                     } label: {

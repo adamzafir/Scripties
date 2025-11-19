@@ -4,7 +4,7 @@ struct ListItem: View {
     var sfSymbol: String
     var title: String
     var subtitle: String
-
+    
     var body: some View {
         HStack(alignment: .center, spacing: 12) {
             
@@ -20,19 +20,24 @@ struct ListItem: View {
                         .foregroundStyle(.secondary)
                         .appleIntelligenceGradient(start: .top)
                 }
-                    
+                
                 Spacer(minLength: 0)
             }
             
             VStack(alignment: .leading, spacing: 2) {
-                if title != "Avyan Intelligence" {
-                    Text(title)
-                        .font(.body)
-                        .fontWeight(.semibold)
-                } else {
+                if title == "Avyan Intelligence" {
                     Text(title)
                         .fontWeight(.semibold)
                         .appleIntelligenceGradient()
+                } else if sfSymbol == "link" {
+                    Text(title)
+                        .fontWeight(.semibold)
+                        .font(.body)
+                        .foregroundStyle(Color.blue)
+                } else {
+                        Text(title)
+                            .fontWeight(.semibold)
+                            .font(.body)
                 }
                 Text(subtitle)
                     .font(.subheadline)
