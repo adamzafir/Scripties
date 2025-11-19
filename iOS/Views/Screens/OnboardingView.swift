@@ -23,14 +23,14 @@ struct OnboardingView: View {
     let pages = [
         OnboardingPage(
             imageName: "text.book.closed.fill",
-            title: "Welcome to Script Practice",
+            title: "Welcome to Yap Longer",
             description: "Your personal speech coach. Write, practice, and perfect your presentations with AI-powered feedback.",
             highlightColor: .blue
         ),
         OnboardingPage(
             imageName: "square.and.pencil",
             title: "Create & Edit Scripts",
-            description: "Write your scripts or let AI help. Use the magic wand ✨ to rewrite sections with AI assistance.",
+            description: "Write your scripts or let AI help. Use the magic wand to rewrite sections with AI assistance.",
             highlightColor: .purple
         ),
         OnboardingPage(
