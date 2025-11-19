@@ -65,52 +65,92 @@ struct Acknowledgements: View {
                     List {
                         Section(header: Text("People")) {
                             DisclosureGroup(isExpanded: $adam) {
-                                HStack {
-                                    Text("About")
-                                        .font(.title2)
-                                        .fontWeight(.bold)
-                                    Spacer()
+                                VStack {
+                                    HStack {
+                                        Text("About")
+                                            .multilineTextAlignment(.leading)
+                                            .font(.title2)
+                                            .fontWeight(.bold)
+                                        Spacer()
+                                    }
+                                    HStack {
+                                        Text("What if the real about was the freinds we made along the way")
+                                            .multilineTextAlignment(.leading)
+                                        Spacer()
+                                    }
                                 }
                             } label: {
                                 ListItem(sfSymbol: "apple.terminal", title: "Adam", subtitle: "The only iPhone user.")
                             }
                              DisclosureGroup(isExpanded: $divya) {
-                                HStack {
-                                    Text("About")
-                                        .font(.title2)
-                                        .fontWeight(.bold)
-                                    Spacer()
-                                }
+                                 VStack {
+                                     HStack {
+                                         Text("About")
+                                             .multilineTextAlignment(.leading)
+                                             .font(.title2)
+                                             .fontWeight(.bold)
+                                         Spacer()
+                                     }
+                                     HStack {
+                                         Text("What if the real about was the freinds we made along the way")
+                                             .multilineTextAlignment(.leading)
+                                         Spacer()
+                                     }
+                                 }
                              } label: {
                                  ListItem(sfSymbol: "shoeprints.fill", title: "Divya", subtitle: "The one who threw the shoe.")
                              }
                             DisclosureGroup(isExpanded: $yaplong) {
-                               HStack {
-                                   Text("About")
-                                       .font(.title2)
-                                       .fontWeight(.bold)
-                                   Spacer()
-                               }
+                                VStack {
+                                    HStack {
+                                        Text("About")
+                                            .multilineTextAlignment(.leading)
+                                            .font(.title2)
+                                            .fontWeight(.bold)
+                                        Spacer()
+                                    }
+                                    HStack {
+                                        Text("What if the real about was the freinds we made along the way")
+                                            .multilineTextAlignment(.leading)
+                                        Spacer()
+                                    }
+                                }
                             } label: {
                                 ListItem(sfSymbol: "sharedwithyou", title: "Yap Long", subtitle: "The inspiration behind the app.")
                             }
                             DisclosureGroup(isExpanded: $avyan) {
-                               HStack {
-                                   Text("About")
-                                       .font(.title2)
-                                       .fontWeight(.bold)
-                                   Spacer()
-                               }
+                                VStack {
+                                    HStack {
+                                        Text("About")
+                                            .multilineTextAlignment(.leading)
+                                            .font(.title2)
+                                            .fontWeight(.bold)
+                                        Spacer()
+                                    }
+                                    HStack {
+                                        Text("What if the real about was the freinds we made along the way")
+                                            .multilineTextAlignment(.leading)
+                                        Spacer()
+                                    }
+                                }
                             } label: {
                                 ListItem(sfSymbol: "figure.walk.motion.trianglebadge.exclamationmark", title: "Avyan", subtitle: "Our Mentor, the cooked one.")
                             }
                             DisclosureGroup(isExpanded: $friends) {
-                               HStack {
-                                   Text("About")
-                                       .font(.title2)
-                                       .fontWeight(.bold)
-                                   Spacer()
-                               }
+                                VStack {
+                                    HStack {
+                                        Text("About")
+                                            .multilineTextAlignment(.leading)
+                                            .font(.title2)
+                                            .fontWeight(.bold)
+                                        Spacer()
+                                    }
+                                    HStack {
+                                        Text("What if the real about was the freinds we made along the way")
+                                            .multilineTextAlignment(.leading)
+                                        Spacer()
+                                    }
+                                }
                             } label: {
                                 ListItem(sfSymbol: "figure.2.circle.fill", title: "The Friends We Made Along the Way", subtitle: "Thank you to everyone who helped with this app!")
                             }
@@ -130,6 +170,15 @@ struct Acknowledgements: View {
                                 .contentShape(Rectangle())
                                 .onTapGesture {
                                     if let url = URL(string: "https://github.com/jacobamobin/AppleIntelligenceGlowEffect") {
+                                        UIApplication.shared.open(url)
+                                    }
+                                }
+                        }
+                        Section(header: Text("Source Control")) {
+                            ListItem(sfSymbol: "link", title: "Yap Longer", subtitle: "This project is open source on Github.")
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    if let url = URL(string: "https://github.com/adamzafir/yapLonger") {
                                         UIApplication.shared.open(url)
                                     }
                                 }
