@@ -23,6 +23,10 @@
             {
               "appearance" : "dark",
               "value" : "plus-lighter"
+            },
+            {
+              "appearance" : "tinted",
+              "value" : "darken"
             }
           ],
           "fill-specializations" : [
@@ -36,9 +40,23 @@
               "value" : {
                 "solid" : "srgb:0.96822,0.96822,0.96822,1.00000"
               }
+            },
+            {
+              "appearance" : "tinted",
+              "value" : {
+                "solid" : "srgb:1.00000,1.00000,1.00000,1.00000"
+              }
             }
           ],
-          "glass" : true,
+          "glass-specializations" : [
+            {
+              "value" : false
+            },
+            {
+              "appearance" : "tinted",
+              "value" : false
+            }
+          ],
           "image-name" : "chalkboard-teacher.png",
           "name" : "chalkboard-teacher",
           "position" : {
@@ -80,7 +98,7 @@
           ],
           "glass-specializations" : [
             {
-              "value" : true
+              "value" : false
             },
             {
               "appearance" : "tinted",
