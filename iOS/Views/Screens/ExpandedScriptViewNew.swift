@@ -65,15 +65,17 @@ struct Screen2: View {
                     }
                     Spacer()
                 } else {
-                    TextField("Untitled Script", text: $title)
-                        .font(.title)
-                        .fontWeight(.bold)
-                        .padding()
-                    
-                    TextEditor(text: $script)
-                        .focused($isEditingScript)
-                        .padding(.horizontal)
-                        .frame(maxHeight: .infinity)
+                    VStack(alignment: .leading, spacing: 12) {
+                        TextField("Untitled Script", text: $title)
+                            .font(.title)
+                            .fontWeight(.bold)
+                            .textFieldStyle(.plain)
+                            .submitLabel(.done)
+                        
+                        TextEditor(text: $script)
+                            .focused($isEditingScript)
+                            .frame(maxHeight: .infinity)
+                    }
                     
                     Spacer()
                 }
@@ -132,11 +134,6 @@ struct Screen2: View {
                         } label: {
                             Text("Teleprompter")
                         }
-                        // Button {
-                        //     showScreen = true
-                        // } label: {
-                        //     Text("Keywords") // COMMENTED OUT: beta feature
-                        // }
                     } label: {
                         Image(systemName: "play.fill")
                     }
@@ -185,9 +182,6 @@ struct Screen2: View {
         .fullScreenCover(isPresented: $showScreent) {
             Screen3Teleprompter(title: $title, script: $script, WPM: $WPM, isPresented: $showScreent)
         }
-        // .fullScreenCover(isPresented: $showScreen) {
-        //     Screen3Keywords(title: $title, script: $script) // COMMENTED OUT: beta feature
-        // }
         .onDisappear {
             typingResetTask?.cancel()
         }
