@@ -172,29 +172,36 @@ struct OnboardingView: View {
 struct OnboardingPageView: View {
     let page: OnboardingPage
     @State private var isAnimating = false
+    @Environment(\.colorScheme) private var colorScheme
+    private func resolvedImageName(from baseName: String) -> String {
+        if baseName == "light" || baseName == "dark" {
+            return colorScheme == .dark ? "dark" : "light"
+        }
+        return baseName
+    }
     
     @ViewBuilder
-private func pageImage(named name: String, tint: Color) -> some View {
-    if let uiImage = UIImage(named: name) {
-        Image(uiImage: uiImage)
-            .resizable()
-            .scaledToFit()
-            .frame(width: 100, height: 100)
-            .background(Color.red.opacity(0.1)) // debug background
-    } else {
-        // Show a visible placeholder if asset not found, instead of attempting a system symbol
-        ZStack {
-            Color.yellow.opacity(0.3)
-            Text("Missing asset: \(name)")
-                .font(.caption)
-                .foregroundColor(.red)
-                .multilineTextAlignment(.center)
-                .padding(4)
+    private func pageImage(named name: String, tint: Color) -> some View {
+        let effectiveName = resolvedImageName(from: name)
+        if let uiImage = UIImage(named: effectiveName) {
+            Image(uiImage: uiImage)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 100, height: 100)
+        } else {
+            Image(systemName: effectiveName)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 100, height: 100)
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [tint, tint.opacity(0.6)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
         }
-        .frame(width: 100, height: 100)
-        .clipShape(RoundedRectangle(cornerRadius: 8))
     }
-}
     
     var body: some View {
         VStack(spacing: 30) {
