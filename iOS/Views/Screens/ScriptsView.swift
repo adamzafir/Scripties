@@ -17,7 +17,7 @@ struct Screen1: View {
                                     .font(.headline)
                                     .foregroundStyle(.secondary)
                             }
-                            Text("Tap “Add Script” to create your first script.")
+                            Text("Select “Add Script” to create your first script.")
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                         }
