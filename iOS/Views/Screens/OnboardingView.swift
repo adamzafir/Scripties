@@ -22,27 +22,21 @@ struct OnboardingView: View {
     
     let pages = [
         OnboardingPage(
-            imageName: "text.book.closed.fill",
+            imageName: "light",
             title: "Welcome to Scripties",
-            description: "Your personal speech coach. Write, practice, and perfect your presentations with AI-powered feedback.",
+            description: "Your personal speech coach. Write, practice, and perfect your presentations with feedback.",
             highlightColor: .blue
-        ),
-        OnboardingPage(
-            imageName: "square.and.pencil",
-            title: "Create & Edit Scripts",
-            description: "Write your scripts or let AI help. Use the magic wand to rewrite sections with AI assistance.",
-            highlightColor: .purple
         ),
         OnboardingPage(
             imageName: "waveform.circle.fill",
             title: "Practice Your Speech",
-            description: "Choose Teleprompter mode for guided reading or Keywords mode to practice naturally with key points.",
+            description: "Teleprompter in-app helps you to read naturally, using an autoscroll based on your voice.",
             highlightColor: .orange
         ),
         OnboardingPage(
             imageName: "chart.line.uptrend.xyaxis",
             title: "Get Detailed Feedback",
-            description: "Track your words per minute (ideal: 120 WPM), speech consistency, and silence patterns to improve your delivery.",
+            description: "Track your words per minute and  speech consistency to improve your delivery.",
             highlightColor: .green
         ),
         OnboardingPage(
@@ -68,18 +62,17 @@ struct OnboardingView: View {
             .animation(.easeInOut(duration: 0.5), value: currentPage)
             
             VStack(spacing: 20) {
-                // Skip button
                 HStack {
                     Spacer()
-                    if currentPage < pages.count - 1 {
-                        Button("Skip") {
-                            completeOnboarding()
-                        }
-                        .foregroundColor(.blue)
-                        .padding()
-                        
+                    Button("Skip") {
+                        completeOnboarding()
                     }
+                    .foregroundColor(.blue)
+                    .opacity(currentPage < pages.count - 1 ? 1 : 0)
+                    .animation(.easeInOut(duration: 0.3), value: currentPage)
+                    .padding()
                 }
+                .frame(height: 50)
                 
                 Spacer()
                 
@@ -129,18 +122,26 @@ struct OnboardingView: View {
                             completeOnboarding()
                         }
                     }) {
-                        HStack {
-                            Text(currentPage == pages.count - 1 ? "Get Started" : "Next")
-                                .font(.headline)
-                                .fontWeight(.semibold)
-                                
+                        HStack(spacing: 8) {
+                            ZStack {
+                                Text("Next")
+                                    .font(.headline)
+                                    .fontWeight(.semibold)
+                                    .opacity(currentPage == pages.count - 1 ? 0 : 1)
+                                Text("Get Started")
+                                    .font(.headline)
+                                    .fontWeight(.semibold)
+                                    .opacity(currentPage == pages.count - 1 ? 1 : 0)
+                            }
                             if currentPage < pages.count - 1 {
                                 Image(systemName: "chevron.right")
                                     .font(.headline)
+                                    .transition(.opacity)
                             }
                         }
+                        .animation(.spring(response: 0.3), value: currentPage)
                         .foregroundColor(.white)
-                        .frame(width: currentPage == pages.count - 1 ? 150 : 100, height: 50)
+                        .frame(width: 150, height: 50)
                         .background(
                             LinearGradient(
                                 colors: [
@@ -172,6 +173,29 @@ struct OnboardingPageView: View {
     let page: OnboardingPage
     @State private var isAnimating = false
     
+    @ViewBuilder
+private func pageImage(named name: String, tint: Color) -> some View {
+    if let uiImage = UIImage(named: name) {
+        Image(uiImage: uiImage)
+            .resizable()
+            .scaledToFit()
+            .frame(width: 100, height: 100)
+            .background(Color.red.opacity(0.1)) // debug background
+    } else {
+        // Show a visible placeholder if asset not found, instead of attempting a system symbol
+        ZStack {
+            Color.yellow.opacity(0.3)
+            Text("Missing asset: \(name)")
+                .font(.caption)
+                .foregroundColor(.red)
+                .multilineTextAlignment(.center)
+                .padding(4)
+        }
+        .frame(width: 100, height: 100)
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+}
+    
     var body: some View {
         VStack(spacing: 30) {
             // Icon with animation
@@ -186,17 +210,7 @@ struct OnboardingPageView: View {
                         value: isAnimating
                     )
                 
-                Image(systemName: page.imageName)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 100, height: 100)
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [page.highlightColor, page.highlightColor.opacity(0.6)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                pageImage(named: page.imageName, tint: page.highlightColor)
                     .padding()
             }
             .padding(.top, 20)
