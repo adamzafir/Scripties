@@ -136,7 +136,7 @@ struct ReviewView: View {
                             Text("\(CIS)%").monospacedDigit().foregroundStyle(.secondary)
                         }
                     }
-                }.padding(.horizontal)
+                }
                 
                 
                 Screen5()
