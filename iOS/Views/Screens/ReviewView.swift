@@ -118,22 +118,34 @@ struct ReviewView: View {
                     }
                     
                     DisclosureGroup(isExpanded: $expandCIS) {
-                        SemiCircleGauge(
-                            progress: max(0,min(1,Double(CIS)/100)),
-                            highlight: (75.0/100)...(85.0/100),
-                            minLabel: "0%",
-                            maxLabel: "100%",
-                            valueLabel: "\(CIS)%"
-                        )
-                        .frame(height: 90)
-                        Text("The best consistency (CIS) is 80–85%. The green band shows the ideal range.")
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
+                        if CIS != 0 {
+                            SemiCircleGauge(
+                                progress: max(0,min(1,Double(CIS)/100)),
+                                highlight: (75.0/100)...(85.0/100),
+                                minLabel: "0%",
+                                maxLabel: "100%",
+                                valueLabel: "\(CIS)%"
+                            )
+                            .frame(height: 90)
+                            Text("The best consistency (CIS) is 80–85%. The green band shows the ideal range.")
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                        } else {
+                            Text("Speech was not detected properly, please try again.")
+                                .foregroundStyle(Color.red)
+                                .foregroundStyle(.secondary)
+                        }
                     } label: {
                         HStack {
                             Text("Consistency")
                             Spacer()
-                            Text("\(CIS)%").monospacedDigit().foregroundStyle(.secondary)
+                            if CIS != 0 {
+                                Text("\(CIS)%").monospacedDigit().foregroundStyle(.secondary)
+                            } else {
+                                Text("Error")
+                                    .foregroundStyle(Color.red)
+                                    .foregroundStyle(.secondary)
+                            }
                         }
                     }
                 }
@@ -141,39 +153,41 @@ struct ReviewView: View {
                 
                 Screen5()
                 
-            }
-            
-            Button {
-                dismiss()
-                DispatchQueue.main.async { isCoverPresented = false }
-            } label: {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 24)
-                        .frame(height: 55)
-                        .foregroundColor(.accentColor)
-                        .glassEffect()
-                    Text("Done")
-                        .foregroundColor(.white)
-                        .fontWeight(.semibold)
+                
+                
+                Button {
+                    dismiss()
+                    DispatchQueue.main.async { isCoverPresented = false }
+                } label: {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 24)
+                            .frame(height: 55)
+                            .foregroundColor(.accentColor)
+                            .glassEffect()
+                        Text("Done")
+                            .foregroundColor(.white)
+                            .fontWeight(.semibold)
+                    }
+                    .padding()
                 }
-                .padding()
             }
             .onAppear {
                 computeWPM()
-                CIS = Int(deriative.rounded())
+                // Force CIS to 0 for testing
+                CIS = 0
                 updateScore()
             }
             .onChange(of: elapsedTime) { _ in computeWPM(); updateScore() }
             .onChange(of: wordCount) { _ in computeWPM(); updateScore() }
             .onChange(of: LGBW) { _ in updateScore() }
-            .onChange(of: deriative) { _,v in CIS = Int(v.rounded()); updateScore() }
+            // Disable CIS updates from 'deriative' while testing
+            // .onChange(of: deriative) { _,v in CIS = Int(v.rounded()); updateScore() }
             
             .navigationTitle("Review")
             .navigationBarBackButtonHidden(true)
         }
     }
 }
-
 // MARK: - Gauge
 struct SemiCircleGauge: View {
     var progress: Double
