@@ -11,9 +11,12 @@ struct Screen1: View {
                 Group {
                     if viewModel.scriptItems.isEmpty {
                         VStack(spacing: 8) {
-                            Text("No Scripts")
-                                .font(.headline)
-                                .foregroundStyle(.secondary)
+                            HStack {
+                                Image(systemName: "list.bullet")
+                                Text("No Scripts")
+                                    .font(.headline)
+                                    .foregroundStyle(.secondary)
+                            }
                             Text("Tap “Add Script” to create your first script.")
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
