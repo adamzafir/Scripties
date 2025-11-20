@@ -156,9 +156,10 @@ struct Screen5: View {
                             }
                         }
                     } label: {
-                        Image(systemName: isPlaying ? "pause.fill" : "play.fill")
-                            .font(.headline)
-                            .accessibilityLabel(isPlaying ? "Pause" : "Play")
+                            Image(systemName: isPlaying ? "pause.fill" : "play.fill")
+                                .font(.system(size: 40, weight: .bold))
+                                .foregroundColor(.accentColor)
+                                .accessibilityLabel(isPlaying ? "Pause" : "Play")
                     }
                     // .buttonStyle(.plain) // uncomment if you want a totally plain button
                 }
