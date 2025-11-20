@@ -155,19 +155,21 @@ struct Screen22: View {
                 }
                 
                 ToolbarItemGroup(placement: .keyboard) {
-                    Button {
-                        showPromptDialog = true
-                    } label: {
-                        Image(systemName: "wand.and.stars")
-                    }
-                    
+//                    Button {
+//                        showPromptDialog = true
+//                    } label: {
+//                        Image(systemName: "wand.and.stars")
+//               }
+//                    
                     Spacer()
-                    
-                    Button {
-                        isEditingScript = false
-                    } label: {
-                        Image(systemName: "checkmark")
-                    }
+//                ToolbarItem(placement: .keyboard) {
+//                    HStack {
+//                        Spacer()
+                        Button {
+                            isEditingScript = false
+                        } label: {
+                            Image(systemName: "checkmark")
+                        }
                 }
             }
         }
