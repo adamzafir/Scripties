@@ -167,8 +167,7 @@ struct Screen2: View {
                         """)
                     .font(.headline)
                     .monospacedDigit()
-                    .padding(.horizontal, 16)
-                    .padding(.top)
+                    .padding()
                     .glassEffect()
                 }
                 .shadow(color: Color.black.opacity(0.1), radius: 12, x: 0, y: 4)
