@@ -98,14 +98,19 @@ struct ReviewView: View {
                 Section("Result") {
                     
                     DisclosureGroup(isExpanded: $expandWPM) {
-                        SemiCircleGauge(
-                            progress: max(0, min(1, Double(WPM)/180)),
-                            highlight: (100.0/180)...(120.0/180),
-                            minLabel: "0",
-                            maxLabel: "180",
-                            valueLabel: "\(WPM)"
-                        )
-                        .frame(width: 300, height: 90)
+                        HStack {
+                            Spacer()
+                            SemiCircleGauge(
+                                progress: max(0, min(1, Double(WPM)/180)),
+                                highlight: (100.0/180)...(120.0/180),
+                                minLabel: "0",
+                                maxLabel: "180",
+                                valueLabel: "\(WPM)"
+                            )
+                            .frame(width: 300, height: 90)
+                            .padding(.trailing, 10) // nudge left towards center
+                            Spacer()
+                        }
                         
                         if WPM > 120 {
                             Text("Too fast. The best WPM is 120. The green band shows the ideal range.")
@@ -130,14 +135,19 @@ struct ReviewView: View {
                     
                     DisclosureGroup(isExpanded: $expandCIS) {
                         if CIS != 0 {
-                            SemiCircleGauge(
-                                progress: max(0,min(1,Double(CIS)/100)),
-                                highlight: (75.0/100)...(85.0/100),
-                                minLabel: "0%",
-                                maxLabel: "100%",
-                                valueLabel: "\(CIS)%"
-                            )
-                            .frame(width: 300, height: 90)
+                            HStack {
+                                Spacer()
+                                SemiCircleGauge(
+                                    progress: max(0,min(1,Double(CIS)/100)),
+                                    highlight: (75.0/100)...(85.0/100),
+                                    minLabel: "0%",
+                                    maxLabel: "100%",
+                                    valueLabel: "\(CIS)%"
+                                )
+                                .frame(width: 300, height: 90)
+                                .padding(.trailing, 12) // nudge left towards center
+                                Spacer()
+                            }
                             if CIS < 80 {
                                 Text("Take less pauses. The best consistency (CIS) is 80–85%. The green band shows the ideal range.")
                                     .font(.footnote)
