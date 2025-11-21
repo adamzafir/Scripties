@@ -105,7 +105,7 @@ struct ReviewView: View {
                             maxLabel: "180",
                             valueLabel: "\(WPM)"
                         )
-                        .frame(height: 90)
+                        .frame(width: 300, height: 90)
                         
                         if WPM > 120 {
                             Text("Too fast. The best WPM is 120. The green band shows the ideal range.")
@@ -137,7 +137,7 @@ struct ReviewView: View {
                                 maxLabel: "100%",
                                 valueLabel: "\(CIS)%"
                             )
-                            .frame(height: 90)
+                            .frame(width: 300, height: 90)
                             if CIS < 80 {
                                 Text("Take less pauses. The best consistency (CIS) is 80–85%. The green band shows the ideal range.")
                                     .font(.footnote)
