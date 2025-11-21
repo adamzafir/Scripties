@@ -10,7 +10,8 @@ struct Screen1: View {
             ZStack {
                 Group {
                     if viewModel.scriptItems.isEmpty {
-                        VStack(spacing: 8) {
+                        ContentUnavailableView() {
+                            VStack {
                             HStack {
                                 Image(systemName: "list.bullet")
                                 Text("No Scripts")
@@ -18,10 +19,10 @@ struct Screen1: View {
                                     .foregroundStyle(.secondary)
                             }
                             Text("Select “Add Script” to create your first script.")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
                         }
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            }
+                        
+                       
                     } else {
                         Form {
                             ForEach($viewModel.scriptItems) { $item in

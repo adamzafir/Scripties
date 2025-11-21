@@ -194,16 +194,17 @@ struct ReviewView: View {
             }
             .onAppear {
                 computeWPM()
-                // Force CIS to 0 for testing
-                CIS = 0
+                // Initialize CIS from the incoming derived value
+                CIS = Int(deriative.rounded())
                 updateScore()
             }
             .onChange(of: elapsedTime) { _ in computeWPM(); updateScore() }
             .onChange(of: wordCount) { _ in computeWPM(); updateScore() }
             .onChange(of: LGBW) { _ in updateScore() }
-            // Disable CIS updates from 'deriative' while testing
-            // .onChange(of: deriative) { _,v in CIS = Int(v.rounded()); updateScore() }
-            
+            .onChange(of: deriative) { _, v in
+                CIS = Int(v.rounded())
+                updateScore()
+            }
             .navigationTitle("Review")
             .navigationBarBackButtonHidden(true)
         }
@@ -274,4 +275,3 @@ struct SemiCircleGauge: View {
     )
     .environmentObject(RecordingStore())
 }
-
