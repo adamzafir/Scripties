@@ -106,9 +106,20 @@ struct ReviewView: View {
                             valueLabel: "\(WPM)"
                         )
                         .frame(height: 90)
-                        Text("The best WPM is 120. The green band shows the ideal range.")
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
+                        
+                        if WPM > 120 {
+                            Text("Too fast. The best WPM is 120. The green band shows the ideal range.")
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                        } else if WPM < 100 {
+                            Text("Too slow. The best WPM is 120. The green band shows the ideal range.")
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                        } else {
+                            Text("Good! The best WPM is 120. The green band shows the ideal range.")
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                        }
                     } label: {
                         HStack {
                             Text("Words Per Minute")
@@ -127,9 +138,19 @@ struct ReviewView: View {
                                 valueLabel: "\(CIS)%"
                             )
                             .frame(height: 90)
-                            Text("The best consistency (CIS) is 80–85%. The green band shows the ideal range.")
-                                .font(.footnote)
-                                .foregroundStyle(.secondary)
+                            if CIS < 80 {
+                                Text("Take less pauses. The best consistency (CIS) is 80–85%. The green band shows the ideal range.")
+                                    .font(.footnote)
+                                    .foregroundStyle(.secondary)
+                            } else if CIS > 85 {
+                                Text("Take more pauses. The best consistency (CIS) is 80–85%. The green band shows the ideal range.")
+                                    .font(.footnote)
+                                    .foregroundStyle(.secondary)
+                            } else {
+                                Text("Keep it up! The best consistency (CIS) is 80–85%. The green band shows the ideal range.")
+                                    .font(.footnote)
+                                    .foregroundStyle(.secondary)
+                            }
                         } else {
                             Text("Speech was not detected properly, please try again.")
                                 .foregroundStyle(Color.red)
@@ -253,3 +274,4 @@ struct SemiCircleGauge: View {
     )
     .environmentObject(RecordingStore())
 }
+
