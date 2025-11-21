@@ -155,26 +155,22 @@ struct Screen22: View {
                 }
                 
                 ToolbarItemGroup(placement: .keyboard) {
-//                    Button {
-//                        showPromptDialog = true
-//                    } label: {
-//                        Image(systemName: "wand.and.stars")
-//               }
-//                    
                     Spacer()
-//                ToolbarItem(placement: .keyboard) {
-//                    HStack {
-//                        Spacer()
-                        Button {
-                            isEditingScript = false
-                        } label: {
-                            Image(systemName: "checkmark")
-                        }
+                    Button {
+                        // Dismiss any active text input (title or script)
+                        isEditingScript = false
+                        isEditingTitle = false
+                        // If you ever need an extra safety net:
+                        // UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                    } label: {
+                        Image(systemName: "checkmark")
+                    }
                 }
             }
         }
         .overlay(alignment: .bottom) {
-            if showEstimate && !isEditingScript && !isTyping {
+            // Show only when neither field is focused and user isn't actively typing
+            if showEstimate && !isEditingScript && !isEditingTitle && !isTyping {
                 VStack(spacing: 6) {
                     Text("""
                         Word Count: \(wordCount)
