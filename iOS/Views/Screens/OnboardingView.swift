@@ -20,6 +20,11 @@ struct OnboardingView: View {
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
     @State private var currentPage = 0
     
+    private var safeCurrentPage: Int {
+        guard !pages.isEmpty else { return 0 }
+        return min(max(currentPage, 0), pages.count - 1)
+    }
+    
     let pages = [
         OnboardingPage(
             imageName: "light",
@@ -49,17 +54,17 @@ struct OnboardingView: View {
     
     var body: some View {
         ZStack {
-            // Dynamic background gradient based on current page
+            // Dynamic background gradient based on current page (safe)
             LinearGradient(
                 colors: [
-                    pages[currentPage].highlightColor.opacity(0.3),
-                    pages[currentPage].highlightColor.opacity(0.1)
+                    pages[safeCurrentPage].highlightColor.opacity(0.3),
+                    pages[safeCurrentPage].highlightColor.opacity(0.1)
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
             .ignoresSafeArea()
-            .animation(.easeInOut(duration: 0.5), value: currentPage)
+            .animation(.easeInOut(duration: 0.5), value: safeCurrentPage)
             
             VStack(spacing: 20) {
                 HStack {
@@ -68,8 +73,8 @@ struct OnboardingView: View {
                         completeOnboarding()
                     }
                     .foregroundColor(.blue)
-                    .opacity(currentPage < pages.count - 1 ? 1 : 0)
-                    .animation(.easeInOut(duration: 0.3), value: currentPage)
+                    .opacity(safeCurrentPage < pages.count - 1 ? 1 : 0)
+                    .animation(.easeInOut(duration: 0.3), value: safeCurrentPage)
                     .padding()
                 }
                 .frame(height: 50)
@@ -85,14 +90,21 @@ struct OnboardingView: View {
                 }
                 .tabViewStyle(.page(indexDisplayMode: .always))
                 .indexViewStyle(.page(backgroundDisplayMode: .always))
+                .onChange(of: currentPage) { _, newValue in
+                    // Clamp defensively if TabView/animations race
+                    let clamped = min(max(newValue, 0), pages.count - 1)
+                    if clamped != newValue {
+                        currentPage = clamped
+                    }
+                }
                 
                 Spacer()
                 // Navigation buttons
                 HStack(spacing: 20) {
-                    if currentPage > 0 {
+                    if safeCurrentPage > 0 {
                         Button(action: {
                             withAnimation(.spring(response: 0.8)) {
-                                currentPage -= 1
+                                currentPage = max(0, safeCurrentPage - 1)
                             }
                         }) {
                             HStack {
@@ -107,6 +119,7 @@ struct OnboardingView: View {
                             .cornerRadius(12)
                             .padding()
                         }
+                        .disabled(safeCurrentPage == 0)
                     } else {
                         Spacer()
                             .frame(width: 100)
@@ -114,9 +127,9 @@ struct OnboardingView: View {
                     
                     Spacer()
                     Button(action: {
-                        if currentPage < pages.count - 1 {
+                        if safeCurrentPage < pages.count - 1 {
                             withAnimation(.spring(response: 0.3)) {
-                                currentPage += 1
+                                currentPage = min(pages.count - 1, safeCurrentPage + 1)
                             }
                         } else {
                             completeOnboarding()
@@ -127,33 +140,33 @@ struct OnboardingView: View {
                                 Text("Next")
                                     .font(.headline)
                                     .fontWeight(.semibold)
-                                    .opacity(currentPage == pages.count - 1 ? 0 : 1)
+                                    .opacity(safeCurrentPage == pages.count - 1 ? 0 : 1)
                                 Text("Get Started")
                                     .font(.headline)
                                     .fontWeight(.semibold)
-                                    .opacity(currentPage == pages.count - 1 ? 1 : 0)
+                                    .opacity(safeCurrentPage == pages.count - 1 ? 1 : 0)
                             }
-                            if currentPage < pages.count - 1 {
+                            if safeCurrentPage < pages.count - 1 {
                                 Image(systemName: "chevron.right")
                                     .font(.headline)
                                     .transition(.opacity)
                             }
                         }
-                        .animation(.spring(response: 0.3), value: currentPage)
+                        .animation(.spring(response: 0.3), value: safeCurrentPage)
                         .foregroundColor(.white)
                         .frame(width: 150, height: 50)
                         .background(
                             LinearGradient(
                                 colors: [
-                                    pages[currentPage].highlightColor,
-                                    pages[currentPage].highlightColor.opacity(0.7)
+                                    pages[safeCurrentPage].highlightColor,
+                                    pages[safeCurrentPage].highlightColor.opacity(0.7)
                                 ],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
                         )
                         .cornerRadius(12)
-                        .shadow(color: pages[currentPage].highlightColor.opacity(0.4), radius: 8, x: 0, y: 4)
+                        .shadow(color: pages[safeCurrentPage].highlightColor.opacity(0.4), radius: 8, x: 0, y: 4)
                     }
                     .padding()
                 }
