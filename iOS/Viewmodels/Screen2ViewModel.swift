@@ -19,12 +19,6 @@ struct ScriptItem: Identifiable, Codable {
 
 class Screen2ViewModel: ObservableObject {
     @Published var scriptItems: [ScriptItem] = [
-        ScriptItem(
-            id: UUID(),
-            title: "Demo Script",
-            scriptText: "Progress begins when people unite with purpose. By listening carefully, acting responsibly, and supporting one another, we create space for real improvement. Let us commit to steady effort and shared accountability so each choice we make builds a stronger tomorrow.",
-            lastAccessed: Date()
-        )
     ]
     
     private var untitledCount: Int = 0

@@ -16,7 +16,7 @@ struct yapLONGERApp: App {
         WindowGroup {
             Group {
                 if hasCompletedOnboarding {
-                    TabHolder()
+                    Screen1(viewModel: scriptsViewModel)
                         .transition(.opacity)
                 } else {
                     OnboardingView()

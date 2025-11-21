@@ -45,7 +45,7 @@ struct Screen1: View {
                         selectedID = viewModel.scriptItems.first?.id
                     } label: {
                         VStack {
-                            Text("Add Script")
+                            Text("New Script")
                                 .frame(maxWidth: .infinity)
                                 .font(.headline)
                                 .padding(.horizontal, 16)
