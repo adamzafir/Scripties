@@ -1,0 +1,51 @@
+import SwiftUI
+
+struct ListItem: View {
+    var sfSymbol: String
+    var title: String
+    var subtitle: String
+    
+    var body: some View {
+        HStack(alignment: .center, spacing: 12) {
+            
+            VStack {
+                Spacer(minLength: 0)
+                if title != "Avyan Intelligence" {
+                    Image(systemName: sfSymbol)
+                        .font(.system(size: 28, weight: .regular))
+                        .foregroundStyle(.secondary)
+                        .frame(width: 30, alignment: .center)
+                } else {
+                    Image(systemName: sfSymbol)
+                        .font(.system(size: 28, weight: .regular))
+                        .foregroundStyle(.secondary)
+                        .appleIntelligenceGradient(start: .top)
+                        .frame(width: 30, alignment: .center)
+                }
+                
+                Spacer(minLength: 0)
+            }
+            
+            VStack(alignment: .leading, spacing: 2) {
+                if title == "Avyan Intelligence" {
+                    Text(title)
+                        .fontWeight(.semibold)
+                        .appleIntelligenceGradient()
+                } else if sfSymbol == "link" {
+                    Text(title)
+                        .fontWeight(.semibold)
+                        .font(.body)
+                        .foregroundStyle(Color.blue)
+                } else {
+                        Text(title)
+                            .fontWeight(.semibold)
+                            .font(.body)
+                }
+                Text(subtitle)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(.vertical, 6)
+    }
+}
