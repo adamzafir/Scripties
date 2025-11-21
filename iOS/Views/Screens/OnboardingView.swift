@@ -42,7 +42,7 @@ struct OnboardingView: View {
         OnboardingPage(
             imageName: "checkmark.seal.fill",
             title: "Ready to Practice!",
-            description: "Start by creating your first script. Record yourself, get instant feedback, and become a confident speaker.",
+            description: "Create, Record, Repeat. Become a confident speaker with Scripties",
             highlightColor: .cyan
         )
     ]
