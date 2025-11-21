@@ -123,6 +123,7 @@ struct Screen5: View {
                     }
                     .font(.caption)
                     .monospacedDigit()
+                    .padding(.horizontal) // Match the slider’s horizontal padding for perfect alignment
                 }
 
                 HStack(spacing: 24) {
