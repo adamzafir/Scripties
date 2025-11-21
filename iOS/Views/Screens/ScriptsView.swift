@@ -10,18 +10,11 @@ struct Screen1: View {
             ZStack {
                 Group {
                     if viewModel.scriptItems.isEmpty {
-                        ContentUnavailableView() {
-                            VStack {
-                            HStack {
-                                Image(systemName: "list.bullet")
-                                Text("No Scripts")
-                                    .font(.headline)
-                                    .foregroundStyle(.secondary)
-                            }
-                            Text("Select “Add Script” to create your first script.")
+                        ContentUnavailableView {
+                            Label("No Mail", systemImage: "tray.fill")
+                        } description: {
+                            Text("New mails you receive will appear here.")
                         }
-                            }
-                        
                        
                     } else {
                         Form {
