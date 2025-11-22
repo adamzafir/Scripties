@@ -11,9 +11,9 @@ struct Screen1: View {
                 Group {
                     if viewModel.scriptItems.isEmpty {
                         ContentUnavailableView {
-                            Label("No Mail", systemImage: "tray.fill")
+                            Label("No Scripts", systemImage: "list.bullet")
                         } description: {
-                            Text("New mails you receive will appear here.")
+                            Text("Select 'New Script' to add a new script")
                         }
                        
                     } else {

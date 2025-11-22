@@ -2,18 +2,34 @@ import Foundation
 import SwiftUI
 import Combine
 
+struct Review: Identifiable, Codable {
+    var id: UUID
+    var cis: Int
+    var wpm: Int
+    // var stuff, stuff, consistency, wpm etc add the audio logic here
+}
+struct Reviews: Identifiable, Codable  {
+    var id: UUID
+    var reviewsItems: [Review] = []
+}
 struct ScriptItem: Identifiable, Codable {
     var id: UUID
     var title: String
     var scriptText: String
     var lastAccessed: Date
-
-    // Backward-compatible init if needed elsewhere
-    init(id: UUID = UUID(), title: String, scriptText: String, lastAccessed: Date = Date()) {
+    var pastReviews: Reviews
+    init(
+        id: UUID = UUID(),
+        title: String,
+        scriptText: String,
+        lastAccessed: Date = Date(),
+        pastReviews: Reviews = Reviews(id: UUID(), reviewsItems: [])
+    ) {
         self.id = id
         self.title = title
         self.scriptText = scriptText
         self.lastAccessed = lastAccessed
+        self.pastReviews = pastReviews
     }
 }
 
@@ -59,7 +75,8 @@ class Screen2ViewModel: ObservableObject {
             id: UUID(),
             title: finalTitle,
             scriptText: scriptText,
-            lastAccessed: Date()
+            lastAccessed: Date(),
+            pastReviews: Reviews(id: UUID(), reviewsItems: [])
         )
         scriptItems.insert(newItem, at: 0)
         sortByRecency()
@@ -113,7 +130,15 @@ class Screen2ViewModel: ObservableObject {
                     var scriptText: String
                 }
                 let old = try JSONDecoder().decode([OldScriptItem].self, from: data)
-                self.scriptItems = old.map { ScriptItem(id: $0.id, title: $0.title, scriptText: $0.scriptText, lastAccessed: Date.distantPast) }
+                self.scriptItems = old.map {
+                    ScriptItem(
+                        id: $0.id,
+                        title: $0.title,
+                        scriptText: $0.scriptText,
+                        lastAccessed: Date.distantPast,
+                        pastReviews: Reviews(id: UUID(), reviewsItems: [])
+                    )
+                }
                 save() // write new schema
             }
             sortByRecency()
