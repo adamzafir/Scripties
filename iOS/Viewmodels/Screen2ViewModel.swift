@@ -6,7 +6,8 @@ struct Review: Identifiable, Codable {
     var id: UUID
     var cis: Int
     var wpm: Int
-    // var stuff, stuff, consistency, wpm etc add the audio logic here
+    var audioURL: URL?
+    var date: Date?
 }
 struct Reviews: Identifiable, Codable  {
     var id: UUID
@@ -99,6 +100,15 @@ class Screen2ViewModel: ObservableObject {
         save()
     }
     
+    // Append a review result for a specific script
+    func appendReview(to scriptID: UUID, cis: Int, wpm: Int, audioURL: URL?) {
+        guard let idx = scriptItems.firstIndex(where: { $0.id == scriptID }) else { return }
+        let review = Review(id: UUID(), cis: cis, wpm: wpm, audioURL: audioURL, date: Date())
+        scriptItems[idx].pastReviews.reviewsItems.insert(review, at: 0)
+        scriptItems[idx].lastAccessed = Date()
+        save()
+    }
+    
     private func sortByRecency() {
         scriptItems.sort { $0.lastAccessed > $1.lastAccessed }
     }
@@ -158,3 +168,4 @@ class Screen2ViewModel: ObservableObject {
         }
     }
 }
+

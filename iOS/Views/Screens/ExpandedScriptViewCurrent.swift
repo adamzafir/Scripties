@@ -2,6 +2,10 @@ import SwiftUI
 import FoundationModels
 
 struct Screen22: View {
+    var scriptItemID: UUID
+
+    @EnvironmentObject private var scriptsViewModel: Screen2ViewModel
+
     @Binding var title: String
     @Binding var script: String
     
@@ -187,6 +191,7 @@ struct Screen22: View {
         }
         .fullScreenCover(isPresented: $showScreent) {
             Screen3Teleprompter(
+                scriptItemID: scriptItemID,
                 title: $title,
                 script: $script,
                 WPM: $WPM,
@@ -201,6 +206,7 @@ struct Screen22: View {
 
 #Preview {
     Screen22(
+        scriptItemID: UUID(),
         title: .constant("untitled"),
         script: .constant("")
     )

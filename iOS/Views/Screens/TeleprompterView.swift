@@ -30,26 +30,11 @@ private func normTokens(_ s:String)->[String]{
 }
 
 struct Screen3Teleprompter: View {
-
-    private enum FS:Hashable,CaseIterable,Identifiable{
-        case xs,s,def,l,xl,custom
-        var id:Self{self}
-        var t:String{
-            switch self {
-            case .xs:"XS"; case .s:"S"; case .def:"Default"; case .l:"L"; case .xl:"XL"; case .custom:"Custom"
-            }
-        }
-        var preset:Double?{
-            switch self{
-            case .xs:10; case .s:20; case .def:28; case .l:40; case .xl:50; default:nil
-            }
-        }
-        static func from(_ v:Double)->FS{
-            switch v{case 10:.xs;case 20:.s;case 28:.def;case 40:.l;case 50:.xl;default:.custom}
-        }
-    }
+    // The ScriptItem this teleprompter session belongs to
+    var scriptItemID: UUID? = nil
 
     @EnvironmentObject var recordingStore:RecordingStore
+    @EnvironmentObject var scriptsViewModel: Screen2ViewModel
     @Environment(\.dismiss) private var dismiss
     @Binding var title:String
     @Binding var script:String
@@ -206,11 +191,13 @@ struct Screen3Teleprompter: View {
         NavigationStack {
             NavigationLink("", destination:
                 ReviewView(
-                    LGBW:Binding(get:{Int(LGBWSeconds)},set:{_ in}),
-                    elapsedTime:$elapsed,
-                    wordCount:$wordCount,
-                    deriative:Binding(get:{computeCIS()},set:{_ in}),
-                    isCoverPresented:$isPresented
+                    scriptItemID: scriptItemID,
+                    recordingURL: recordingStore.latestRecordingURL,
+                    LGBW: Binding(get: { Int(LGBWSeconds) }, set: { _ in }),
+                    elapsedTime: $elapsed,
+                    wordCount: $wordCount,
+                    deriative: Binding(get: { computeCIS() }, set: { _ in }),
+                    isCoverPresented: $isPresented
                 ), isActive:$navigate
             )
 

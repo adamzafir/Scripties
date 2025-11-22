@@ -2,9 +2,13 @@ import SwiftUI
 import AVFoundation
 
 struct ReviewView: View {
-    // Optional URL to a specific recording to review
+    // Target script to append review to
+    var scriptItemID: UUID? = nil
+    // Optional URL to a specific recording to review (overrides latest)
     var recordingURL: URL? = nil
+
     @EnvironmentObject private var recordingStore: RecordingStore
+    @EnvironmentObject private var scriptsViewModel: Screen2ViewModel
     
     // MARK: - Audio playback state
     @State private var audioPlayer: AVAudioPlayer?
@@ -16,6 +20,11 @@ struct ReviewView: View {
     @State private var selectedURL: URL? = nil
     @State private var lastPreparedURL: URL? = nil
     @State private var isPlaying = false
+    
+    private var resolvedAudioURL: URL? {
+        // Prefer explicit recordingURL, else latest from store, else selected from list
+        return recordingURL ?? recordingStore.latestRecordingURL ?? selectedURL
+    }
     
     // MARK: - Scoring state
     @State var WPM = 120
@@ -187,6 +196,13 @@ struct ReviewView: View {
                 
                 
                 Button {
+                    // Persist review into the associated script if possible
+                    if let sid = scriptItemID {
+                        // Ensure latest metrics are computed
+                        computeWPM()
+                        CIS = Int(deriative.rounded())
+                        scriptsViewModel.appendReview(to: sid, cis: CIS, wpm: WPM, audioURL: resolvedAudioURL)
+                    }
                     dismiss()
                     DispatchQueue.main.async { isCoverPresented = false }
                 } label: {
@@ -277,6 +293,8 @@ struct SemiCircleGauge: View {
 
 #Preview {
     ReviewView(
+        scriptItemID: UUID(),
+        recordingURL: nil,
         LGBW: .constant(5),
         elapsedTime: .constant(120),
         wordCount: .constant(240),
@@ -284,4 +302,5 @@ struct SemiCircleGauge: View {
         isCoverPresented: .constant(false)
     )
     .environmentObject(RecordingStore())
+    .environmentObject(Screen2ViewModel())
 }

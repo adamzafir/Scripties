@@ -2,6 +2,10 @@ import SwiftUI
 import FoundationModels
 
 struct Screen2: View {
+    var scriptItemID: UUID = UUID() // placeholder if used
+
+    @EnvironmentObject private var scriptsViewModel: Screen2ViewModel
+
     @Binding var title: String
     @Binding var script: String
     @State private var showScreen = false
@@ -179,7 +183,7 @@ struct Screen2: View {
             }
         }
         .fullScreenCover(isPresented: $showScreent) {
-            Screen3Teleprompter(title: $title, script: $script, WPM: $WPM, isPresented: $showScreent)
+            Screen3Teleprompter(title: $title, script: $script, WPM: $WPM, isPresented: $showScreent, scriptItemID: scriptItemID)
         }
         .onDisappear {
             typingResetTask?.cancel()

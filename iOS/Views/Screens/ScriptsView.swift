@@ -21,7 +21,7 @@ struct Screen1: View {
                             ForEach($viewModel.scriptItems) { $item in
                                 NavigationLink(tag: item.id, selection: $selectedID) {
                                     // Always show the main editor; beta/keywords disabled
-                                    Screen22(title: $item.title, script: $item.scriptText)
+                                    Screen22(scriptItemID: item.id, title: $item.title, script: $item.scriptText)
                                         .onAppear { viewModel.markAccessed(id: item.id) }
                                 } label: {
                                     Text(item.title)
