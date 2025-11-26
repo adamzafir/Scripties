@@ -34,7 +34,7 @@ struct Settings: View {
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
     @State private var showReplayAlert = false
     
-    private enum FontSizeChoice: Hashable, CaseIterable, Identifiable {
+    enum FontSizeChoice: Hashable, CaseIterable, Identifiable {
         case extraSmall
         case small
         case `default`

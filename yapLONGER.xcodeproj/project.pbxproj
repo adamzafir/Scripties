@@ -7,7 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		169F288E50C34F43A4548C27 /* ExtensionDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2572D92F368410C9B72B952 /* ExtensionDelegate.swift */; };
 		66896F692ED165870016AB26 /* Scripties Watchos Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 66896F5F2ED165830016AB26 /* Scripties Watchos Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		781D838B3AC443C5A370F526 /* Scripties Watchos Watch App Extension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = E642754BEC4C477F846FF0F8 /* Scripties Watchos Watch App Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		D464F51599A941C7BB08F2E5 /* NotificationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60F802E3B7164FA9A083C932 /* NotificationController.swift */; };
+		F2222A94B2A3439FBA88BDED /* ComplicationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44D57529A9C64A5BAAA4A625 /* ComplicationController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -18,9 +22,27 @@
 			remoteGlobalIDString = 66896F5E2ED165830016AB26;
 			remoteInfo = "Scripties Watchos Watch App";
 		};
+		68AC94E2D3BF4C12AD5DBFAB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 66C863C62EC1AA94007A5F08 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = FC61463ED9D1443EAE5DFB98;
+			remoteInfo = "Scripties Watchos Watch App Extension";
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		5D1F21B99A6B44C79F5AB64A /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				781D838B3AC443C5A370F526 /* Scripties Watchos Watch App Extension.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		66896F6A2ED165870016AB26 /* Embed Watch Content */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -35,14 +57,49 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		3D5EA9A42AB449DAA6318FF5 /* Scripties Watchos Watch App Extension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Scripties Watchos Watch App Extension.entitlements"; sourceTree = "<group>"; };
+		44D57529A9C64A5BAAA4A625 /* ComplicationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComplicationController.swift; sourceTree = "<group>"; };
+		60F802E3B7164FA9A083C932 /* NotificationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationController.swift; sourceTree = "<group>"; };
 		66157EED2EC61AE5001EF93E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		66896F5F2ED165830016AB26 /* Scripties Watchos Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Scripties Watchos Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		66C863CE2EC1AA94007A5F08 /* yapLONGER.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = yapLONGER.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		CFD542DC7D53401CBCCB692E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		E642754BEC4C477F846FF0F8 /* Scripties Watchos Watch App Extension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "Scripties Watchos Watch App Extension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F2572D92F368410C9B72B952 /* ExtensionDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionDelegate.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		66CDC4792ED5CF70004975F5 /* Exceptions for "Scripties Watchos Watch App" folder in "Scripties Watchos Watch App" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				ContentView.swift,
+				ReviewView.swift,
+				Scripties_WatchosApp.swift,
+				WatchConnectivityManager.swift,
+				WatchTeleprompterView.swift,
+			);
+			target = 66896F5E2ED165830016AB26 /* Scripties Watchos Watch App */;
+		};
+		66CDC47A2ED5CF70004975F5 /* Exceptions for "Scripties Watchos Watch App" folder in "Scripties Watchos Watch App Extension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				ContentView.swift,
+				ReviewView.swift,
+				Scripties_WatchosApp.swift,
+				WatchConnectivityManager.swift,
+				WatchTeleprompterView.swift,
+			);
+			target = FC61463ED9D1443EAE5DFB98 /* Scripties Watchos Watch App Extension */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		66896F602ED165840016AB26 /* Scripties Watchos Watch App */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				66CDC4792ED5CF70004975F5 /* Exceptions for "Scripties Watchos Watch App" folder in "Scripties Watchos Watch App" target */,
+				66CDC47A2ED5CF70004975F5 /* Exceptions for "Scripties Watchos Watch App" folder in "Scripties Watchos Watch App Extension" target */,
+			);
 			path = "Scripties Watchos Watch App";
 			sourceTree = "<group>";
 		};
@@ -54,6 +111,13 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		4DE4D1AC9BED4C7D8B1337B3 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		66896F5C2ED165830016AB26 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -77,6 +141,7 @@
 				66157EED2EC61AE5001EF93E /* Info.plist */,
 				66C863D02EC1AA94007A5F08 /* iOS */,
 				66896F602ED165840016AB26 /* Scripties Watchos Watch App */,
+				F0F513EC14AD457DB5D63905 /* Scripties Watchos Watch App Extension */,
 				66C863CF2EC1AA94007A5F08 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -86,8 +151,21 @@
 			children = (
 				66C863CE2EC1AA94007A5F08 /* yapLONGER.app */,
 				66896F5F2ED165830016AB26 /* Scripties Watchos Watch App.app */,
+				E642754BEC4C477F846FF0F8 /* Scripties Watchos Watch App Extension.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		F0F513EC14AD457DB5D63905 /* Scripties Watchos Watch App Extension */ = {
+			isa = PBXGroup;
+			children = (
+				F2572D92F368410C9B72B952 /* ExtensionDelegate.swift */,
+				60F802E3B7164FA9A083C932 /* NotificationController.swift */,
+				44D57529A9C64A5BAAA4A625 /* ComplicationController.swift */,
+				CFD542DC7D53401CBCCB692E /* Info.plist */,
+				3D5EA9A42AB449DAA6318FF5 /* Scripties Watchos Watch App Extension.entitlements */,
+			);
+			path = "Scripties Watchos Watch App Extension";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -100,10 +178,12 @@
 				66896F5B2ED165830016AB26 /* Sources */,
 				66896F5C2ED165830016AB26 /* Frameworks */,
 				66896F5D2ED165830016AB26 /* Resources */,
+				5D1F21B99A6B44C79F5AB64A /* Embed App Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				FD69A988C2AA46A7A13D7D91 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				66896F602ED165840016AB26 /* Scripties Watchos Watch App */,
@@ -113,7 +193,7 @@
 			);
 			productName = "Scripties Watchos Watch App";
 			productReference = 66896F5F2ED165830016AB26 /* Scripties Watchos Watch App.app */;
-			productType = "com.apple.product-type.application";
+			productType = "com.apple.product-type.application.watchapp2";
 		};
 		66C863CD2EC1AA94007A5F08 /* yapLONGER */ = {
 			isa = PBXNativeTarget;
@@ -139,6 +219,25 @@
 			productReference = 66C863CE2EC1AA94007A5F08 /* yapLONGER.app */;
 			productType = "com.apple.product-type.application";
 		};
+		FC61463ED9D1443EAE5DFB98 /* Scripties Watchos Watch App Extension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 512D3173D57548448F3AA782 /* Build configuration list for PBXNativeTarget "Scripties Watchos Watch App Extension" */;
+			buildPhases = (
+				3B0A65089E4E4F8DB0181987 /* Sources */,
+				4DE4D1AC9BED4C7D8B1337B3 /* Frameworks */,
+				592DBC34E56644EAA6138771 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Scripties Watchos Watch App Extension";
+			packageProductDependencies = (
+			);
+			productName = "Scripties Watchos Watch App Extension";
+			productReference = E642754BEC4C477F846FF0F8 /* Scripties Watchos Watch App Extension.appex */;
+			productType = "com.apple.product-type.watchkit2-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -150,10 +249,13 @@
 				LastUpgradeCheck = 2610;
 				TargetAttributes = {
 					66896F5E2ED165830016AB26 = {
-						CreatedOnToolsVersion = 26.1.1;
+						CreatedOnToolsVersion = 26.0;
 					};
 					66C863CD2EC1AA94007A5F08 = {
-						CreatedOnToolsVersion = 26.1;
+						CreatedOnToolsVersion = 26.0;
+					};
+					FC61463ED9D1443EAE5DFB98 = {
+						CreatedOnToolsVersion = 26.0;
 					};
 				};
 			};
@@ -175,11 +277,19 @@
 			targets = (
 				66C863CD2EC1AA94007A5F08 /* yapLONGER */,
 				66896F5E2ED165830016AB26 /* Scripties Watchos Watch App */,
+				FC61463ED9D1443EAE5DFB98 /* Scripties Watchos Watch App Extension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		592DBC34E56644EAA6138771 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		66896F5D2ED165830016AB26 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -197,6 +307,16 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		3B0A65089E4E4F8DB0181987 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				169F288E50C34F43A4548C27 /* ExtensionDelegate.swift in Sources */,
+				D464F51599A941C7BB08F2E5 /* NotificationController.swift in Sources */,
+				F2222A94B2A3439FBA88BDED /* ComplicationController.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		66896F5B2ED165830016AB26 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -219,17 +339,50 @@
 			target = 66896F5E2ED165830016AB26 /* Scripties Watchos Watch App */;
 			targetProxy = 66896F672ED165870016AB26 /* PBXContainerItemProxy */;
 		};
+		FD69A988C2AA46A7A13D7D91 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = FC61463ED9D1443EAE5DFB98 /* Scripties Watchos Watch App Extension */;
+			targetProxy = 68AC94E2D3BF4C12AD5DBFAB /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		1C2014D6581049A98CD77A1A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "Scripties Watchos Watch App Extension/Scripties Watchos Watch App Extension.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 3;
+				DEVELOPMENT_TEAM = XL5JK4F896;
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = "Scripties Watchos Watch App Extension/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = sg.tk.2025.scripties.watchkitapp.watchkitextension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 26.0;
+				WK_APP_BUNDLE_IDENTIFIER = sg.tk.2025.scripties.watchkitapp;
+			};
+			name = Debug;
+		};
 		66896F6B2ED165870016AB26 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = XL5JK4F896;
+				ENABLE_PREVIEWS = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Scripties Watchos";
@@ -251,7 +404,7 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 4;
-				WATCHOS_DEPLOYMENT_TARGET = 26.1;
+				WATCHOS_DEPLOYMENT_TARGET = 26.0;
 			};
 			name = Debug;
 		};
@@ -260,9 +413,11 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = XL5JK4F896;
+				ENABLE_PREVIEWS = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Scripties Watchos";
@@ -284,7 +439,7 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 4;
-				WATCHOS_DEPLOYMENT_TARGET = 26.1;
+				WATCHOS_DEPLOYMENT_TARGET = 26.0;
 			};
 			name = Release;
 		};
@@ -341,7 +496,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -349,6 +504,7 @@
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
 			};
 			name = Debug;
 		};
@@ -399,12 +555,13 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_VERSION = 6.0;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
@@ -489,9 +646,44 @@
 			};
 			name = Release;
 		};
+		E5469CE36DA84BF4A67365E1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "Scripties Watchos Watch App Extension/Scripties Watchos Watch App Extension.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 3;
+				DEVELOPMENT_TEAM = XL5JK4F896;
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = "Scripties Watchos Watch App Extension/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = sg.tk.2025.scripties.watchkitapp.watchkitextension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 26.0;
+				WK_APP_BUNDLE_IDENTIFIER = sg.tk.2025.scripties.watchkitapp;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		512D3173D57548448F3AA782 /* Build configuration list for PBXNativeTarget "Scripties Watchos Watch App Extension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1C2014D6581049A98CD77A1A /* Debug */,
+				E5469CE36DA84BF4A67365E1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		66896F6D2ED165870016AB26 /* Build configuration list for PBXNativeTarget "Scripties Watchos Watch App" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

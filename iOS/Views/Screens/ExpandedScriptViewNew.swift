@@ -183,7 +183,13 @@ struct Screen2: View {
             }
         }
         .fullScreenCover(isPresented: $showScreent) {
-            Screen3Teleprompter(title: $title, script: $script, WPM: $WPM, isPresented: $showScreent, scriptItemID: scriptItemID)
+            Screen3Teleprompter(
+                scriptItemID: scriptItemID,
+                title: $title,
+                script: $script,
+                WPM: $WPM,
+                isPresented: $showScreent
+            )
         }
         .onDisappear {
             typingResetTask?.cancel()

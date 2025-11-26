@@ -42,7 +42,7 @@ struct Screen3Teleprompter: View {
     @Binding var isPresented:Bool
     
     @AppStorage("fontSize") private var fontSize:Double = 28
-    @State private var fontChoice:FS = .def
+    @State var fontChoice: Settings.FontSizeChoice = .default
     @State private var customSize:Double = 28
 
     @State private var scriptLines:[String]=[]
@@ -53,6 +53,7 @@ struct Screen3Teleprompter: View {
     @State private var isRecording=false
     @State private var navigate=false
     @State private var isLoading=true
+    @State private var reviewDraft = Review(cis: 0, wpm: 0, audioURL: nil, date: Date())
 
     @State private var wallTimer:Timer?
     @State private var elapsed=0
@@ -187,17 +188,32 @@ struct Screen3Teleprompter: View {
         return max(0,base-p)
     }
 
+    private func computeWPMValue() -> Int {
+        guard elapsed > 0 else { return 0 }
+        let min = Double(elapsed) / 60
+        return max(0, Int(round(Double(wordCount) / min)))
+    }
+
+    private func finalizeReviewDraft() {
+        let cis = Int(computeCIS().rounded())
+        let wpm = computeWPMValue()
+        reviewDraft = Review(
+            cis: cis,
+            wpm: wpm,
+            audioURL: recordingStore.latestRecordingURL,
+            date: Date()
+        )
+    }
+
     var body: some View {
         NavigationStack {
             NavigationLink("", destination:
                 ReviewView(
+                    review: $reviewDraft,
                     scriptItemID: scriptItemID,
-                    recordingURL: recordingStore.latestRecordingURL,
-                    LGBW: Binding(get: { Int(LGBWSeconds) }, set: { _ in }),
-                    elapsedTime: $elapsed,
-                    wordCount: $wordCount,
-                    deriative: Binding(get: { computeCIS() }, set: { _ in }),
-                    isCoverPresented: $isPresented
+                    showsSaveButton: true,
+                    autoPersistOnAppear: true,
+                    onDismiss: { isPresented = false }
                 ), isActive:$navigate
             )
 
@@ -226,6 +242,7 @@ struct Screen3Teleprompter: View {
                 Button {
                     isRecording.toggle()
                     if isRecording {
+                        reviewDraft = Review(cis: 0, wpm: 0, audioURL: nil, date: Date())
                         silenceDurations=[]
                         LGBWSeconds=0
                         isSilent=true
@@ -238,6 +255,7 @@ struct Screen3Teleprompter: View {
                         stopRecog()
                         stopWall()
                         finalizeSilence()
+                        finalizeReviewDraft()
                         navigate=true
                     }
                 } label: {
@@ -250,10 +268,10 @@ struct Screen3Teleprompter: View {
                 ToolbarItem(placement:.topBarTrailing){
                     Menu{
                         Picker("Font Size",selection:$fontChoice){
-                            ForEach(FS.allCases){c in Text(c.t).tag(c) }
+                            ForEach(Settings.FontSizeChoice.allCases){c in Text(c.title).tag(c) }
                         }
                         .onChange(of:fontChoice){_,v in
-                            if let p=v.preset {
+                            if let p=v.presetValue {
                                 fontSize=p
                                 customSize=p
                             }
@@ -274,7 +292,7 @@ struct Screen3Teleprompter: View {
                 }
             }
             .onAppear{
-                fontChoice = FS.from(fontSize)
+                fontChoice = Settings.FontSizeChoice.fromStored(fontSize)
                 customSize = fontSize
                 wordCount = script.split(whereSeparator:\.isWhitespace).count
                 recompute()

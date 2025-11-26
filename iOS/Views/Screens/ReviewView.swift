@@ -4,238 +4,214 @@ import AVFoundation
 struct ReviewView: View {
     // Target script to append review to
     var scriptItemID: UUID? = nil
-    // Optional URL to a specific recording to review (overrides latest)
-    var recordingURL: URL? = nil
+    // Optional callback for external save handling (e.g., watch->phone)
+    var onSave: ((Review) -> Void)? = nil
+    var onDismiss: (() -> Void)? = nil
+    var showsSaveButton: Bool = true
+    var autoPersistOnAppear: Bool = false
 
-    @EnvironmentObject private var recordingStore: RecordingStore
     @EnvironmentObject private var scriptsViewModel: Screen2ViewModel
-    
+    @Environment(\.dismiss) private var dismiss
+
+    @Binding private var review: Review
+
     // MARK: - Audio playback state
     @State private var audioPlayer: AVAudioPlayer?
-    @State private var currentTime: TimeInterval = 0
-    @State private var duration: TimeInterval = 0
-    @State private var progressTimer: Timer?
-    @State private var isScrubbing = false
-    @State private var audios: [URL] = []
-    @State private var selectedURL: URL? = nil
-    @State private var lastPreparedURL: URL? = nil
     @State private var isPlaying = false
-    
-    private var resolvedAudioURL: URL? {
-        // Prefer explicit recordingURL, else latest from store, else selected from list
-        return recordingURL ?? recordingStore.latestRecordingURL ?? selectedURL
-    }
-    
-    // MARK: - Scoring state
-    @State var WPM = 120
-    @Binding var LGBW: Int
-    @Binding var elapsedTime: Int
-    @Binding var wordCount: Int
-    @Binding var deriative: Double
-    @Binding var isCoverPresented: Bool
-    @Environment(\.dismiss) private var dismiss
-    
-    @State private var CIS: Int = 0
-    @State private var scoreTwo: Double = 0
-    @State private var score: Int = 2
+    @State private var hasPersisted = false
+
+    // MARK: - Expansions
     @State private var expandWPM = false
     @State private var expandCIS = false
-    
-    private func computeWPM() {
-        guard elapsedTime > 0 else { WPM = 0; return }
-        let min = Double(elapsedTime) / 60
-        WPM = max(0, Int(round(Double(wordCount) / min)))
+
+    init(review: Binding<Review>, scriptItemID: UUID? = nil, showsSaveButton: Bool = true, autoPersistOnAppear: Bool = false, onSave: ((Review) -> Void)? = nil, onDismiss: (() -> Void)? = nil) {
+        _review = review
+        self.scriptItemID = scriptItemID
+        self.showsSaveButton = showsSaveButton
+        self.autoPersistOnAppear = autoPersistOnAppear
+        self.onSave = onSave
+        self.onDismiss = onDismiss
     }
-    
-    private func wpmPct(_ v: Int) -> Double {
-        if v <= 120 { return Double(max(0, v)) }
-        return Double(min(200, v))
+
+    init(review: Review, scriptItemID: UUID? = nil, showsSaveButton: Bool = false, autoPersistOnAppear: Bool = false, onSave: ((Review) -> Void)? = nil, onDismiss: (() -> Void)? = nil) {
+        _review = .constant(review)
+        self.scriptItemID = scriptItemID
+        self.showsSaveButton = showsSaveButton
+        self.autoPersistOnAppear = autoPersistOnAppear
+        self.onSave = onSave
+        self.onDismiss = onDismiss
     }
-    
-    private func lgbwPct(_ v: Int) -> Double {
-        if v <= 5 { return 100 }
-        let over = min(10, max(6, v))
-        let steps = over - 5
-        return max(0, 100 - Double(steps) * 20)
+
+    private var formattedDate: String {
+        let f = DateFormatter()
+        f.dateStyle = .medium
+        f.timeStyle = .short
+        return f.string(from: review.date)
     }
-    
-    private func cisPct(_ v: Int) -> Double {
-        if v >= 80 && v <= 85 { return 100 }
-        if v > 85 { return max(0, 100 - Double(v - 85) * 6) }
-        return Double(max(0, v))
-    }
-    
-    private func updateScore() {
-        let wp = wpmPct(WPM)
-        let lp = lgbwPct(LGBW)
-        let cp = cisPct(CIS)
-        let total = (wp + lp + cp) / 3
-        scoreTwo = max(0, min(100, total))
-        let idealWPM = Int(round(wp)) == 100
-        let idealLGBW = Int(round(lp)) == 100
-        let idealCIS = CIS >= 80 && CIS <= 85
-        score = (idealWPM && idealLGBW && idealCIS) ? 3 : 2
-    }
-    
-    private func formatTime(_ t: TimeInterval) -> String {
-        guard t.isFinite && !t.isNaN else { return "0:00" }
-        let total = Int(t.rounded())
-        return String(format: "%d:%02d", total / 60, total % 60)
-    }
-    
-    private func getAudios() {
+
+    private func togglePlayback() {
+        guard let url = review.audioURL else { return }
+
+        if let player = audioPlayer, player.url == url {
+            if player.isPlaying {
+                player.pause()
+                isPlaying = false
+            } else {
+                player.play()
+                isPlaying = true
+            }
+            return
+        }
+
         do {
-            let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-            let result = try FileManager.default.contentsOfDirectory(at: url, includingPropertiesForKeys: [.contentModificationDateKey], options: [])
-            self.audios = result
-                .filter { $0.pathExtension.lowercased() == "m4a" }
-                .sorted(by: { lhs, rhs in
-                    let lDate = (try? lhs.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantPast
-                    let rDate = (try? rhs.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantPast
-                    return lDate > rDate
-                })
+            let player = try AVAudioPlayer(contentsOf: url)
+            audioPlayer = player
+            player.play()
+            isPlaying = true
         } catch {
-            print("List audios error: \(error.localizedDescription)")
-            self.audios = []
+            print("Audio playback error: \(error.localizedDescription)")
+            isPlaying = false
         }
     }
-    
-    // MARK: - View
+
+    private func persistReview(shouldDismiss: Bool = true) {
+        guard !hasPersisted else {
+            if shouldDismiss {
+                dismiss()
+                onDismiss?()
+            }
+            return
+        }
+
+        if let sid = scriptItemID {
+            scriptsViewModel.appendReview(review, to: sid)
+        }
+        onSave?(review)
+        hasPersisted = true
+        if shouldDismiss {
+            dismiss()
+            onDismiss?()
+        }
+    }
+
     var body: some View {
-        NavigationStack {
-            Form {
-                Section("Result") {
-                    
-                    DisclosureGroup(isExpanded: $expandWPM) {
-                        HStack {
-                            Spacer()
-                            SemiCircleGauge(
-                                progress: max(0, min(1, Double(WPM)/180)),
-                                highlight: (100.0/180)...(120.0/180),
-                                minLabel: "0",
-                                maxLabel: "180",
-                                valueLabel: "\(WPM)"
-                            )
-                            .frame(width: 300, height: 90)
-                            .padding(.trailing, 10) // nudge left towards center
-                            Spacer()
-                        }
-                        
-                        if WPM > 120 {
-                            Text("Too fast. The best WPM is 120. The green band shows the ideal range.")
-                                .font(.footnote)
-                                .foregroundStyle(.secondary)
-                        } else if WPM < 100 {
-                            Text("Too slow. The best WPM is 120. The green band shows the ideal range.")
-                                .font(.footnote)
-                                .foregroundStyle(.secondary)
-                        } else {
-                            Text("Good! The best WPM is 120. The green band shows the ideal range.")
-                                .font(.footnote)
-                                .foregroundStyle(.secondary)
-                        }
-                    } label: {
-                        HStack {
-                            Text("Words Per Minute")
-                            Spacer()
-                            Text("\(WPM)").monospacedDigit().foregroundStyle(.secondary)
-                        }
+        Form {
+            Section {
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Review")
+                            .font(.headline)
+                        Text(formattedDate)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
                     }
-                    
-                    DisclosureGroup(isExpanded: $expandCIS) {
-                        if CIS != 0 {
-                            HStack {
-                                Spacer()
-                                SemiCircleGauge(
-                                    progress: max(0,min(1,Double(CIS)/100)),
-                                    highlight: (75.0/100)...(85.0/100),
-                                    minLabel: "0%",
-                                    maxLabel: "100%",
-                                    valueLabel: "\(CIS)%"
-                                )
-                                .frame(width: 300, height: 90)
-                                .padding(.trailing, 12) // nudge left towards center
-                                Spacer()
-                            }
-                            if CIS < 80 {
-                                Text("Take less pauses. The best consistency (CIS) is 80–85%. The green band shows the ideal range.")
-                                    .font(.footnote)
-                                    .foregroundStyle(.secondary)
-                            } else if CIS > 85 {
-                                Text("Take more pauses. The best consistency (CIS) is 80–85%. The green band shows the ideal range.")
-                                    .font(.footnote)
-                                    .foregroundStyle(.secondary)
-                            } else {
-                                Text("Keep it up! The best consistency (CIS) is 80–85%. The green band shows the ideal range.")
-                                    .font(.footnote)
-                                    .foregroundStyle(.secondary)
-                            }
-                        } else {
-                            Text("Speech was not detected properly, please try again.")
-                                .foregroundStyle(Color.red)
-                                .foregroundStyle(.secondary)
+                    Spacer()
+                    if let url = review.audioURL {
+                        Button {
+                            togglePlayback()
+                        } label: {
+                            Label(isPlaying ? "Pause" : "Play", systemImage: isPlaying ? "pause.fill" : "play.fill")
                         }
-                    } label: {
-                        HStack {
-                            Text("Consistency")
-                            Spacer()
-                            if CIS != 0 {
-                                Text("\(CIS)%").monospacedDigit().foregroundStyle(.secondary)
-                            } else {
-                                Text("Error")
-                                    .foregroundStyle(Color.red)
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
+                        .buttonStyle(.bordered)
+                        .tint(.accentColor)
+                        .accessibilityLabel(url.lastPathComponent)
                     }
                 }
-                
-                
-                Screen5()
-                
-                
-                
-                Button {
-                    // Persist review into the associated script if possible
-                    if let sid = scriptItemID {
-                        // Ensure latest metrics are computed
-                        computeWPM()
-                        CIS = Int(deriative.rounded())
-                        scriptsViewModel.appendReview(to: sid, cis: CIS, wpm: WPM, audioURL: resolvedAudioURL)
+            }
+
+            Section("Result") {
+                DisclosureGroup(isExpanded: $expandWPM) {
+                    SemiCircleGauge(
+                        progress: max(0, min(1, Double(review.wpm)/180)),
+                        highlight: (100.0/180)...(120.0/180),
+                        minLabel: "0",
+                        maxLabel: "180",
+                        valueLabel: "\(review.wpm)"
+                    )
+                    .frame(height: 110)
+
+                    if review.wpm > 120 {
+                        Text("Too fast. The best WPM is 120. The green band shows the ideal range.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    } else if review.wpm < 100 {
+                        Text("Too slow. The best WPM is 120. The green band shows the ideal range.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text("Good! The best WPM is 120. The green band shows the ideal range.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
                     }
-                    dismiss()
-                    DispatchQueue.main.async { isCoverPresented = false }
+                } label: {
+                    HStack {
+                        Text("Words Per Minute")
+                        Spacer()
+                        Text("\(review.wpm)").monospacedDigit().foregroundStyle(.secondary)
+                    }
+                }
+
+                DisclosureGroup(isExpanded: $expandCIS) {
+                    HStack {
+                        SemiCircleGauge(
+                            progress: max(0,min(1,Double(review.cis)/100)),
+                            highlight: (75.0/100)...(85.0/100),
+                            minLabel: "0%",
+                            maxLabel: "100%",
+                            valueLabel: "\(review.cis)%"
+                        )
+                        .frame(height: 110)
+                    }
+                    if review.cis < 80 {
+                        Text("Take less pauses. The best consistency (CIS) is 80–85%. The green band shows the ideal range.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    } else if review.cis > 85 {
+                        Text("Take more pauses. The best consistency (CIS) is 80–85%. The green band shows the ideal range.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text("Keep it up! The best consistency (CIS) is 80–85%. The green band shows the ideal range.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                } label: {
+                    HStack {
+                        Text("Consistency")
+                        Spacer()
+                        Text("\(review.cis)%").monospacedDigit().foregroundStyle(.secondary)
+                    }
+                }
+            }
+
+            if showsSaveButton {
+                Button {
+                    persistReview()
                 } label: {
                     ZStack {
                         RoundedRectangle(cornerRadius: 24)
                             .frame(height: 55)
                             .foregroundColor(.accentColor)
                             .glassEffect()
-                        Text("Done")
+                        Text("Save Review")
                             .foregroundColor(.white)
                             .fontWeight(.semibold)
                     }
-                    .padding()
                 }
+                .buttonStyle(.plain)
+                .padding(.vertical, 6)
             }
-            .onAppear {
-                computeWPM()
-                // Initialize CIS from the incoming derived value
-                CIS = Int(deriative.rounded())
-                updateScore()
+        }
+        .navigationTitle("Review")
+        .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            if autoPersistOnAppear {
+                persistReview(shouldDismiss: false)
             }
-            .onChange(of: elapsedTime) { _ in computeWPM(); updateScore() }
-            .onChange(of: wordCount) { _ in computeWPM(); updateScore() }
-            .onChange(of: LGBW) { _ in updateScore() }
-            .onChange(of: deriative) { _, v in
-                CIS = Int(v.rounded())
-                updateScore()
-            }
-            .navigationTitle("Review")
-            .navigationBarBackButtonHidden(true)
         }
     }
 }
+
 // MARK: - Gauge
 struct SemiCircleGauge: View {
     var progress: Double
@@ -293,14 +269,9 @@ struct SemiCircleGauge: View {
 
 #Preview {
     ReviewView(
+        review: Review(cis: 72, wpm: 118, audioURL: nil, date: Date()),
         scriptItemID: UUID(),
-        recordingURL: nil,
-        LGBW: .constant(5),
-        elapsedTime: .constant(120),
-        wordCount: .constant(240),
-        deriative: .constant(70.0),
-        isCoverPresented: .constant(false)
+        showsSaveButton: true
     )
-    .environmentObject(RecordingStore())
     .environmentObject(Screen2ViewModel())
 }

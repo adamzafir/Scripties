@@ -4,6 +4,7 @@ struct Screen1: View {
     @ObservedObject var viewModel: Screen2ViewModel
     // @AppStorage("betashit") private var isBeta: Bool = false // COMMENTED OUT: beta flag not used
     @State private var selectedID: ScriptItem.ID? = nil
+    @State private var pastReviewsTarget: ScriptItem.ID? = nil
     
     var body: some View {
         NavigationStack {
@@ -26,8 +27,38 @@ struct Screen1: View {
                                 } label: {
                                     Text(item.title)
                                 }
+                                .swipeActions(edge: .leading, allowsFullSwipe: false) {
+                                    Button {
+                                        pastReviewsTarget = item.id
+                                    } label: {
+                                        Label("Past Reviews", systemImage: "clock.arrow.circlepath")
+                                    }
+                                    .tint(.blue)
+                                }
+                                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                    Button(role: .destructive) {
+                                        if let idx = viewModel.scriptItems.firstIndex(where: { $0.id == item.id }) {
+                                            deleteItems(at: IndexSet(integer: idx))
+                                        }
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
+                                }
+                                .background(
+                                    NavigationLink(
+                                        "",
+                                        destination: PastReviewsView(scriptID: item.id)
+                                            .environmentObject(viewModel),
+                                        isActive: Binding(
+                                            get: { pastReviewsTarget == item.id },
+                                            set: { active in
+                                                pastReviewsTarget = active ? item.id : nil
+                                            }
+                                        )
+                                    )
+                                    .hidden()
+                                )
                             }
-                            .onDelete(perform: deleteItems)
                         }
                     }
                 }
@@ -60,5 +91,10 @@ struct Screen1: View {
     
     private func deleteItems(at offsets: IndexSet) {
         viewModel.scriptItems.remove(atOffsets: offsets)
+    }
+
+    private func deleteItems(at index: Int) {
+        guard index < viewModel.scriptItems.count else { return }
+        viewModel.scriptItems.remove(at: index)
     }
 }
