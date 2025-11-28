@@ -99,7 +99,7 @@ struct ReviewView: View {
             Section {
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Review")
+                        Text("Playback")
                             .font(.headline)
                         Text(formattedDate)
                             .font(.subheadline)
