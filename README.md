@@ -1,5 +1,7 @@
  # Scripties
-
+  
+  [Download on the App Store For Free!](https://apps.apple.com/sg/app/scripties/id6755456358)
+  
   Scripties is your personal speech practice coach – a place to draft your
   scripts, rehearse aloud, and get automatic feedback on your delivery so you
   can walk into your presentation feeling prepared and confident.
