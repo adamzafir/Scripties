@@ -249,13 +249,15 @@ extension Screen2ViewModel: WCSessionDelegate {
     }
 
     private func sendScriptsToWatch() {
-        guard let watchSession, watchSession.isPaired, watchSession.isWatchAppInstalled else {
+        guard let watchSession, watchSession.isPaired else {
+            print("WC iOS: not paired; skipping send")
+
             return
         }
         guard let data = scriptsData() else { return }
 
         let byteCount = data.count
-        print("WC: pushing scripts (\(byteCount) bytes)")
+        print("WC iOS: pushing scripts (\(byteCount) bytes)")
 
         // If the watch app is in the foreground, push immediately.
         if watchSession.isReachable {
@@ -266,12 +268,14 @@ extension Screen2ViewModel: WCSessionDelegate {
 
         // Keep background/queued paths too.
         do {
+            print("WC iOS: updateApplicationContext scripts")
             try watchSession.updateApplicationContext(["scripts": data])
         } catch {
-            print("WC updateApplicationContext error: \(error.localizedDescription)")
+            print("WC iOS updateApplicationContext error: \(error.localizedDescription)")
         }
 
         // Also transfer as userInfo for background delivery.
+        print("WC iOS: transferUserInfo scripts")
         watchSession.transferUserInfo(["type": "scripts", "scripts": data])
     }
 
@@ -290,6 +294,7 @@ extension Screen2ViewModel: WCSessionDelegate {
 
     // Reachability changed: if the watch app just came to foreground, push immediately.
     func sessionReachabilityDidChange(_ session: WCSession) {
+        print("WC iOS reachability changed: \(session.isReachable)")
         if session.isReachable {
             sendScriptsToWatch()
         }
@@ -297,6 +302,7 @@ extension Screen2ViewModel: WCSessionDelegate {
 
     // Watch state changed (e.g., app installed later) — try again.
     func sessionWatchStateDidChange(_ session: WCSession) {
+        print("WC iOS watch state changed; sending scripts")
         sendScriptsToWatch()
     }
 
@@ -304,6 +310,7 @@ extension Screen2ViewModel: WCSessionDelegate {
     func session(_ session: WCSession, didReceiveMessage message: [String : Any]) {
         guard let type = message["type"] as? String else { return }
         if type == "requestScripts" {
+            print("WC iOS: got requestScripts message")
             DispatchQueue.main.async { self.sendScriptsToWatch() }
         } else if type == "review" {
             handleReviewPayload(message)
@@ -317,6 +324,7 @@ extension Screen2ViewModel: WCSessionDelegate {
             return
         }
         if type == "requestScripts" {
+            print("WC iOS: got requestScripts reply message")
             if let data = scriptsData() {
                 replyHandler(["scripts": data])
             } else {
@@ -333,6 +341,7 @@ extension Screen2ViewModel: WCSessionDelegate {
     // Background request from watch
     func session(_ session: WCSession, didReceiveUserInfo userInfo: [String : Any] = [:]) {
         if let type = userInfo["type"] as? String, type == "requestScripts" {
+            print("WC iOS: got requestScripts userInfo")
             DispatchQueue.main.async { self.sendScriptsToWatch() }
         } else {
             handleReviewPayload(userInfo)

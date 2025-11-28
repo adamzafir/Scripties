@@ -45,24 +45,29 @@ final class WatchSessionManager: NSObject, WCSessionDelegate, ObservableObject {
     func requestScriptsIfNeeded() {
         // Prefer a live message with reply if reachable
         if session.isReachable {
+            print("WC watch: reachable, send requestScripts")
             session.sendMessage(
                 ["type": "requestScripts"],
                 replyHandler: { [weak self] reply in
+                    print("WC watch: got reply for requestScripts")
                     guard let data = reply["scripts"] as? Data,
                           let decoded = try? JSONDecoder().decode([WatchScript].self, from: data)
                     else { return }
                     Task { @MainActor in
                         self?.scripts = decoded.sorted { $0.lastAccessed > $1.lastAccessed }
+                print("WC watch: scripts updated (\(decoded.count))")
                     }
                 },
                 errorHandler: { error in
                     // Fallback to background path if live message fails
                     self.session.transferUserInfo(["type": "requestScripts"])
+            print("WC watch: transferUserInfo requestScripts")
                 }
             )
         } else {
             // Background request; iPhone should answer by pushing applicationContext or userInfo with scripts
             session.transferUserInfo(["type": "requestScripts"])
+            print("WC watch: transferUserInfo requestScripts")
         }
     }
 
@@ -77,11 +82,14 @@ final class WatchSessionManager: NSObject, WCSessionDelegate, ObservableObject {
         ]
 
         if session.isReachable {
+            print("WC watch: reachable, send requestScripts")
             session.sendMessage(payload, replyHandler: nil, errorHandler: { error in
+                print("WC watch review send error: \(error.localizedDescription)")
                 print("Review send error: \(error.localizedDescription)")
             })
         } else {
             session.transferUserInfo(payload)
+            print("WC watch: queued review payload")
         }
 
         if let audioURL = review.audioURL, FileManager.default.fileExists(atPath: audioURL.path) {
@@ -90,6 +98,7 @@ final class WatchSessionManager: NSObject, WCSessionDelegate, ObservableObject {
                 "reviewID": review.id.uuidString
             ]
             session.transferFile(audioURL, metadata: metadata)
+            print("WC watch: transferFile audio for review")
         }
     }
 
@@ -103,9 +112,11 @@ final class WatchSessionManager: NSObject, WCSessionDelegate, ObservableObject {
         Task { @MainActor [weak self] in
             guard let self else { return }
             self.isReachable = reachable
+                print("WC watch activation reachable=\(reachable)")
             if isActivated {
                 // Now safe to request
                 self.requestScriptsIfNeeded()
+                print("WC watch activation requesting scripts")
             }
         }
     }
@@ -116,6 +127,7 @@ final class WatchSessionManager: NSObject, WCSessionDelegate, ObservableObject {
         Task { @MainActor [weak self] in
             guard let self else { return }
             self.isReachable = reachable
+                print("WC watch activation reachable=\(reachable)")
         }
     }
 
@@ -148,6 +160,7 @@ final class WatchSessionManager: NSObject, WCSessionDelegate, ObservableObject {
            let decoded = try? JSONDecoder().decode([WatchScript].self, from: data) {
             Task { @MainActor [weak self] in
                 self?.scripts = decoded.sorted { $0.lastAccessed > $1.lastAccessed }
+                print("WC watch: scripts updated (\(decoded.count))")
             }
         }
     }

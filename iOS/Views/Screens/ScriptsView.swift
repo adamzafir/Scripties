@@ -33,9 +33,9 @@ struct Screen1: View {
                                     } label: {
                                         Label("Past Reviews", systemImage: "clock.arrow.circlepath")
                                     }
-                                    .tint(.blue)
+                                    .tint(.sec)
                                 }
-                                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                                     Button(role: .destructive) {
                                         if let idx = viewModel.scriptItems.firstIndex(where: { $0.id == item.id }) {
                                             deleteItems(at: IndexSet(integer: idx))
@@ -73,8 +73,13 @@ struct Screen1: View {
                             Text("New Script")
                                 .frame(maxWidth: .infinity)
                                 .font(.headline)
+                                .foregroundStyle(.white)
                                 .padding(.horizontal, 16)
                                 .padding()
+                                .background(
+                                    Capsule()
+                                        .fill(Color.pri)
+                                )
                                 .glassEffect()
                         }
                         .shadow(color: Color.black.opacity(0.1), radius: 12, x: 0, y: 4)

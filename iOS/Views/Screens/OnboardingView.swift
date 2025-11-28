@@ -12,7 +12,6 @@ struct OnboardingPage: Identifiable {
     let imageName: String
     let title: String
     let description: String
-    let highlightColor: Color
 }
 
 // MARK: - Main Onboarding View
@@ -29,36 +28,31 @@ struct OnboardingView: View {
         OnboardingPage(
             imageName: "light",
             title: "Welcome to Scripties",
-            description: "Your personal speech coach. Write, practice, and perfect your presentations with feedback.",
-            highlightColor: .blue
+            description: "Your personal speech coach. Write, practice, and perfect your presentations with feedback."
         ),
         OnboardingPage(
             imageName: "waveform.circle.fill",
             title: "Practice Your Speech",
-            description: "Teleprompter in-app helps you to read naturally, using an autoscroll based on your voice.",
-            highlightColor: .orange
+            description: "Teleprompter in-app helps you to read naturally, using an autoscroll based on your voice."
         ),
         OnboardingPage(
             imageName: "chart.line.uptrend.xyaxis",
             title: "Get Detailed Feedback",
-            description: "Track your words per minute and  speech consistency to improve your delivery.",
-            highlightColor: .green
+            description: "Track your words per minute and  speech consistency to improve your delivery."
         ),
         OnboardingPage(
             imageName: "checkmark.seal.fill",
             title: "Ready to Practice!",
-            description: "Create, Record, Repeat. Become a confident speaker with Scripties",
-            highlightColor: .cyan
+            description: "Create, Record, Repeat. Become a confident speaker with Scripties"
         )
     ]
     
     var body: some View {
         ZStack {
-            // Dynamic background gradient based on current page (safe)
             LinearGradient(
                 colors: [
-                    pages[safeCurrentPage].highlightColor.opacity(0.3),
-                    pages[safeCurrentPage].highlightColor.opacity(0.1)
+                    Color.pri.opacity(0.25),
+                    Color.sec.opacity(0.15)
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
@@ -72,7 +66,7 @@ struct OnboardingView: View {
                     Button("Skip") {
                         completeOnboarding()
                     }
-                    .foregroundColor(.blue)
+                    .foregroundStyle(Color.pri)
                     .opacity(safeCurrentPage < pages.count - 1 ? 1 : 0)
                     .animation(.easeInOut(duration: 0.3), value: safeCurrentPage)
                     .padding()
@@ -90,6 +84,7 @@ struct OnboardingView: View {
                 }
                 .tabViewStyle(.page(indexDisplayMode: .always))
                 .indexViewStyle(.page(backgroundDisplayMode: .always))
+                .tint(.pri)
                 .onChange(of: currentPage) { _, newValue in
                     // Clamp defensively if TabView/animations race
                     let clamped = min(max(newValue, 0), pages.count - 1)
@@ -113,9 +108,13 @@ struct OnboardingView: View {
                                 Text("Back")
                                     .font(.headline)
                             }
-                            .foregroundColor(.primary)
+                            .foregroundStyle(Color.sec)
                             .frame(width: 100, height: 50)
-                            .background(Color.gray.opacity(0.2))
+                            .background(Color.secondary.opacity(0.12))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(Color.sec.opacity(0.25), lineWidth: 1)
+                            )
                             .cornerRadius(12)
                             .padding()
                         }
@@ -154,19 +153,16 @@ struct OnboardingView: View {
                         }
                         .animation(.spring(response: 0.3), value: safeCurrentPage)
                         .foregroundColor(.white)
-                        .frame(width: 150, height: 50)
+                        .frame(width: 170, height: 50)
                         .background(
                             LinearGradient(
-                                colors: [
-                                    pages[safeCurrentPage].highlightColor,
-                                    pages[safeCurrentPage].highlightColor.opacity(0.7)
-                                ],
+                                colors: [Color.pri, Color.sec],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
                         )
                         .cornerRadius(12)
-                        .shadow(color: pages[safeCurrentPage].highlightColor.opacity(0.4), radius: 8, x: 0, y: 4)
+                        .shadow(color: Color.pri.opacity(0.35), radius: 8, x: 0, y: 4)
                     }
                     .padding()
                 }
@@ -186,6 +182,7 @@ struct OnboardingPageView: View {
     let page: OnboardingPage
     @State private var isAnimating = false
     @Environment(\.colorScheme) private var colorScheme
+    
     private func resolvedImageName(from baseName: String) -> String {
         if baseName == "light" || baseName == "dark" {
             return colorScheme == .dark ? "dark" : "light"
@@ -194,21 +191,23 @@ struct OnboardingPageView: View {
     }
     
     @ViewBuilder
-    private func pageImage(named name: String, tint: Color) -> some View {
+    private func pageImage(named name: String) -> some View {
         let effectiveName = resolvedImageName(from: name)
         if let uiImage = UIImage(named: effectiveName) {
+            // Use asset as-is (no tint)
             Image(uiImage: uiImage)
                 .resizable()
                 .scaledToFit()
                 .frame(width: 100, height: 100)
         } else {
+            // SF Symbol with pri→sec gradient
             Image(systemName: effectiveName)
                 .resizable()
                 .scaledToFit()
                 .frame(width: 100, height: 100)
                 .foregroundStyle(
                     LinearGradient(
-                        colors: [tint, tint.opacity(0.6)],
+                        colors: [Color.pri, Color.sec],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
@@ -221,16 +220,22 @@ struct OnboardingPageView: View {
             // Icon with animation
             ZStack {
                 Circle()
-                    .fill(page.highlightColor.opacity(0.2))
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.pri.opacity(0.18), Color.sec.opacity(0.12)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
                     .frame(width: 180, height: 180)
-                    .scaleEffect(isAnimating ? 1.1 : 1.0)
+                    .scaleEffect(isAnimating ? 1.08 : 1.0)
                     .animation(
                         Animation.easeInOut(duration: 2.0)
                             .repeatForever(autoreverses: true),
                         value: isAnimating
                     )
                 
-                pageImage(named: page.imageName, tint: page.highlightColor)
+                pageImage(named: page.imageName)
                     .padding()
             }
             .padding(.top, 20)
@@ -242,7 +247,7 @@ struct OnboardingPageView: View {
                     .padding(.horizontal, 16)
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [.primary, page.highlightColor],
+                            colors: [Color.pri, Color.sec],
                             startPoint: .leading,
                             endPoint: .trailing
                         )
@@ -250,7 +255,7 @@ struct OnboardingPageView: View {
                 
                 Text(page.description)
                     .font(.system(size: 17))
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 40)
                     .lineSpacing(6)
@@ -263,6 +268,7 @@ struct OnboardingPageView: View {
         }
     }
 }
+
 #Preview("Onboarding") {
     OnboardingView()
 }

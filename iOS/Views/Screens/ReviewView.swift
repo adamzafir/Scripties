@@ -111,9 +111,10 @@ struct ReviewView: View {
                             togglePlayback()
                         } label: {
                             Label(isPlaying ? "Pause" : "Play", systemImage: isPlaying ? "pause.fill" : "play.fill")
+                                .foregroundStyle(.pri)
                         }
+                        .tint(.pri)
                         .buttonStyle(.bordered)
-                        .tint(.accentColor)
                         .accessibilityLabel(url.lastPathComponent)
                     }
                 }
@@ -191,7 +192,7 @@ struct ReviewView: View {
                     ZStack {
                         RoundedRectangle(cornerRadius: 24)
                             .frame(height: 55)
-                            .foregroundColor(.accentColor)
+                            .foregroundColor(.pri)
                             .glassEffect()
                         Text("Save Review")
                             .foregroundColor(.white)
@@ -203,7 +204,6 @@ struct ReviewView: View {
             }
         }
         .navigationTitle("Review")
-        .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             if autoPersistOnAppear {
                 persistReview(shouldDismiss: false)
