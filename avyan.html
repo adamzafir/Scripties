@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Avyan Approved!</title>
+                
+                <!-- Fonts -->
+                <link rel="preconnect" href="https://fonts.googleapis.com">
+                    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+                        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;900&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+                            
+                            <!-- Tailwind -->
+                            <script src="https://cdn.tailwindcss.com"></script>
+                            
+                            <!-- Icons -->
+                            <script src="https://unpkg.com/lucide@latest"></script>
+                            
+                            <!-- GSAP -->
+                            <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+                            
+                            <style>
+                                :root {
+                                    --brand-blue: rgb(146, 180, 238);
+                                    --brand-teal: rgb(89, 154, 152);
+                                    --bg-base: #f0f4ff;
+                                    --text-main: #1a1f36;
+                                    
+                                    --glass-bg: rgba(255, 255, 255, 0.45);
+                                    --glass-border: rgba(255, 255, 255, 0.65);
+                                }
+                                
+                                body {
+                                    font-family: 'Plus Jakarta Sans', sans-serif;
+                                    background-color: var(--bg-base);
+                                    color: var(--text-main);
+                                    height: 100vh;
+                                    width: 100vw;
+                                    overflow: hidden;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E");
+                                }
+                                
+                                /* Background blobs */
+                                .bg-blob {
+                                    position: absolute;
+                                    border-radius: 50%;
+                                    filter: blur(80px);
+                                    opacity: 0.6;
+                                    z-index: -1;
+                                }
+                                
+                                .blob-blue {
+                                    background: var(--brand-blue);
+                                    width: 60vw;
+                                    height: 60vw;
+                                    top: -20%;
+                                    left: -10%;
+                                    animation: drift 15s infinite alternate ease-in-out;
+                                }
+                                
+                                .blob-teal {
+                                    background: var(--brand-teal);
+                                    width: 50vw;
+                                    height: 50vw;
+                                    bottom: -10%;
+                                    right: -10%;
+                                    animation: drift 12s infinite alternate-reverse ease-in-out;
+                                }
+                                
+                                @keyframes drift {
+                                    from { transform: translate(0, 0) scale(1); }
+                                    to { transform: translate(30px, -30px) scale(1.05); }
+                                }
+                                
+                                /* Glass panel */
+                                .glass-panel {
+                                    background: linear-gradient(135deg, var(--glass-bg), rgba(255,255,255,0.2));
+                                    backdrop-filter: blur(20px);
+                                    border: 1px solid var(--glass-border);
+                                    box-shadow: 0 20px 50px rgba(146,180,238,0.2);
+                                    border-radius: 40px;
+                                    transform-style: preserve-3d;
+                                }
+                                
+                                /* Floating images */
+                                .floating-img {
+                                    position: absolute;
+                                    pointer-events: none;
+                                    user-select: none;
+                                    z-index: 0;
+                                    filter: drop-shadow(0 10px 30px rgba(146,180,238,0.25));
+                                }
+                                
+                                /* Button */
+                                .magnetic-btn {
+                                    background: linear-gradient(135deg, var(--brand-teal), var(--brand-blue));
+                                    transition: transform 0.1s;
+                                }
+                                
+                                .font-outfit {
+                                    font-family: 'Outfit', sans-serif;
+                                }
+                            </style>
+    </head>
+    
+    <body class="relative">
+        
+        <!-- Background -->
+        <div class="bg-blob blob-blue"></div>
+        <div class="bg-blob blob-teal"></div>
+        
+        <!-- Floating Images -->
+        <img src="2.webp" class="floating-img top-[15%] left-[15%] w-24 rotate-12 opacity-80" data-speed="2">
+            <img src="3.webp" class="floating-img top-[75%] right-[20%] w-20 -rotate-12 opacity-70" data-speed="-1">
+                <img src="4.webp" class="floating-img bottom-[10%] left-[8%] w-32 rotate-45 opacity-60" data-speed="1.5">
+                    <img src="5.webp"
+                        class="floating-img top-[25%] right-[25%] w-16 rotate-180 opacity-75"
+                        data-speed="-0.8">
+                        
+                        
+                        <!-- Card -->
+                        <div class="relative z-10 w-full max-w-2xl px-6" id="card-container">
+                            <div class="glass-panel p-12 md:p-20 text-center tilt-card opacity-0 translate-y-10">
+                                
+                                <!-- Icon -->
+                                
+                                <!-- 404 Image -->
+                                <div class="mb-6 flex justify-center">
+                                    <img src="11.webp" alt="404" class="w-64 md:w-80 drop-shadow-2xl">
+                                </div>
+                                
+                                <div class="w-24 h-1 bg-gradient-to-r from-transparent via-[var(--brand-blue)] to-transparent mx-auto my-6 opacity-50"></div>
+                                
+                                <h2 class="text-2xl md:text-3xl font-bold mb-4 text-slate-800 font-outfit">
+                                    Woah
+                                </h2>
+                                
+                                <p class="text-slate-600 text-lg mb-10 leading-relaxed max-w-md mx-auto">
+                                I guess you could say that link is... AVYAN APPROVED!
+                                </p>
+                                
+                                <a href="index.html"
+                                    class="inline-flex items-center gap-3 text-white px-10 py-4 rounded-full font-bold text-sm tracking-widest shadow-xl hover:shadow-2xl transition-all magnetic-btn group">
+                                    <i data-lucide="arrow-left" class="w-4 h-4 group-hover:-translate-x-1 transition-transform"></i>
+                                    Back Home
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <script>
+                            lucide.createIcons();
+                            
+                            /* Parallax */
+                            window.addEventListener('mousemove', (e) => {
+                                document.querySelectorAll('.floating-img').forEach(img => {
+                                    const speed = parseFloat(img.dataset.speed);
+                                    const x = (window.innerWidth - e.clientX * speed) / 100;
+                                    const y = (window.innerHeight - e.clientY * speed) / 100;
+                                    
+                                    gsap.to(img, {
+                                        x: x * 10,
+                                        y: y * 10,
+                                        duration: 1,
+                                        ease: "power2.out"
+                                    });
+                                });
+                            });
+                            
+                            /* Card tilt */
+                            const card = document.querySelector('.tilt-card');
+                            
+                            document.addEventListener('mousemove', (e) => {
+                                const x = (window.innerWidth / 2 - e.clientX) / 40;
+                                           const y = (window.innerHeight / 2 - e.clientY) / 40;
+                                                      
+                                                      gsap.to(card, {
+                                    rotateY: x,
+                                    rotateX: -y,
+                                    duration: 1,
+                                    ease: "power2.out"
+                                });
+                                                      });
+                            
+                            document.addEventListener('mouseleave', () => {
+                                gsap.to(card, {
+                                    rotateX: 0,
+                                    rotateY: 0,
+                                    duration: 1,
+                                    ease: "elastic.out(1, 0.3)"
+                                });
+                            });
+                            
+                            /* Magnetic button */
+                            const btn = document.querySelector('.magnetic-btn');
+                            
+                            btn.addEventListener('mousemove', (e) => {
+                                const rect = btn.getBoundingClientRect();
+                                const x = e.clientX - rect.left - rect.width / 2;
+                                const y = e.clientY - rect.top - rect.height / 2;
+                                
+                                gsap.to(btn, { x: x * 0.3, y: y * 0.3, duration: 0.3 });
+                            });
+                            
+                            btn.addEventListener('mouseleave', () => {
+                                gsap.to(btn, { x: 0, y: 0, duration: 0.5, ease: "elastic.out(1,0.3)" });
+                            });
+                            
+                            /* Entrance */
+                            window.addEventListener('load', () => {
+                                gsap.timeline()
+                                .to(".tilt-card", { opacity: 1, y: 0, duration: 1.2, ease: "power3.out" })
+                                .from(".floating-img", {
+                                    opacity: 0,
+                                    y: 50,
+                                    duration: 1,
+                                    stagger: 0.1,
+                                    ease: "back.out(1.7)"
+                                }, "-=0.8");
+                            });
+                        </script>
+                        
+    </body>
+</html>

@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scripties | Write, Record, Review, Repeat</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            /* Light Mode Colors */
+            --primary-light: rgb(146, 180, 238);
+            --bg-light: #f8faff;
+            --text-light: #1d1d1f;
+            
+            /* Dark Mode Colors */
+            --primary-dark: rgb(89, 154, 152);
+            --bg-dark: #0a0f0f;
+            --text-dark: #f5f5f7;
+
+            /* Liquid Glass Props */
+            --glass-bg: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.15);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --primary: var(--primary-dark);
+                --bg: var(--bg-dark);
+                --text: var(--text-dark);
+                --glass-bg: rgba(89, 154, 152, 0.1);
+            }
+        }
+
+        @media (prefers-color-scheme: light) {
+            :root {
+                --primary: var(--primary-light);
+                --bg: var(--bg-light);
+                --text: var(--text-light);
+                --glass-bg: rgba(146, 180, 238, 0.15);
+                --glass-border: rgba(0, 0, 0, 0.05);
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Animated Liquid Background Blobs */
+        .liquid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            filter: blur(100px);
+            opacity: 0.5;
+        }
+
+        .blob {
+            position: absolute;
+            background: var(--primary);
+            border-radius: 50%;
+            animation: move 25s infinite alternate ease-in-out;
+        }
+
+        @keyframes move {
+            0% { transform: translate(-10%, -10%) scale(1); }
+            50% { transform: translate(30%, 10%) scale(1.3); }
+            100% { transform: translate(-5%, 30%) scale(1.1); }
+        }
+
+        /* Navigation - Liquid Glass */
+        nav {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 95%;
+            max-width: 1000px;
+            padding: 10px 25px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(25px) saturate(200%);
+            -webkit-backdrop-filter: blur(25px) saturate(200%);
+            border: 1px solid var(--glass-border);
+            border-radius: 100px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 25px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text);
+            font-size: 0.85rem;
+            font-weight: 600;
+            opacity: 0.6;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-links a:hover { opacity: 1; color: var(--primary); }
+
+        .logo {
+            font-weight: 800;
+            font-size: 1.3rem;
+            letter-spacing: -1px;
+            color: var(--text);
+            text-decoration: none;
+        }
+
+        /* Sections */
+        section {
+            min-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 120px 24px;
+            text-align: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: clamp(3rem, 10vw, 5.5rem);
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 25px;
+            letter-spacing: -2px;
+        }
+
+        .hero h1 span {
+            display: block;
+            background: linear-gradient(135deg, var(--text) 40%, var(--primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .tagline {
+            font-size: 1.25rem;
+            max-width: 650px;
+            margin-bottom: 40px;
+            opacity: 0.8;
+        }
+
+        /* Problem Section Styling */
+        .problem-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            text-align: left;
+            align-items: center;
+            max-width: 1000px;
+            margin: 40px auto;
+        }
+        
+        .problem-list, .solution-list {
+            list-style: none;
+        }
+        
+        .problem-list li, .solution-list li {
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .problem-list li { opacity: 0.6; }
+        .solution-list li { font-weight: 600; }
+
+        /* App Store Button */
+        .app-store-btn {
+            background: #000;
+            color: #fff;
+            padding: 14px 32px;
+            border-radius: 18px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .app-store-btn:hover {
+            transform: scale(1.02) translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        /* Feature Cards */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            width: 100%;
+            margin-top: 60px;
+        }
+
+        .card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            padding: 50px 40px;
+            border-radius: 40px;
+            text-align: left;
+            opacity: 0;
+            transform: translateY(50px);
+            transition: all 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .card.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .card i {
+            color: var(--primary);
+            margin-bottom: 25px;
+            display: block;
+        }
+
+        /* Steps Section */
+        .steps {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            flex-wrap: wrap;
+            gap: 40px;
+            margin-top: 50px;
+        }
+
+        .step-item {
+            flex: 1;
+            min-width: 200px;
+            padding: 20px;
+        }
+
+        .step-num {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--primary);
+            opacity: 0.3;
+            margin-bottom: 10px;
+        }
+
+        /* Review Section */
+        .reviews-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            width: 100%;
+        }
+
+        .review-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            padding: 30px;
+            border-radius: 30px;
+            text-align: left;
+            position: relative;
+        }
+
+        .stars { color: #FFD700; margin-bottom: 10px; display: flex; gap: 4px; }
+
+        footer {
+            padding: 100px 20px;
+            text-align: center;
+            background: rgba(0,0,0,0.02);
+        }
+
+        .team-pills {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .pill {
+            background: var(--glass-bg);
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            border: 1px solid var(--glass-border);
+        }
+
+        /* Scroll Animation Utility */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            section { padding: 80px 20px; }
+            .problem-container { grid-template-columns: 1fr; gap: 30px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="liquid-bg">
+        <div class="blob" style="width: 600px; height: 600px; top: -20%; left: -10%;"></div>
+        <div class="blob" style="width: 500px; height: 500px; bottom: -10%; right: -5%; animation-delay: -5s;"></div>
+    </div>
+
+    <nav>
+        <a href="#" class="logo">Scripties</a>
+        <div class="nav-links">
+            <a href="#features">Features</a>
+            <a href="#how-it-works">How it Works</a>
+            <a href="#reviews">Reviews</a>
+            <a href="#about">About</a>
+        </div>
+        <a href="https://apps.apple.com/sg/app/scripties/id6755456358" class="app-store-btn" style="padding: 10px 20px; font-size: 0.8rem; border-radius: 50px;">
+            Download
+        </a>
+    </nav>
+
+    <section class="hero" id="home">
+        <h1 class="reveal">
+            <span>Write. Record.</span>
+            <span>Review. Repeat.</span>
+        </h1>
+        <p class="tagline reveal">The personal speech coach that helps you write, rehearse, and refine your delivery with AI-powered feedback.</p>
+        <div class="reveal">
+            <a href="https://apps.apple.com/sg/app/scripties/id6755456358" class="app-store-btn">
+                <i data-lucide="apple"></i>
+                <div style="text-align: left;">
+                    <div style="font-size: 0.6rem; opacity: 0.7; text-transform: uppercase; letter-spacing: 1px;">Get it on the</div>
+                    <div style="font-size: 1.2rem; font-weight: 600; margin-top: -2px;">App Store</div>
+                </div>
+            </a>
+        </div>
+    </section>
+
+    <section id="problem" style="background: rgba(0,0,0,0.02);">
+        <h2 class="reveal" style="font-size: 3rem; margin-bottom: 20px;">Practicing Is Broken</h2>
+        <p class="tagline reveal" style="margin-bottom: 20px;">Most people rehearse speeches by reading off static notes or recording themselves with zero feedback.</p>
+        
+        <div class="problem-container reveal">
+            <div class="problem-side">
+                <ul class="problem-list">
+                    <li><i data-lucide="x-circle" style="color: #ff4d4d;"></i> Manual scrolling breaks your flow</li>
+                    <li><i data-lucide="x-circle" style="color: #ff4d4d;"></i> No awareness of actual pacing</li>
+                    <li><i data-lucide="x-circle" style="color: #ff4d4d;"></i> Re-recording without insight</li>
+                </ul>
+            </div>
+            <div class="solution-side">
+                <ul class="solution-list">
+                    <li><i data-lucide="check-circle" style="color: var(--primary);"></i> Scripties tracks your voice</li>
+                    <li><i data-lucide="check-circle" style="color: var(--primary);"></i> Auto-scrolls as you speak</li>
+                    <li><i data-lucide="check-circle" style="color: var(--primary);"></i> Gives clear pacing feedback</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section id="features">
+        <h2 class="reveal" style="font-size: 3rem; margin-bottom: 20px;">Powerful Features</h2>
+        <div class="features-grid">
+            <div class="card">
+                <i data-lucide="feather" size="40"></i>
+                <h3>Script Writing</h3>
+                <p>Create and edit scripts with a clean interface. Your library is always sorted by your most recent work.</p>
+            </div>
+            <div class="card">
+                <i data-lucide="zap" size="40"></i>
+                <h3>Voice Tracking</h3>
+                <p>The teleprompter follows your voice. It automatically advances as you speak so you never lose your place.</p>
+            </div>
+            <div class="card">
+                <i data-lucide="bar-chart-3" size="40"></i>
+                <h3>Smart Metrics</h3>
+                <p>Get instant feedback on your Words Per Minute (WPM) and Consistency Score (CIS) after every session.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="how-it-works" style="background: rgba(255,255,255,0.02); border-radius: 60px;">
+        <h2 class="reveal" style="font-size: 3rem; margin-bottom: 40px;">Simple. Effective.</h2>
+        <div class="steps">
+            <div class="step-item reveal">
+                <div class="step-num">01</div>
+                <h3>Draft</h3>
+                <p>Write your speech directly in the app or paste your existing script.</p>
+            </div>
+            <div class="step-item reveal">
+                <div class="step-num">02</div>
+                <h3>Rehearse</h3>
+                <p>Use the voice-guided teleprompter to practice your delivery out loud.</p>
+            </div>
+            <div class="step-item reveal">
+                <div class="step-num">03</div>
+                <h3>Perfect</h3>
+                <p>Listen back to recordings and adjust based on your pacing scores.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="reviews">
+        <h2 class="reveal" style="font-size: 3rem; margin-bottom: 50px;">What People Say</h2>
+        <div class="reviews-grid">
+            <div class="review-card reveal">
+                <div class="stars"><i data-lucide="star" fill="currentColor" size="14"></i><i data-lucide="star" fill="currentColor" size="14"></i><i data-lucide="star" fill="currentColor" size="14"></i><i data-lucide="star" fill="currentColor" size="14"></i><i data-lucide="star" fill="currentColor" size="14"></i></div>
+                <p>"Simple and easy to use"</p>
+            </div>
+            <div class="review-card reveal">
+                <div class="stars"><i data-lucide="star" fill="currentColor" size="14"></i><i data-lucide="star" fill="currentColor" size="14"></i><i data-lucide="star" fill="currentColor" size="14"></i><i data-lucide="star" fill="currentColor" size="14"></i><i data-lucide="star" fill="currentColor" size="14"></i></div>
+                <p>"The app is very effective in helping me prepare my speeches"</p>
+            </div>
+            <div class="review-card reveal">
+                <div class="stars"><i data-lucide="star" fill="currentColor" size="14"></i><i data-lucide="star" fill="currentColor" size="14"></i><i data-lucide="star" fill="currentColor" size="14"></i><i data-lucide="star" fill="currentColor" size="14"></i><i data-lucide="star" fill="currentColor" size="14"></i></div>
+                <p>"This is the BEST APP it helped me sooooooo much the creator of this app is the BEST. 🐐✅✅✅"</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="about">
+        <div class="reveal" style="background: var(--glass-bg); padding: 60px; border-radius: 50px; border: 1px solid var(--glass-border); width: 100%;">
+            <h2>Created as part of the 2025 Swift Accelerator Programme</h2>
+            <p style="margin: 20px 0; opacity: 0.7;">Scripties was developed by:</p>
+            <div class="team-pills">
+                <span class="pill">Adam Zafir Bin Mohammed Sudhir</span>
+                <span class="pill">Chan Yap Long</span>
+                <span class="pill">Divya Dharshini Krishnamoorthy</span>
+                <span class="pill">Ethan Soh Yi Teng</span>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <h2 style="margin-bottom: 20px;">Ready to speak with confidence?</h2>
+        <a href="https://apps.apple.com/sg/app/scripties/id6755456358" class="app-store-btn" style="margin-bottom: 40px;">Download Scripties For Free</a>
+        <p style="opacity: 0.5; font-size: 0.8rem;">© 2025 Scripties. Licensed under the Apache 2.0 License.</p>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        // Target both general reveals and specific cards
+        document.querySelectorAll('.reveal, .card, .review-card, .step-item').forEach(el => {
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>
