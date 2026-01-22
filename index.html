@@ -1,608 +1,568 @@
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scripties | The Professional Speech Coach</title>
-    <meta name="description" content="Master your public speaking with AI-driven feedback, voice tracking, and professional script tools.">
-    
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <style>
-        :root {
-            /* BRAND COLORS (Strict adherence) */
-            --brand-blue: rgb(146, 180, 238); /* Light Blue */
-            --brand-teal: rgb(89, 154, 152); /* Teal/Greenish */
-            
-            --bg-base: #f0f4ff;
-            --text-main: #1a1f36;
-            --text-muted: #4e5d78;
-            
-            /* Enhanced Liquid Glass Variables */
-            /* More transparency for "refraction" feel */
-            --glass-bg: rgba(255, 255, 255, 0.45);
-            --glass-border: rgba(255, 255, 255, 0.6);
-            --glass-highlight: rgba(255, 255, 255, 0.7);
-            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scripties | The Professional Speech Coach</title>
+  <meta name="description" content="Master your public speaking with AI-driven feedback, voice tracking, and professional script tools." />
 
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: var(--bg-base);
-            color: var(--text-main);
-            overflow-x: hidden;
-            /* Subtle grain to give texture to the glass */
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
-        }
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-        h1, h2, h3, h4 {
-            font-family: 'Outfit', sans-serif;
-        }
+  <!-- Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
 
-        /* --- Liquid Glass Component (Refractive) --- */
-        .liquid-glass {
-            background: linear-gradient(135deg, var(--glass-bg) 0%, rgba(255, 255, 255, 0.2) 100%);
-            backdrop-filter: blur(20px); /* Heavy blur for depth */
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            box-shadow:
-                var(--glass-shadow),
-                inset 0 0 20px rgba(255, 255, 255, 0.5); /* Inner glow */
-            border-radius: 24px;
-            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            position: relative;
-            overflow: hidden;
-        }
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
-        /* Shine effect on hover */
-        .liquid-glass::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 50%;
-            height: 100%;
-            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.4), transparent);
-            transform: skewX(-25deg);
-            transition: 0.5s;
-            pointer-events: none;
-        }
+  <style>
+    :root {
+      /* keep your existing brand */
+      --brand-blue: rgb(146, 180, 238);
+      --brand-teal: rgb(89, 154, 152);
 
-        .liquid-glass:hover::before {
-            left: 150%;
-            transition: 0.7s ease-in-out;
-        }
+      --bg: #05070b;
+      --surface: rgba(255, 255, 255, 0.06);
+      --surface-2: rgba(255, 255, 255, 0.08);
+      --border: rgba(255, 255, 255, 0.12);
+      --text: rgba(255, 255, 255, 0.92);
+      --muted: rgba(255, 255, 255, 0.70);
+      --muted-2: rgba(255, 255, 255, 0.55);
+      --shadow: 0 20px 80px rgba(0,0,0,0.55);
+    }
 
-        .liquid-glass:hover {
-            transform: translateY(-5px) scale(1.01);
-            background: linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.3) 100%);
-            border-color: rgba(255, 255, 255, 0.9);
-            box-shadow:
-                0 15px 35px rgba(146, 180, 238, 0.2), /* colored shadow matching brand */
-                inset 0 0 20px rgba(255, 255, 255, 0.8);
-        }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+    }
 
-        /* --- Dynamic Background Blobs --- */
-        @keyframes drift-1 {
-            0% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(50px, -30px) scale(1.1); }
-            66% { transform: translate(-20px, 40px) scale(0.9); }
-            100% { transform: translate(0, 0) scale(1); }
-        }
-        
-        @keyframes drift-2 {
-            0% { transform: translate(0, 0) rotate(0deg); }
-            50% { transform: translate(-40px, 20px) rotate(10deg); }
-            100% { transform: translate(0, 0) rotate(0deg); }
-        }
+    h1, h2, h3, h4 {
+      font-family: 'Outfit', sans-serif;
+    }
 
-        .bg-blob {
-            position: fixed;
-            border-radius: 50%;
-            filter: blur(80px); /* Soften the blobs */
-            opacity: 0.5; /* Reduced opacity for better text contrast */
-            z-index: -1;
-            will-change: transform;
-        }
+    /* Subtle grid texture */
+    .grid-bg {
+      background-image:
+        radial-gradient(1200px 800px at 80% 10%, rgba(146,180,238,0.22), transparent 60%),
+        radial-gradient(900px 700px at 10% 30%, rgba(89,154,152,0.18), transparent 60%),
+        radial-gradient(700px 500px at 60% 80%, rgba(146,180,238,0.10), transparent 60%),
+        linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px);
+      background-size: auto, auto, auto, 56px 56px, 56px 56px;
+      background-position: center, center, center, center, center;
+    }
 
-        .blob-blue {
-            background: var(--brand-blue);
-            animation: drift-1 15s infinite ease-in-out alternate;
-        }
+    /* Premium card */
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.04));
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
 
-        .blob-teal {
-            background: var(--brand-teal);
-            animation: drift-2 20s infinite ease-in-out alternate-reverse;
-        }
+    .card-soft {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 20px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
 
-        /* --- iPhone Mockup CSS (Unchanged structural logic, refined style) --- */
-        .iphone-frame {
-            width: 300px;
-            height: 600px;
-            background: #fbfbfd;
-            border-radius: 45px;
-            border: 8px solid #2a2a2a;
-            box-shadow:
-                0 0 0 2px #555,
-                0 30px 60px -15px rgba(0,0,0,0.4);
-            position: relative;
-            overflow: hidden;
-            margin: 0 auto;
-            transform-style: preserve-3d;
-        }
+    .ring-glow {
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.12) inset,
+        0 0 0 1px rgba(255,255,255,0.06),
+        0 30px 100px rgba(0,0,0,0.55);
+    }
 
-        .iphone-notch {
-            position: absolute;
-            top: 12px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 124px;
-            height: 34px;
-            background: #000;
-            border-radius: 999px;
-            z-index: 20;
-        }
+    .text-gradient {
+      background: linear-gradient(135deg, var(--brand-blue), var(--brand-teal));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+    }
 
-        .iphone-notch::after {
-            content: "";
-            position: absolute;
-            right: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 8px;
-            height: 8px;
-            background: #111;
-            border-radius: 50%;
-        }
+    .btn {
+      border-radius: 999px;
+      font-weight: 700;
+      transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease, border-color 180ms ease;
+      will-change: transform;
+    }
 
+    .btn:active { transform: translateY(1px) scale(0.99); }
 
+    .btn-primary {
+      background: linear-gradient(135deg, var(--brand-teal), var(--brand-blue));
+      color: rgba(0,0,0,0.88);
+      box-shadow: 0 14px 40px rgba(89,154,152,0.22);
+    }
 
-        .iphone-screen {
-            width: 100%;
-            height: 100%;
-            background: white;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
+    .btn-primary:hover {
+      box-shadow: 0 18px 60px rgba(146,180,238,0.28);
+      transform: translateY(-1px);
+    }
 
-        /* --- Enhanced Scroll Animations --- */
-        .reveal { opacity: 0; transition: all 1s cubic-bezier(0.16, 1, 0.3, 1); }
-        
-        /* Slide Up */
-        .reveal-up { transform: translateY(40px); }
-        .reveal-up.active { opacity: 1; transform: translateY(0); }
-        
-        /* Slide Left */
-        .reveal-left { transform: translateX(-40px); }
-        .reveal-left.active { opacity: 1; transform: translateX(0); }
-        
-        /* Slide Right */
-        .reveal-right { transform: translateX(40px); }
-        .reveal-right.active { opacity: 1; transform: translateX(0); }
+    .btn-ghost {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.14);
+      color: var(--text);
+    }
 
-        /* Scale In */
-        .reveal-scale { transform: scale(0.95); }
-        .reveal-scale.active { opacity: 1; transform: scale(1); }
+    .btn-ghost:hover {
+      background: rgba(255,255,255,0.09);
+      border-color: rgba(255,255,255,0.20);
+      transform: translateY(-1px);
+    }
 
-        /* Delays */
-        .delay-100 { transition-delay: 100ms; }
-        .delay-200 { transition-delay: 200ms; }
-        .delay-300 { transition-delay: 300ms; }
+    /* iPhone mock (kept, but made more premium) */
+    .iphone-frame {
+      width: 308px;
+      height: 616px;
+      background: #0b0f14;
+      border-radius: 48px;
+      border: 10px solid #1b2330;
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.10) inset,
+        0 40px 90px rgba(0,0,0,0.65);
+      position: relative;
+      overflow: hidden;
+      margin: 0 auto;
+      transform-style: preserve-3d;
+    }
 
-        /* Floating elements */
-        @keyframes float-y {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-15px); }
-        }
-        .animate-float { animation: float-y 6s ease-in-out infinite; }
-        
-        /* Text Gradients using Brand Colors */
-        .text-brand-gradient {
-            background: linear-gradient(135deg, var(--brand-teal) 0%, var(--brand-blue) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        .bg-brand-gradient {
-            background: linear-gradient(135deg, var(--brand-teal) 0%, var(--brand-blue) 100%);
-        }
-    </style>
+    .iphone-notch {
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 128px;
+      height: 34px;
+      background: #05070b;
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 999px;
+      z-index: 20;
+    }
+
+    .iphone-screen {
+      width: 100%;
+      height: 100%;
+      background: #0b0f14;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Scroll reveal */
+    .reveal { opacity: 0; transform: translateY(14px); transition: opacity 700ms cubic-bezier(0.16, 1, 0.3, 1), transform 700ms cubic-bezier(0.16, 1, 0.3, 1); }
+    .reveal.active { opacity: 1; transform: translateY(0); }
+    .delay-100 { transition-delay: 100ms; }
+    .delay-200 { transition-delay: 200ms; }
+    .delay-300 { transition-delay: 300ms; }
+
+    @keyframes float-y { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
+    .animate-float { animation: float-y 7s ease-in-out infinite; }
+
+    /* navbar */
+    .nav-blur {
+      background: rgba(5,7,11,0.55);
+      border: 1px solid rgba(255,255,255,0.10);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+
+    /* inputs */
+    .input {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 999px;
+      color: var(--text);
+      outline: none;
+    }
+    .input:focus {
+      border-color: rgba(146,180,238,0.55);
+      box-shadow: 0 0 0 4px rgba(146,180,238,0.15);
+    }
+
+    /* tiny pill */
+    .pill {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 999px;
+    }
+
+    /* selection */
+    ::selection { background: rgba(146,180,238,0.50); color: white; }
+  </style>
 </head>
-<body class="selection:bg-[rgb(146,180,238)] selection:text-white">
 
-    <!-- Active Background Blobs -->
-    <div class="fixed inset-0 overflow-hidden pointer-events-none">
-        <div class="bg-blob blob-blue w-[60vw] h-[60vw] top-[-20%] left-[-10%]"></div>
-        <div class="bg-blob blob-teal w-[50vw] h-[50vw] bottom-[-10%] right-[-10%]"></div>
-        <div class="bg-blob blob-blue w-[30vw] h-[30vw] top-[40%] left-[30%] opacity-30 animation-delay-2000"></div>
+<body class="grid-bg">
+
+  <!-- NAV -->
+  <nav class="fixed top-0 left-0 right-0 z-50 px-4 pt-4">
+    <div class="max-w-6xl mx-auto nav-blur rounded-2xl px-5 py-3 flex items-center justify-between">
+      <a href="#" class="flex items-center gap-3">
+        <img src="icon.png" alt="" class="w-10 h-10 rounded-xl ring-glow" />
+        <span class="text-lg font-extrabold tracking-tight">Scripties</span>
+      </a>
+
+      <div class="hidden md:flex items-center gap-7 text-sm font-semibold" style="color: var(--muted)">
+        <a href="#features" class="hover:text-white transition">Features</a>
+        <a href="#how" class="hover:text-white transition">How it works</a>
+        <a href="#faq" class="hover:text-white transition">FAQ</a>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <a href="#pricing" class="hidden sm:inline-flex btn btn-ghost px-4 py-2 text-sm">Pricing</a>
+        <a href="https://apps.apple.com/sg/app/scripties/id6755456358" class="inline-flex btn btn-primary px-5 py-2.5 text-sm">
+          Download
+          <i data-lucide="arrow-right" class="w-4 h-4 ml-2"></i>
+        </a>
+      </div>
     </div>
+  </nav>
 
-    <!-- Navigation -->
-    <nav class="fixed top-0 w-full z-50 transition-all duration-300 px-4 py-4" id="navbar">
-        <div class="max-w-6xl mx-auto liquid-glass px-6 py-3 flex justify-between items-center">
-            <a href="#" class="font-bold text-2xl tracking-tight text-slate-800 flex items-center gap-3">
-                <!-- App Icon Placeholder -->
-                <img src="icon.png" alt="" class="w-10 h-10 rounded-xl shadow-sm">
-                Scripties
-            </a>
-            
-            <div class="hidden md:flex items-center space-x-8">
-                <a href="#features" class="text-sm font-semibold text-slate-700 hover:text-[var(--brand-teal)] transition-colors">Features</a>
-                <a href="#how-it-works" class="text-sm font-semibold text-slate-700 hover:text-[var(--brand-teal)] transition-colors">How it Works</a>
-                <a href="#faq" class="text-sm font-semibold text-slate-700 hover:text-[var(--brand-teal)] transition-colors">FAQ</a>
-            </div>
+  <!-- HERO -->
+  <header class="pt-32 pb-20 px-6">
+    <div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-14 items-center">
 
-            <a href="https://apps.apple.com/sg/app/scripties/id6755456358" class="hidden md:inline-flex items-center gap-2 bg-brand-gradient text-white px-6 py-2.5 rounded-full text-sm font-bold hover:shadow-lg hover:shadow-[rgba(146,180,238,0.5)] transition-all transform hover:-translate-y-0.5">
-                Download Now
-            </a>
-        </div>
-    </nav>
-
-    <!-- Hero Section -->
-    <header class="relative pt-44 pb-24 overflow-hidden">
-        <div class="max-w-7xl mx-auto px-6 lg:px-8 grid lg:grid-cols-2 gap-16 items-center">
-            
-            <!-- Hero Text -->
-            <div class="reveal reveal-up active z-10">
-                <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/50 border border-white/60 text-[var(--brand-teal)] text-xs font-bold uppercase tracking-wider mb-8 backdrop-blur-sm shadow-sm">
-                    <span class="w-2 h-2 rounded-full bg-[var(--brand-teal)] animate-pulse"></span>
-                    v2.0 Coming Soon
-                </div>
-                
-                <h1 class="text-5xl lg:text-7xl font-extrabold leading-[1.1] mb-8 text-slate-900">
-                    Your speech coach, <br>
-                    <span class="text-brand-gradient">in your pocket.</span>
-                </h1>
-                
-                <p class="text-xl text-slate-600 mb-10 leading-relaxed max-w-lg">
-                    Scripties listens to your voice, scrolls your script automatically, and gives you data-driven feedback on your pacing.
-                </p>
-                
-                <div class="flex flex-col sm:flex-row gap-4">
-                </div>
-            </div>
-
-            <!-- Hero Visual (iPhone Mockup) -->
-            <div class="relative lg:h-[800px] flex items-center justify-center reveal reveal-scale active delay-200 z-10">
-                <!-- Decorative Glow behind phone -->
-                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100%] h-[100%] bg-gradient-to-tr from-[var(--brand-blue)] to-[var(--brand-teal)] rounded-full opacity-20 blur-3xl -z-10"></div>
-                
-                <div class="iphone-frame animate-float shadow-2xl">
-                    <div class="iphone-notch"></div>
-                    <div class="iphone-screen">
-                        <!-- Placeholder for Screen 1 -->
-                        
-                        <div class="flex h-full w-full bg-slate-50">
-                            <!-- Image Placeholder for App Screenshot -->
-                            <img src="1.png" alt="" class="w-full h-full object-cover rounded-3xl opacity-80 mix-blend-multiply">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Floating Feature Badges (Glassy) -->
-                <div class="absolute top-1/4 left-0 md:left-4 liquid-glass p-4 rounded-2xl flex items-center gap-3 animate-float shadow-lg" style="animation-delay: 1s;">
-                    <div class="bg-green-100 p-2 rounded-full text-green-600"><i data-lucide="mic" class="w-5 h-5"></i></div>
-                    <div>
-                        <p class="font-bold text-slate-800">Teleprompter</p>
-                    </div>
-                </div>
-
-                <div class="absolute bottom-1/4 right-0 md:right-4 liquid-glass p-4 rounded-2xl flex items-center gap-3 animate-float shadow-lg" style="animation-delay: 2s;">
-                    <div class="bg-purple-100 p-2 rounded-full text-purple-600"><i data-lucide="zap" class="w-5 h-5"></i></div>
-                    <div>
-                        <p class="font-bold text-slate-800">In-app Review</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <!-- Logo Cloud -->
-    <section class="py-12 border-y border-white/40 bg-white/20 backdrop-blur-sm">
-        <div class="max-w-7xl mx-auto px-6 text-center">
-            <p class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-8 reveal reveal-up">Trusted by speakers at</p>
-            <div class="flex flex-wrap justify-center gap-12 opacity-50 grayscale hover:grayscale-0 transition-all duration-500 reveal reveal-scale delay-100">
-                <span class="text-xl font-bold font-serif text-slate-800">Toastmasters</span>
-                <span class="text-xl font-bold font-sans text-slate-800">TEDxYouth</span>
-                <span class="text-xl font-bold font-mono text-slate-800">DebateAssociation</span>
-                <span class="text-xl font-bold font-serif italic text-slate-800">ModelUN</span>
-            </div>
-        </div>
-    </section>
-
-    <!-- Deep Dive Features (Zig Zag Layout) -->
-    <section id="features" class="py-32 space-y-40 overflow-hidden">
-        
-        <!-- Feature 1: The Writer -->
-        <div class="max-w-7xl mx-auto px-6 lg:px-8">
-            <div class="grid lg:grid-cols-2 gap-20 items-center">
-                <div class="order-2 lg:order-1 relative reveal reveal-left">
-                    <div class="absolute inset-0 bg-[var(--brand-blue)] blur-[100px] opacity-20 rounded-full transform -translate-x-10"></div>
-                    <div class="iphone-frame transform rotate-[-6deg] hover:rotate-0 transition-transform duration-500">
-                        <div class="iphone-notch"></div>
-                        <div class="iphone-screen bg-slate-50">
-                             <!-- Screenshot Placeholder -->
-                             <img src="interface.png" class="w-full h-full object-cover">
-                        </div>
-                    </div>
-                </div>
-                <div class="order-1 lg:order-2 reveal reveal-right delay-200">
-                    <div class="w-14 h-14 rounded-2xl bg-[rgba(146,180,238,0.2)] flex items-center justify-center text-[var(--brand-blue)] mb-8">
-                        <i data-lucide="pen-tool" class="w-7 h-7"></i>
-                    </div>
-                    <h2 class="text-4xl md:text-5xl font-bold mb-6 text-slate-900">Distraction-free Writing.</h2>
-                    <p class="text-lg text-slate-600 leading-relaxed mb-8">
-                        Draft your scripts in a clean, minimal interface designed for speakers. Organize your thoughts, estimate reading time instantly, and keep your library sorted by recent activity.
-                    </p>
-                    <ul class="space-y-4">
-                        <li class="flex items-center gap-3 text-slate-700 font-medium">
-                            <div class="bg-green-100 p-1 rounded-full"><i data-lucide="check" class="w-4 h-4 text-green-600"></i></div>
-                            Auto-save functionality
-                        </li>
-                        <li class="flex items-center gap-3 text-slate-700 font-medium">
-                            <div class="bg-green-100 p-1 rounded-full"><i data-lucide="check" class="w-4 h-4 text-green-600"></i></div>
-                            Real-time duration estimation
-                        </li>
-                        <li class="flex items-center gap-3 text-slate-700 font-medium">
-                            <div class="bg-green-100 p-1 rounded-full"><i data-lucide="check" class="w-4 h-4 text-green-600"></i></div>
-                            Familiar typing interface
-                        </li>
-                    </ul>
-                </div>
-            </div>
+      <!-- Copy -->
+      <div class="reveal active">
+        <div class="inline-flex items-center gap-2 pill px-4 py-2 text-xs font-bold" style="color: var(--muted)">
+          <span class="inline-flex w-2 h-2 rounded-full" style="background: var(--brand-teal)"></span>
+          Built for students, creators, and pros
         </div>
 
-        <!-- Feature 2: The Teleprompter -->
-        <div class="max-w-7xl mx-auto px-6 lg:px-8">
-            <div class="grid lg:grid-cols-2 gap-20 items-center">
-                <div class="reveal reveal-left">
-                    <div class="w-14 h-14 rounded-2xl bg-[rgba(89,154,152,0.2)] flex items-center justify-center text-[var(--brand-teal)] mb-8">
-                        <i data-lucide="mic-2" class="w-7 h-7"></i>
-                    </div>
-                    <h2 class="text-4xl md:text-5xl font-bold mb-6 text-slate-900">A Teleprompter that Listens.</h2>
-                    <p class="text-lg text-slate-600 leading-relaxed mb-8">
-                        Old teleprompters scroll blindly. Scripties uses voice recognition to track your words in real-time. If you pause for effect, it pauses. If you speed up, it speeds up.
-                    </p>
-                    <div class="liquid-glass p-6 rounded-2xl inline-block max-w-sm w-full">
-                        <div class="flex justify-between mb-2">
-                            <p class="text-xs font-bold text-slate-500 uppercase">Live Pacing</p>
-                            <span class="text-xs font-bold text-[var(--brand-teal)]">Perfect</span>
-                        </div>
-                        <div class="flex items-center gap-4">
-                            <div class="flex-1 h-3 bg-white/50 rounded-full overflow-hidden border border-white/60">
-                                <div class="h-full bg-[var(--brand-teal)] w-[80%] rounded-full shadow-[0_0_10px_rgb(89,154,152)]"></div>
-                            </div>
-                            <span class="font-mono font-bold text-slate-800">125 WPM</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="relative reveal reveal-right delay-200">
-                    <div class="absolute inset-0 bg-[var(--brand-teal)] blur-[100px] opacity-20 rounded-full transform translate-x-10"></div>
-                    <div class="iphone-frame transform rotate-[6deg] hover:rotate-0 transition-transform duration-500">
-                        <div class="iphone-notch"></div>
-                        <div class="iphone-screen bg-slate-900">
-                            <!-- Screenshot Placeholder -->
-                             <img src="telprompter.png" class="w-full h-full object-cover">
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <h1 class="mt-6 text-5xl md:text-6xl font-extrabold leading-[1.05] tracking-tight">
+          Speak with confidence.
+          <span class="text-gradient">Practice like a pro.</span>
+        </h1>
+
+        <p class="mt-6 text-lg md:text-xl leading-relaxed" style="color: var(--muted)">
+          Scripties is your pocket speech coach: voice-following teleprompter, pacing analytics, and distraction‑free writing — all on-device.
+        </p>
+
+        <div class="mt-8 flex flex-col sm:flex-row gap-3">
+          <a href="https://apps.apple.com/sg/app/scripties/id6755456358" class="inline-flex justify-center items-center btn btn-primary px-6 py-3">
+            Get Scripties
+            <i data-lucide="download" class="w-4 h-4 ml-2"></i>
+          </a>
+          <a href="#features" class="inline-flex justify-center items-center btn btn-ghost px-6 py-3">
+            See features
+            <i data-lucide="sparkles" class="w-4 h-4 ml-2"></i>
+          </a>
         </div>
 
-        <!-- Feature 3: Analytics -->
-        <div class="max-w-7xl mx-auto px-6 lg:px-8">
-            <div class="grid lg:grid-cols-2 gap-20 items-center">
-                <div class="order-2 lg:order-1 relative reveal reveal-scale">
-                    <div class="absolute inset-0 bg-purple-200 blur-[100px] opacity-30 rounded-full transform -translate-x-10"></div>
-                    <div class="iphone-frame transform rotate-[-3deg] hover:rotate-0 transition-transform duration-500">
-                        <div class="iphone-notch"></div>
-                        <div class="iphone-screen bg-slate-50">
-                             <!-- Screenshot Placeholder -->
-                             <img src="review.png" class="w-full h-full object-cover">
-                        </div>
-                    </div>
-                </div>
-                <div class="order-1 lg:order-2 reveal reveal-up delay-200">
-                    <div class="w-14 h-14 rounded-2xl bg-purple-100 flex items-center justify-center text-purple-600 mb-8">
-                        <i data-lucide="bar-chart-2" class="w-7 h-7"></i>
-                    </div>
-                    <h2 class="text-4xl md:text-5xl font-bold mb-6 text-slate-900">Measure, Don't Guess.</h2>
-                    <p class="text-lg text-slate-600 leading-relaxed mb-8">
-                        After every session, get a detailed breakdown of your performance. See your speed variations, listen to audio playback of specific sections, and track your improvement over time with our Consistency Score (CIS).
-                    </p>
-                </div>
+        <div class="mt-10 grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div class="card-soft p-4">
+            <div class="flex items-center gap-2 text-sm font-semibold">
+              <i data-lucide="mic" class="w-4 h-4" style="color: var(--brand-teal)"></i>
+              Voice tracking
             </div>
+            <p class="mt-1 text-xs" style="color: var(--muted-2)">Teleprompter that follows you.</p>
+          </div>
+          <div class="card-soft p-4">
+            <div class="flex items-center gap-2 text-sm font-semibold">
+              <i data-lucide="bar-chart-3" class="w-4 h-4" style="color: var(--brand-blue)"></i>
+              Pacing stats
+            </div>
+            <p class="mt-1 text-xs" style="color: var(--muted-2)">WPM + consistency score.</p>
+          </div>
+          <div class="card-soft p-4 sm:col-span-1 col-span-2">
+            <div class="flex items-center gap-2 text-sm font-semibold">
+              <i data-lucide="shield" class="w-4 h-4" style="color: rgba(255,255,255,0.85)"></i>
+              Privacy-first
+            </div>
+            <p class="mt-1 text-xs" style="color: var(--muted-2)">Your scripts stay on your device.</p>
+          </div>
         </div>
 
-    </section>
-
-    <!-- Use Cases Grid -->
-    <section class="py-32 relative">
-        <!-- Background Refraction Effect -->
-        <div class="absolute inset-0 bg-gradient-to-b from-transparent via-white/40 to-transparent pointer-events-none"></div>
-
-        <div class="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
-            <div class="text-center mb-20 reveal reveal-up">
-                <h2 class="text-4xl font-bold mb-4">Who is Scripties for?</h2>
-                <p class="text-slate-500 text-lg">Designed for anyone who needs to command the room.</p>
-            </div>
-            
-            <div class="grid md:grid-cols-3 gap-8">
-                <!-- Case 1 -->
-                <div class="liquid-glass p-10 reveal reveal-up delay-100">
-                    <div class="bg-orange-100 w-12 h-12 rounded-full flex items-center justify-center text-orange-600 mb-6">
-                        <i data-lucide="graduation-cap" class="w-6 h-6"></i>
-                    </div>
-                    <h3 class="text-2xl font-bold mb-3">Students</h3>
-                    <p class="text-slate-600">Ace your oral exams, presentations, and debates with structured practice.</p>
-                </div>
-                
-                <!-- Case 2 -->
-                <div class="liquid-glass p-10 reveal reveal-up delay-200">
-                    <div class="bg-[rgba(146,180,238,0.3)] w-12 h-12 rounded-full flex items-center justify-center text-[var(--brand-blue)] mb-6">
-                        <i data-lucide="briefcase" class="w-6 h-6"></i>
-                    </div>
-                    <h3 class="text-2xl font-bold mb-3">Professionals</h3>
-                    <p class="text-slate-600">Prepare for keynotes, pitches, and board meetings efficiently.</p>
-                </div>
-
-                <!-- Case 3 -->
-                <div class="liquid-glass p-10 reveal reveal-up delay-300">
-                    <div class="bg-[rgba(89,154,152,0.3)] w-12 h-12 rounded-full flex items-center justify-center text-[var(--brand-teal)] mb-6">
-                        <i data-lucide="video" class="w-6 h-6"></i>
-                    </div>
-                    <h3 class="text-2xl font-bold mb-3">Content Creators</h3>
-                    <p class="text-slate-600">Record perfect voiceovers and Video scripts without looking away from the camera.</p>
-                </div>
-            </div>
+        <!-- social proof -->
+        <div class="mt-10 flex flex-wrap items-center gap-3" style="color: var(--muted-2)">
+          <div class="flex items-center gap-2">
+            <i data-lucide="star" class="w-4 h-4"></i>
+            <span class="text-sm font-semibold" style="color: var(--muted)">4.6</span>
+            <span class="text-sm">App Store rating</span>
+          </div>
+          <span class="hidden sm:inline" style="color: rgba(255,255,255,0.22)">•</span>
+          <div class="text-sm">Created as part of the 2025 Swift Accelerator Programme</div>
         </div>
-    </section>
+      </div>
 
-    <!-- FAQ Section -->
-    <section id="faq" class="py-24">
-        <div class="max-w-3xl mx-auto px-6">
-            <h2 class="text-3xl font-bold text-center mb-16 reveal reveal-up">Frequently Asked Questions</h2>
-            
-            <div class="space-y-6">
-                <div class="liquid-glass px-8 py-6 cursor-pointer group reveal reveal-left delay-100" onclick="this.classList.toggle('active')">
-                    <div class="flex justify-between items-center">
-                        <h3 class="font-bold text-lg text-slate-800">Is Scripties free?</h3>
-                        <i data-lucide="chevron-down" class="w-5 h-5 text-slate-400 transition-transform duration-300 group-[.active]:rotate-180"></i>
-                    </div>
-                    <div class="grid grid-rows-[0fr] transition-[grid-template-rows] duration-300 group-[.active]:grid-rows-[1fr]">
-                        <div class="overflow-hidden">
-                            <div class="pt-4 text-slate-600 leading-relaxed border-t border-slate-200/50 mt-4">
-                                Yes! Scripties is free to download and use. We believe everyone deserves access to professional speech coaching tools.
-                            </div>
-                        </div>
-                    </div>
+      <!-- Visual -->
+      <div class="relative reveal active delay-100">
+        <div class="card p-8">
+          <div class="flex items-center justify-between">
+            <div class="text-sm font-semibold" style="color: var(--muted)">Preview</div>
+            <div class="pill px-3 py-1 text-xs font-bold" style="color: rgba(255,255,255,0.70)">On-device</div>
+          </div>
+
+          <div class="mt-6 relative">
+            <div class="absolute -inset-6 rounded-[32px]" style="background: radial-gradient(500px 300px at 30% 20%, rgba(146,180,238,0.22), transparent 60%), radial-gradient(500px 300px at 70% 80%, rgba(89,154,152,0.18), transparent 60%);"></div>
+
+            <div class="relative">
+              <div class="iphone-frame animate-float">
+                <div class="iphone-notch"></div>
+                <div class="iphone-screen">
+                  <img src="1.png" alt="" class="w-full h-full object-cover" />
                 </div>
+              </div>
 
-                <div class="liquid-glass px-8 py-6 cursor-pointer group reveal reveal-left delay-200" onclick="this.classList.toggle('active')">
-                    <div class="flex justify-between items-center">
-                        <h3 class="font-bold text-lg text-slate-800">Does it work offline?</h3>
-                        <i data-lucide="chevron-down" class="w-5 h-5 text-slate-400 transition-transform duration-300 group-[.active]:rotate-180"></i>
-                    </div>
-                    <div class="grid grid-rows-[0fr] transition-[grid-template-rows] duration-300 group-[.active]:grid-rows-[1fr]">
-                        <div class="overflow-hidden">
-                             <div class="pt-4 text-slate-600 leading-relaxed border-t border-slate-200/50 mt-4">
-                                Yes, all features work without an internet connection. Your rehearsals are private and local.
-                            </div>
-                        </div>
-                    </div>
+              <!-- floating badges -->
+              <div class="hidden sm:flex absolute -left-4 top-20 card-soft px-4 py-3 items-center gap-3 animate-float" style="animation-delay: 0.8s;">
+                <div class="w-9 h-9 rounded-full flex items-center justify-center" style="background: rgba(89,154,152,0.22); color: var(--brand-teal)">
+                  <i data-lucide="waveform" class="w-5 h-5"></i>
                 </div>
-
-                <div class="liquid-glass px-8 py-6 cursor-pointer group reveal reveal-left delay-300" onclick="this.classList.toggle('active')">
-                    <div class="flex justify-between items-center">
-                        <h3 class="font-bold text-lg text-slate-800">Is my data private?</h3>
-                        <i data-lucide="chevron-down" class="w-5 h-5 text-slate-400 transition-transform duration-300 group-[.active]:rotate-180"></i>
-                    </div>
-                    <div class="grid grid-rows-[0fr] transition-[grid-template-rows] duration-300 group-[.active]:grid-rows-[1fr]">
-                        <div class="overflow-hidden">
-                             <div class="pt-4 text-slate-600 leading-relaxed border-t border-slate-200/50 mt-4">
-                                Absolutely. Your scripts and recordings are stored locally on your device. We do not use your voice data to train public AI models.
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="bg-white/60 border-t border-white/60 pt-20 pb-10 backdrop-blur-xl">
-        <div class="max-w-7xl mx-auto px-6 lg:px-8">
-            <div class="grid md:grid-cols-2 gap-12 mb-16">
                 <div>
-                    <a href="#" class="font-bold text-2xl tracking-tight text-slate-800 flex items-center gap-3 mb-6">
-                        <!-- App Icon Placeholder (Footer) -->
-                        <img src="icon.png" alt="" class="w-10 h-10 rounded-xl shadow-sm">
-
-                        Scripties
-                    </a>
-                    <p class="text-slate-500 max-w-sm mb-6">
-                       Created as part of the 2025 Swift Accelerator Programme. Empowering voices, one script at a time.
-                    </p>
+                  <div class="text-sm font-bold">Auto-scroll</div>
+                  <div class="text-xs" style="color: var(--muted-2)">follows your voice</div>
                 </div>
-                
+              </div>
+
+              <div class="hidden sm:flex absolute -right-4 bottom-20 card-soft px-4 py-3 items-center gap-3 animate-float" style="animation-delay: 1.6s;">
+                <div class="w-9 h-9 rounded-full flex items-center justify-center" style="background: rgba(146,180,238,0.22); color: var(--brand-blue)">
+                  <i data-lucide="timer" class="w-5 h-5"></i>
+                </div>
                 <div>
-                    <h4 class="font-bold text-slate-900 mb-6">Developed By</h4>
-                    <div class="grid grid-cols-2 gap-4 text-sm text-slate-600">
-                        <div class="flex items-center gap-2">
-                            <span class="w-2 h-2 rounded-full bg-[var(--brand-blue)]"></span>
-                            Adam Zafir
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span class="w-2 h-2 rounded-full bg-[var(--brand-blue)]"></span>
-                            Chan Yap Long
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span class="w-2 h-2 rounded-full bg-[var(--brand-blue)]"></span>
-                            Divya Dharshini
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span class="w-2 h-2 rounded-full bg-[var(--brand-blue)]"></span>
-                            Ethan Soh
-                        </div>
-                    </div>
+                  <div class="text-sm font-bold">Pacing</div>
+                  <div class="text-xs" style="color: var(--muted-2)">125 WPM target</div>
                 </div>
+              </div>
+
             </div>
-            
-            <div class="border-t border-slate-200/60 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-slate-400">
-                <p>&copy; 2025 Scripties. Apache 2.0 License.</p>
-            </div>
+          </div>
         </div>
-    </footer>
 
-    <script>
-        lucide.createIcons();
+        <!-- tiny trust strip -->
+        <div class="mt-6 flex flex-wrap justify-center gap-5 text-xs font-semibold" style="color: rgba(255,255,255,0.45)">
+          <span class="pill px-3 py-2">Toastmasters</span>
+          <span class="pill px-3 py-2">TEDxYouth</span>
+          <span class="pill px-3 py-2">Debate</span>
+          <span class="pill px-3 py-2">Model UN</span>
+        </div>
+      </div>
 
-        // Enhanced Scroll Reveal Observer
-        const observerOptions = {
-            threshold: 0.15, // Trigger a bit later for smoother effect
-            rootMargin: "0px 0px -50px 0px"
-        };
+    </div>
+  </header>
 
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('active');
-                }
-            });
-        }, observerOptions);
+  <!-- FEATURES -->
+  <section id="features" class="py-16 px-6">
+    <div class="max-w-7xl mx-auto">
+      <div class="reveal">
+        <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight">Everything you need to deliver a clean speech.</h2>
+        <p class="mt-3 text-lg" style="color: var(--muted)">Write, rehearse, and improve — without the messy setup.</p>
+      </div>
 
-        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+      <div class="mt-10 grid md:grid-cols-3 gap-6">
+        <div class="card p-7 reveal delay-100">
+          <div class="w-11 h-11 rounded-2xl flex items-center justify-center" style="background: rgba(146,180,238,0.18); color: var(--brand-blue)">
+            <i data-lucide="pen-tool" class="w-6 h-6"></i>
+          </div>
+          <h3 class="mt-5 text-xl font-bold">Distraction‑free writing</h3>
+          <p class="mt-2" style="color: var(--muted)">Draft scripts fast, estimate timing instantly, and stay organised.</p>
+        </div>
 
-        // Navbar Frost Effect Logic
-        window.addEventListener('scroll', () => {
-            const nav = document.getElementById('navbar');
-            const navContainer = nav.querySelector('.liquid-glass');
-            
-            if (window.scrollY > 50) {
-                // Shrink and make more glass-like on scroll
-                nav.classList.add('py-2');
-                nav.classList.remove('py-4');
-                navContainer.style.background = 'rgba(255, 255, 255, 0.7)';
-            } else {
-                // Restore original state
-                nav.classList.add('py-4');
-                nav.classList.remove('py-2');
-                navContainer.style.background = ''; // Revert to CSS default
-            }
-        });
-    </script>
+        <div class="card p-7 reveal delay-200">
+          <div class="w-11 h-11 rounded-2xl flex items-center justify-center" style="background: rgba(89,154,152,0.18); color: var(--brand-teal)">
+            <i data-lucide="mic-2" class="w-6 h-6"></i>
+          </div>
+          <h3 class="mt-5 text-xl font-bold">Teleprompter that listens</h3>
+          <p class="mt-2" style="color: var(--muted)">It pauses when you pause and follows your pace in real time.</p>
+        </div>
+
+        <div class="card p-7 reveal delay-300">
+          <div class="w-11 h-11 rounded-2xl flex items-center justify-center" style="background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.85)">
+            <i data-lucide="bar-chart-2" class="w-6 h-6"></i>
+          </div>
+          <h3 class="mt-5 text-xl font-bold">Performance analytics</h3>
+          <p class="mt-2" style="color: var(--muted)">Review speed changes, spot weak points, and track improvement.</p>
+        </div>
+      </div>
+
+      <!-- feature showcase (screenshot cards) -->
+      <div class="mt-10 grid lg:grid-cols-2 gap-6">
+        <div class="card p-7 overflow-hidden reveal">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xl font-bold">Script library</h3>
+            <span class="pill px-3 py-1 text-xs font-bold" style="color: rgba(255,255,255,0.70)">Organised</span>
+          </div>
+          <p class="mt-2" style="color: var(--muted)">Keep everything searchable and sorted by recency.</p>
+          <div class="mt-6 rounded-2xl overflow-hidden border" style="border-color: rgba(255,255,255,0.10)">
+          </div>
+        </div>
+
+        <div class="card p-7 overflow-hidden reveal delay-100">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xl font-bold">Practice sessions</h3>
+            <span class="pill px-3 py-1 text-xs font-bold" style="color: rgba(255,255,255,0.70)">Realtime</span>
+          </div>
+          <p class="mt-2" style="color: var(--muted)">Use voice tracking while recording, then review your results.</p>
+          <div class="mt-6 grid sm:grid-cols-2 gap-4">
+            <div class="rounded-2xl overflow-hidden border" style="border-color: rgba(255,255,255,0.10)">
+            </div>
+            <div class="rounded-2xl overflow-hidden border" style="border-color: rgba(255,255,255,0.10)">
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section id="how" class="py-16 px-6">
+    <div class="max-w-7xl mx-auto">
+      <div class="reveal">
+        <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight">How it works</h2>
+        <p class="mt-3 text-lg" style="color: var(--muted)">Three steps. No complicated setup.</p>
+      </div>
+
+      <div class="mt-10 grid md:grid-cols-3 gap-6">
+        <div class="card-soft p-7 reveal delay-100">
+          <div class="text-sm font-extrabold" style="color: rgba(255,255,255,0.70)">01</div>
+          <h3 class="mt-2 text-lg font-bold">Write your script</h3>
+          <p class="mt-2" style="color: var(--muted)">Draft in a clean editor, then set your target pace.</p>
+        </div>
+        <div class="card-soft p-7 reveal delay-200">
+          <div class="text-sm font-extrabold" style="color: rgba(255,255,255,0.70)">02</div>
+          <h3 class="mt-2 text-lg font-bold">Rehearse with voice tracking</h3>
+          <p class="mt-2" style="color: var(--muted)">Teleprompter scrolls when you speak — and stops when you stop.</p>
+        </div>
+        <div class="card-soft p-7 reveal delay-300">
+          <div class="text-sm font-extrabold" style="color: rgba(255,255,255,0.70)">03</div>
+          <h3 class="mt-2 text-lg font-bold">Review and improve</h3>
+          <p class="mt-2" style="color: var(--muted)">See pacing insights and re-run sessions until it’s clean.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING (simple, SaaS-y) -->
+  <section id="pricing" class="py-16 px-6">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center reveal">
+        <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight">Pricing</h2>
+        <p class="mt-3 text-lg" style="color: var(--muted)">It's completely free.</p>
+      </div>
+
+      <div class="mt-10 grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+        <div class="card p-8 reveal delay-100">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xl font-bold">Free</h3>
+            <span class="pill px-3 py-1 text-xs font-bold" style="color: rgba(255,255,255,0.70)">Most people</span>
+          </div>
+          <p class="mt-2" style="color: var(--muted)">Everything you need to practise a solid speech.</p>
+          <div class="mt-6 text-4xl font-extrabold">$0</div>
+          <ul class="mt-6 space-y-3" style="color: var(--muted)">
+            <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4" style="color: var(--brand-teal)"></i> Script editor</li>
+            <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4" style="color: var(--brand-teal)"></i> Voice-following teleprompter</li>
+            <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4" style="color: var(--brand-teal)"></i> Session review</li>
+          </ul>
+          <a href="https://apps.apple.com/sg/app/scripties/id6755456358" class="mt-8 inline-flex w-full justify-center items-center btn btn-ghost px-6 py-3">Download</a>
+        </div>
+
+        <div class="card p-8 reveal delay-200" style="border-color: rgba(89,154,152,0.38);">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xl font-bold">Pro</h3>
+            <span class="pill px-3 py-1 text-xs font-bold" style="background: rgba(89,154,152,0.18); border-color: rgba(89,154,152,0.30); color: rgba(255,255,255,0.82)">Best value</span>
+          </div>
+          <p class="mt-2" style="color: var(--muted)">For serious practice and consistent improvement.</p>
+          <div class="mt-6 text-4xl font-extrabold">$0.00</div>
+          <div class="text-sm" style="color: var(--muted-2)">Its still free</div>
+          <ul class="mt-6 space-y-3" style="color: var(--muted)">
+            <li class="flex gap-2"><i data-lucide="sparkles" class="w-4 h-4" style="color: var(--brand-blue)"></i>it literally</li>
+            <li class="flex gap-2"><i data-lucide="sparkles" class="w-4 h-4" style="color: var(--brand-blue)"></i> is</li>
+            <li class="flex gap-2"><i data-lucide="sparkles" class="w-4 h-4" style="color: var(--brand-blue)"></i>free</li>
+          </ul>
+          <a href="https://apps.apple.com/sg/app/scripties/id6755456358" class="mt-8 inline-flex w-full justify-center items-center btn btn-primary px-6 py-3">Get Pro (free)</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" class="py-16 px-6">
+    <div class="max-w-3xl mx-auto">
+      <div class="text-center reveal">
+        <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight">FAQ</h2>
+        <p class="mt-3 text-lg" style="color: var(--muted)">Quick answers. No stress.</p>
+      </div>
+
+      <div class="mt-10 space-y-4">
+        <details class="card-soft p-6 reveal">
+          <summary class="cursor-pointer list-none flex items-center justify-between font-bold">
+            Is Scripties free?
+            <i data-lucide="chevron-down" class="w-5 h-5" style="color: rgba(255,255,255,0.55)"></i>
+          </summary>
+          <p class="mt-3" style="color: var(--muted)">Yes — Scripties is completely free to download and use. Pro is optional for no extra features (its also free).</p>
+        </details>
+
+        <details class="card-soft p-6 reveal delay-100">
+          <summary class="cursor-pointer list-none flex items-center justify-between font-bold">
+            Does it work offline?
+            <i data-lucide="chevron-down" class="w-5 h-5" style="color: rgba(255,255,255,0.55)"></i>
+          </summary>
+          <p class="mt-3" style="color: var(--muted)">Yep. Core features are offline-first, so you can rehearse anywhere.</p>
+        </details>
+
+        <details class="card-soft p-6 reveal delay-200">
+          <summary class="cursor-pointer list-none flex items-center justify-between font-bold">
+            Is my data private?
+            <i data-lucide="chevron-down" class="w-5 h-5" style="color: rgba(255,255,255,0.55)"></i>
+          </summary>
+          <p class="mt-3" style="color: var(--muted)">Your scripts and recordings stay on your device. No public model training off your voice.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="px-6 pb-10 pt-10">
+    <div class="max-w-7xl mx-auto card-soft p-8">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+        <div class="flex items-center gap-3">
+          <img src="icon.png" alt="" class="w-10 h-10 rounded-xl ring-glow" />
+          <div>
+            <div class="font-extrabold">Scripties</div>
+            <div class="text-sm" style="color: var(--muted-2)">Empowering voices, one script at a time.</div>
+          </div>
+        </div>
+
+        <div class="text-sm" style="color: var(--muted-2)">
+          Developed by Adam Zafir • Chan Yap Long • Divya Dharshini • Ethan Soh
+        </div>
+      </div>
+
+      <div class="mt-8 pt-6 border-t" style="border-color: rgba(255,255,255,0.10); color: rgba(255,255,255,0.42)">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-sm">
+          <span>© 2025 Scripties. Apache 2.0 License.</span>
+          <a class="hover:text-white transition" href="#">Back to top</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    // Reveal on scroll
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) e.target.classList.add('active');
+        }
+      },
+      { threshold: 0.12, rootMargin: '0px 0px -60px 0px' }
+    );
+
+    document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
+  </script>
 </body>
 </html>
