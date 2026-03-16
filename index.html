@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Scripties | The Professional Speech Coach</title>
-  <meta name="description" content="Master your public speaking with AI-driven feedback, voice tracking, and professional script tools." />
+  <title>Scripties | Your Pocket Speech Coach</title>
+  <meta name="description" content="Master your public speaking with voice tracking, pacing analytics, and professional script tools — all on-device." />
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -16,136 +16,179 @@
 
   <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            heading: ['Outfit', 'sans-serif'],
+            body: ['Plus Jakarta Sans', 'sans-serif'],
+          },
+        },
+      },
+    }
+  </script>
 
   <style>
     :root {
-      /* keep your existing brand */
       --brand-blue: rgb(146, 180, 238);
       --brand-teal: rgb(89, 154, 152);
-
       --bg: #05070b;
-      --surface: rgba(255, 255, 255, 0.06);
-      --surface-2: rgba(255, 255, 255, 0.08);
-      --border: rgba(255, 255, 255, 0.12);
       --text: rgba(255, 255, 255, 0.92);
-      --muted: rgba(255, 255, 255, 0.70);
-      --muted-2: rgba(255, 255, 255, 0.55);
-      --shadow: 0 20px 80px rgba(0,0,0,0.55);
+      --muted: rgba(255, 255, 255, 0.65);
+      --muted-2: rgba(255, 255, 255, 0.45);
+      --border: rgba(255, 255, 255, 0.10);
     }
+
+    *, *::before, *::after { box-sizing: border-box; }
 
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
       background: var(--bg);
       color: var(--text);
       overflow-x: hidden;
+      margin: 0;
     }
 
-    h1, h2, h3, h4 {
-      font-family: 'Outfit', sans-serif;
+    h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; }
+
+    /* Ambient Background */
+    .hero-glow {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 900px 600px at 70% 5%, rgba(146,180,238,0.15), transparent 70%),
+        radial-gradient(ellipse 700px 500px at 20% 15%, rgba(89,154,152,0.12), transparent 70%),
+        radial-gradient(ellipse 500px 400px at 50% 85%, rgba(146,180,238,0.06), transparent 70%);
     }
 
-    /* Subtle grid texture */
-    .grid-bg {
-      background-image:
-        radial-gradient(1200px 800px at 80% 10%, rgba(146,180,238,0.22), transparent 60%),
-        radial-gradient(900px 700px at 10% 30%, rgba(89,154,152,0.18), transparent 60%),
-        radial-gradient(700px 500px at 60% 80%, rgba(146,180,238,0.10), transparent 60%),
-        linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px);
-      background-size: auto, auto, auto, 56px 56px, 56px 56px;
-      background-position: center, center, center, center, center;
+    .dot-grid {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background-image: radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px);
+      background-size: 32px 32px;
     }
 
-    /* Premium card */
-    .card {
-      background: linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.04));
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-    }
-
-    .card-soft {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.10);
-      border-radius: 20px;
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-    }
-
-    .ring-glow {
-      box-shadow:
-        0 0 0 1px rgba(255,255,255,0.12) inset,
-        0 0 0 1px rgba(255,255,255,0.06),
-        0 30px 100px rgba(0,0,0,0.55);
-    }
-
+    /* Gradient Text */
     .text-gradient {
       background: linear-gradient(135deg, var(--brand-blue), var(--brand-teal));
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
-      color: transparent;
     }
 
+    .text-gradient-reverse {
+      background: linear-gradient(135deg, var(--brand-teal), var(--brand-blue));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Glass Card */
+    .glass {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+
+    .glass-strong {
+      background: linear-gradient(165deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 24px;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 24px 80px rgba(0,0,0,0.4);
+    }
+
+    .glass-subtle {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 16px;
+    }
+
+    /* Buttons */
     .btn {
-      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border-radius: 14px;
       font-weight: 700;
-      transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease, border-color 180ms ease;
-      will-change: transform;
+      font-size: 15px;
+      padding: 14px 28px;
+      transition: all 200ms cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
+      text-decoration: none;
     }
-
-    .btn:active { transform: translateY(1px) scale(0.99); }
 
     .btn-primary {
       background: linear-gradient(135deg, var(--brand-teal), var(--brand-blue));
-      color: rgba(0,0,0,0.88);
-      box-shadow: 0 14px 40px rgba(89,154,152,0.22);
+      color: #050a0e;
+      box-shadow: 0 8px 32px rgba(89,154,152,0.25), inset 0 1px 0 rgba(255,255,255,0.2);
     }
-
     .btn-primary:hover {
-      box-shadow: 0 18px 60px rgba(146,180,238,0.28);
-      transform: translateY(-1px);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 48px rgba(89,154,152,0.35), inset 0 1px 0 rgba(255,255,255,0.2);
     }
 
-    .btn-ghost {
+    .btn-secondary {
       background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.14);
+      border: 1px solid rgba(255,255,255,0.12);
       color: var(--text);
     }
-
-    .btn-ghost:hover {
-      background: rgba(255,255,255,0.09);
-      border-color: rgba(255,255,255,0.20);
-      transform: translateY(-1px);
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.10);
+      border-color: rgba(255,255,255,0.18);
+      transform: translateY(-2px);
     }
 
-    /* iPhone mock (kept, but made more premium) */
+    .btn:active { transform: translateY(0) scale(0.98); }
+
+    /* Pill Badge */
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 999px;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    /* iPhone Frame */
     .iphone-frame {
-      width: 308px;
-      height: 616px;
-      background: #0b0f14;
-      border-radius: 48px;
-      border: 10px solid #1b2330;
+      width: 280px;
+      height: 570px;
+      background: #0c1018;
+      border-radius: 44px;
+      border: 8px solid #1a2030;
       box-shadow:
-        0 0 0 1px rgba(255,255,255,0.10) inset,
-        0 40px 90px rgba(0,0,0,0.65);
+        0 0 0 1px rgba(255,255,255,0.08) inset,
+        0 40px 100px -20px rgba(0,0,0,0.7),
+        0 0 80px rgba(146,180,238,0.08);
       position: relative;
       overflow: hidden;
       margin: 0 auto;
-      transform-style: preserve-3d;
     }
 
     .iphone-notch {
       position: absolute;
-      top: 12px;
+      top: 10px;
       left: 50%;
       transform: translateX(-50%);
-      width: 128px;
-      height: 34px;
-      background: #05070b;
-      border: 1px solid rgba(255,255,255,0.10);
+      width: 120px;
+      height: 30px;
+      background: #080c12;
+      border: 1px solid rgba(255,255,255,0.08);
       border-radius: 999px;
       z-index: 20;
     }
@@ -153,416 +196,515 @@
     .iphone-screen {
       width: 100%;
       height: 100%;
-      background: #0b0f14;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Section Label */
+    .section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--brand-teal);
+    }
+
+    /* Navigation */
+    .nav-glass {
+      background: rgba(5,7,11,0.6);
+      border: 1px solid rgba(255,255,255,0.08);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 16px;
+    }
+
+    /* Bento Feature Card */
+    .bento {
       position: relative;
       overflow: hidden;
+      transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 300ms ease;
+    }
+    .bento:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 32px 80px rgba(0,0,0,0.5);
+    }
+    .bento .bento-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
       display: flex;
-      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
 
-    /* Scroll reveal */
-    .reveal { opacity: 0; transform: translateY(14px); transition: opacity 700ms cubic-bezier(0.16, 1, 0.3, 1), transform 700ms cubic-bezier(0.16, 1, 0.3, 1); }
+    /* Step Card */
+    .step-number {
+      font-family: 'Outfit', sans-serif;
+      font-size: 64px;
+      font-weight: 800;
+      line-height: 1;
+      background: linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.03) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* FAQ */
+    details summary { cursor: pointer; list-style: none; }
+    details summary::-webkit-details-marker { display: none; }
+    details[open] summary .faq-chevron { transform: rotate(180deg); }
+    .faq-chevron { transition: transform 250ms ease; }
+
+    /* Reveal Animations */
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 600ms cubic-bezier(0.16, 1, 0.3, 1), transform 600ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
     .reveal.active { opacity: 1; transform: translateY(0); }
-    .delay-100 { transition-delay: 100ms; }
-    .delay-200 { transition-delay: 200ms; }
-    .delay-300 { transition-delay: 300ms; }
+    .d1 { transition-delay: 80ms; }
+    .d2 { transition-delay: 160ms; }
+    .d3 { transition-delay: 240ms; }
+    .d4 { transition-delay: 320ms; }
 
-    @keyframes float-y { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
-    .animate-float { animation: float-y 7s ease-in-out infinite; }
+    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+    .animate-float { animation: float 6s ease-in-out infinite; }
 
-    /* navbar */
-    .nav-blur {
-      background: rgba(5,7,11,0.55);
-      border: 1px solid rgba(255,255,255,0.10);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
+    @keyframes pulse-ring {
+      0% { box-shadow: 0 0 0 0 rgba(89,154,152,0.4); }
+      70% { box-shadow: 0 0 0 10px rgba(89,154,152,0); }
+      100% { box-shadow: 0 0 0 0 rgba(89,154,152,0); }
     }
+    .pulse-ring { animation: pulse-ring 2.5s infinite; }
 
-    /* inputs */
-    .input {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.14);
-      border-radius: 999px;
-      color: var(--text);
-      outline: none;
-    }
-    .input:focus {
-      border-color: rgba(146,180,238,0.55);
-      box-shadow: 0 0 0 4px rgba(146,180,238,0.15);
-    }
+    /* Selection */
+    ::selection { background: rgba(146,180,238,0.40); color: white; }
 
-    /* tiny pill */
-    .pill {
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 999px;
-    }
-
-    /* selection */
-    ::selection { background: rgba(146,180,238,0.50); color: white; }
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 3px; }
   </style>
 </head>
 
-<body class="grid-bg">
+<body>
+
+  <!-- Ambient layers -->
+  <div class="hero-glow"></div>
+  <div class="dot-grid"></div>
 
   <!-- NAV -->
   <nav class="fixed top-0 left-0 right-0 z-50 px-4 pt-4">
-    <div class="max-w-6xl mx-auto nav-blur rounded-2xl px-5 py-3 flex items-center justify-between">
-      <a href="#" class="flex items-center gap-3">
-        <img src="icon.png" alt="" class="w-10 h-10 rounded-xl ring-glow" />
-        <span class="text-lg font-extrabold tracking-tight">Scripties</span>
+    <div class="max-w-5xl mx-auto nav-glass px-5 py-3 flex items-center justify-between">
+      <a href="#" class="flex items-center gap-3 no-underline" style="color: var(--text)">
+        <img src="icon.png" alt="Scripties" class="w-9 h-9 rounded-xl" style="box-shadow: 0 0 0 1px rgba(255,255,255,0.10), 0 8px 24px rgba(0,0,0,0.4);" />
+        <span class="text-base font-extrabold tracking-tight">Scripties</span>
       </a>
 
-      <div class="hidden md:flex items-center gap-7 text-sm font-semibold" style="color: var(--muted)">
-        <a href="#features" class="hover:text-white transition">Features</a>
-        <a href="#how" class="hover:text-white transition">How it works</a>
-        <a href="#faq" class="hover:text-white transition">FAQ</a>
+      <div class="hidden md:flex items-center gap-8 text-sm font-semibold" style="color: var(--muted)">
+        <a href="#features" class="hover:text-white transition-colors no-underline" style="color: inherit">Features</a>
+        <a href="#how" class="hover:text-white transition-colors no-underline" style="color: inherit">How it works</a>
+        <a href="#pricing" class="hover:text-white transition-colors no-underline" style="color: inherit">Pricing</a>
+        <a href="#faq" class="hover:text-white transition-colors no-underline" style="color: inherit">FAQ</a>
       </div>
 
-      <div class="flex items-center gap-3">
-        <a href="#pricing" class="hidden sm:inline-flex btn btn-ghost px-4 py-2 text-sm">Pricing</a>
-        <a href="https://apps.apple.com/sg/app/scripties/id6755456358" class="inline-flex btn btn-primary px-5 py-2.5 text-sm">
-          Download
-          <i data-lucide="arrow-right" class="w-4 h-4 ml-2"></i>
-        </a>
-      </div>
+      <a href="https://apps.apple.com/sg/app/scripties/id6755456358" class="btn btn-primary" style="padding: 10px 20px; font-size: 13px; border-radius: 12px;">
+        Download
+        <i data-lucide="arrow-down-to-line" class="w-4 h-4"></i>
+      </a>
     </div>
   </nav>
 
   <!-- HERO -->
-  <header class="pt-32 pb-20 px-6">
-    <div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-14 items-center">
+  <header class="relative z-10 pt-36 pb-20 px-6">
+    <div class="max-w-6xl mx-auto">
 
-      <!-- Copy -->
-      <div class="reveal active">
-        <div class="inline-flex items-center gap-2 pill px-4 py-2 text-xs font-bold" style="color: var(--muted)">
-          <span class="inline-flex w-2 h-2 rounded-full" style="background: var(--brand-teal)"></span>
-          Built for students, creators, and pros
+      <!-- Centered headline -->
+      <div class="text-center max-w-3xl mx-auto reveal active">
+        <div class="pill mx-auto" style="width: fit-content;">
+          <span class="inline-block w-2 h-2 rounded-full pulse-ring" style="background: var(--brand-teal)"></span>
+          Built for students, creators &amp; pros
         </div>
 
-        <h1 class="mt-6 text-5xl md:text-6xl font-extrabold leading-[1.05] tracking-tight">
-          Speak with confidence.
-          <span class="text-gradient">Practice like a pro.</span>
+        <h1 class="mt-8 text-5xl sm:text-6xl md:text-7xl font-extrabold leading-[1.05] tracking-tight">
+          Speak with<br>
+          <span class="text-gradient">confidence.</span>
         </h1>
 
-        <p class="mt-6 text-lg md:text-xl leading-relaxed" style="color: var(--muted)">
-          Scripties is your pocket speech coach: voice-following teleprompter, pacing analytics, and distraction‑free writing — all on-device.
+        <p class="mt-6 text-lg md:text-xl leading-relaxed max-w-xl mx-auto" style="color: var(--muted)">
+          Your pocket speech coach &mdash; voice-following teleprompter, pacing analytics, and distraction&#8209;free writing. All on-device, completely free.
         </p>
 
-        <div class="mt-8 flex flex-col sm:flex-row gap-3">
-          <a href="https://apps.apple.com/sg/app/scripties/id6755456358" class="inline-flex justify-center items-center btn btn-primary px-6 py-3">
-            Get Scripties
-            <i data-lucide="download" class="w-4 h-4 ml-2"></i>
+        <div class="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+          <a href="https://apps.apple.com/sg/app/scripties/id6755456358" class="btn btn-primary">
+            Get Scripties &mdash; Free
+            <i data-lucide="download" class="w-5 h-5"></i>
           </a>
-          <a href="#features" class="inline-flex justify-center items-center btn btn-ghost px-6 py-3">
-            See features
-            <i data-lucide="sparkles" class="w-4 h-4 ml-2"></i>
+          <a href="#features" class="btn btn-secondary">
+            Explore features
+            <i data-lucide="arrow-down" class="w-4 h-4"></i>
           </a>
         </div>
 
-        <div class="mt-10 grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <div class="card-soft p-4">
-            <div class="flex items-center gap-2 text-sm font-semibold">
-              <i data-lucide="mic" class="w-4 h-4" style="color: var(--brand-teal)"></i>
-              Voice tracking
-            </div>
-            <p class="mt-1 text-xs" style="color: var(--muted-2)">Teleprompter that follows you.</p>
+        <!-- Social proof -->
+        <div class="mt-8 flex flex-wrap items-center justify-center gap-4 text-sm" style="color: var(--muted-2)">
+          <div class="flex items-center gap-1.5">
+            <i data-lucide="star" class="w-4 h-4" style="color: #f5c542"></i>
+            <span class="font-bold" style="color: var(--muted)">4.6</span>
+            App Store
           </div>
-          <div class="card-soft p-4">
-            <div class="flex items-center gap-2 text-sm font-semibold">
-              <i data-lucide="bar-chart-3" class="w-4 h-4" style="color: var(--brand-blue)"></i>
-              Pacing stats
-            </div>
-            <p class="mt-1 text-xs" style="color: var(--muted-2)">WPM + consistency score.</p>
-          </div>
-          <div class="card-soft p-4 sm:col-span-1 col-span-2">
-            <div class="flex items-center gap-2 text-sm font-semibold">
-              <i data-lucide="shield" class="w-4 h-4" style="color: rgba(255,255,255,0.85)"></i>
-              Privacy-first
-            </div>
-            <p class="mt-1 text-xs" style="color: var(--muted-2)">Your scripts stay on your device.</p>
-          </div>
-        </div>
-
-        <!-- social proof -->
-        <div class="mt-10 flex flex-wrap items-center gap-3" style="color: var(--muted-2)">
-          <div class="flex items-center gap-2">
-            <i data-lucide="star" class="w-4 h-4"></i>
-            <span class="text-sm font-semibold" style="color: var(--muted)">4.6</span>
-            <span class="text-sm">App Store rating</span>
-          </div>
-          <span class="hidden sm:inline" style="color: rgba(255,255,255,0.22)">•</span>
-          <div class="text-sm">Created as part of the 2025 Swift Accelerator Programme</div>
+          <span style="color: rgba(255,255,255,0.15)">|</span>
+          <div>2025 Swift Accelerator Programme</div>
         </div>
       </div>
 
-      <!-- Visual -->
-      <div class="relative reveal active delay-100">
-        <div class="card p-8">
-          <div class="flex items-center justify-between">
-            <div class="text-sm font-semibold" style="color: var(--muted)">Preview</div>
-            <div class="pill px-3 py-1 text-xs font-bold" style="color: rgba(255,255,255,0.70)">On-device</div>
+      <!-- Phone mockup -->
+      <div class="mt-16 relative flex justify-center reveal active d1">
+        <!-- Glow behind phone -->
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full" style="background: radial-gradient(circle, rgba(89,154,152,0.18) 0%, rgba(146,180,238,0.08) 40%, transparent 70%); filter: blur(40px); pointer-events: none;"></div>
+
+        <div class="relative">
+          <div class="iphone-frame animate-float">
+            <div class="iphone-notch"></div>
+            <div class="iphone-screen">
+              <img src="1.png" alt="Scripties app screenshot" class="w-full h-full object-cover" />
+            </div>
           </div>
 
-          <div class="mt-6 relative">
-            <div class="absolute -inset-6 rounded-[32px]" style="background: radial-gradient(500px 300px at 30% 20%, rgba(146,180,238,0.22), transparent 60%), radial-gradient(500px 300px at 70% 80%, rgba(89,154,152,0.18), transparent 60%);"></div>
+          <!-- Floating badges -->
+          <div class="hidden md:flex absolute -left-40 top-16 glass-subtle px-4 py-3 items-center gap-3 animate-float" style="animation-delay: 0.5s;">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center" style="background: rgba(89,154,152,0.18); color: var(--brand-teal);">
+              <i data-lucide="mic" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="text-sm font-bold">Voice tracking</div>
+              <div class="text-xs" style="color: var(--muted-2)">Auto-scrolls as you speak</div>
+            </div>
+          </div>
 
-            <div class="relative">
-              <div class="iphone-frame animate-float">
-                <div class="iphone-notch"></div>
-                <div class="iphone-screen">
-                  <img src="1.png" alt="" class="w-full h-full object-cover" />
-                </div>
-              </div>
+          <div class="hidden md:flex absolute -right-44 top-40 glass-subtle px-4 py-3 items-center gap-3 animate-float" style="animation-delay: 1.2s;">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center" style="background: rgba(146,180,238,0.18); color: var(--brand-blue);">
+              <i data-lucide="gauge" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="text-sm font-bold">Pacing analytics</div>
+              <div class="text-xs" style="color: var(--muted-2)">Track WPM in real time</div>
+            </div>
+          </div>
 
-              <!-- floating badges -->
-              <div class="hidden sm:flex absolute -left-4 top-20 card-soft px-4 py-3 items-center gap-3 animate-float" style="animation-delay: 0.8s;">
-                <div class="w-9 h-9 rounded-full flex items-center justify-center" style="background: rgba(89,154,152,0.22); color: var(--brand-teal)">
-                  <i data-lucide="waveform" class="w-5 h-5"></i>
-                </div>
-                <div>
-                  <div class="text-sm font-bold">Auto-scroll</div>
-                  <div class="text-xs" style="color: var(--muted-2)">follows your voice</div>
-                </div>
-              </div>
-
-              <div class="hidden sm:flex absolute -right-4 bottom-20 card-soft px-4 py-3 items-center gap-3 animate-float" style="animation-delay: 1.6s;">
-                <div class="w-9 h-9 rounded-full flex items-center justify-center" style="background: rgba(146,180,238,0.22); color: var(--brand-blue)">
-                  <i data-lucide="timer" class="w-5 h-5"></i>
-                </div>
-                <div>
-                  <div class="text-sm font-bold">Pacing</div>
-                  <div class="text-xs" style="color: var(--muted-2)">125 WPM target</div>
-                </div>
-              </div>
-
+          <div class="hidden md:flex absolute -left-32 bottom-24 glass-subtle px-4 py-3 items-center gap-3 animate-float" style="animation-delay: 1.8s;">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center" style="background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.7);">
+              <i data-lucide="shield-check" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="text-sm font-bold">100% private</div>
+              <div class="text-xs" style="color: var(--muted-2)">All data stays on-device</div>
             </div>
           </div>
         </div>
-
-        <!-- tiny trust strip -->
-        <div class="mt-6 flex flex-wrap justify-center gap-5 text-xs font-semibold" style="color: rgba(255,255,255,0.45)">
-          <span class="pill px-3 py-2">Toastmasters</span>
-          <span class="pill px-3 py-2">TEDxYouth</span>
-          <span class="pill px-3 py-2">Debate</span>
-          <span class="pill px-3 py-2">Model UN</span>
-        </div>
       </div>
 
+      <!-- Trust strip -->
+      <div class="mt-12 flex flex-wrap justify-center gap-3 reveal active d2">
+        <span class="pill" style="padding: 6px 14px; font-size: 12px;">Toastmasters</span>
+        <span class="pill" style="padding: 6px 14px; font-size: 12px;">TEDxYouth</span>
+        <span class="pill" style="padding: 6px 14px; font-size: 12px;">Debate</span>
+        <span class="pill" style="padding: 6px 14px; font-size: 12px;">Model UN</span>
+      </div>
     </div>
   </header>
 
   <!-- FEATURES -->
-  <section id="features" class="py-16 px-6">
-    <div class="max-w-7xl mx-auto">
-      <div class="reveal">
-        <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight">Everything you need to deliver a clean speech.</h2>
-        <p class="mt-3 text-lg" style="color: var(--muted)">Write, rehearse, and improve — without the messy setup.</p>
+  <section id="features" class="relative z-10 py-24 px-6">
+    <div class="max-w-6xl mx-auto">
+
+      <div class="text-center max-w-2xl mx-auto reveal">
+        <div class="section-label">
+          <i data-lucide="layers" class="w-4 h-4"></i>
+          Features
+        </div>
+        <h2 class="mt-4 text-3xl md:text-5xl font-extrabold tracking-tight">Everything you need to<br><span class="text-gradient">nail your speech.</span></h2>
+        <p class="mt-4 text-lg" style="color: var(--muted)">Write, rehearse, and improve &mdash; no complicated setup required.</p>
       </div>
 
-      <div class="mt-10 grid md:grid-cols-3 gap-6">
-        <div class="card p-7 reveal delay-100">
-          <div class="w-11 h-11 rounded-2xl flex items-center justify-center" style="background: rgba(146,180,238,0.18); color: var(--brand-blue)">
-            <i data-lucide="pen-tool" class="w-6 h-6"></i>
+      <!-- Bento Grid -->
+      <div class="mt-14 grid grid-cols-1 md:grid-cols-3 gap-5">
+
+        <!-- Card 1 large -->
+        <div class="md:col-span-2 glass-strong bento p-8 reveal d1">
+          <div class="flex items-start justify-between">
+            <div>
+              <div class="bento-icon" style="background: rgba(146,180,238,0.14); color: var(--brand-blue);">
+                <i data-lucide="pen-tool" class="w-6 h-6"></i>
+              </div>
+              <h3 class="mt-5 text-2xl font-bold">Distraction&#8209;free writing</h3>
+              <p class="mt-2 max-w-md" style="color: var(--muted)">Draft scripts fast in a clean editor. Estimate timing instantly, organise your library, and stay focused on what you want to say.</p>
+            </div>
+            <span class="pill hidden sm:flex" style="padding: 6px 14px; font-size: 12px; color: var(--muted-2);">Editor</span>
           </div>
-          <h3 class="mt-5 text-xl font-bold">Distraction‑free writing</h3>
-          <p class="mt-2" style="color: var(--muted)">Draft scripts fast, estimate timing instantly, and stay organised.</p>
         </div>
 
-        <div class="card p-7 reveal delay-200">
-          <div class="w-11 h-11 rounded-2xl flex items-center justify-center" style="background: rgba(89,154,152,0.18); color: var(--brand-teal)">
+        <!-- Card 2 small -->
+        <div class="glass-strong bento p-8 reveal d2">
+          <div class="bento-icon" style="background: rgba(89,154,152,0.14); color: var(--brand-teal);">
             <i data-lucide="mic-2" class="w-6 h-6"></i>
           </div>
           <h3 class="mt-5 text-xl font-bold">Teleprompter that listens</h3>
-          <p class="mt-2" style="color: var(--muted)">It pauses when you pause and follows your pace in real time.</p>
+          <p class="mt-2" style="color: var(--muted)">It pauses when you pause and follows your pace in real time. No foot pedals needed.</p>
         </div>
 
-        <div class="card p-7 reveal delay-300">
-          <div class="w-11 h-11 rounded-2xl flex items-center justify-center" style="background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.85)">
+        <!-- Card 3 small -->
+        <div class="glass-strong bento p-8 reveal d1">
+          <div class="bento-icon" style="background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.7);">
             <i data-lucide="bar-chart-2" class="w-6 h-6"></i>
           </div>
           <h3 class="mt-5 text-xl font-bold">Performance analytics</h3>
-          <p class="mt-2" style="color: var(--muted)">Review speed changes, spot weak points, and track improvement.</p>
-        </div>
-      </div>
-
-      <!-- feature showcase (screenshot cards) -->
-      <div class="mt-10 grid lg:grid-cols-2 gap-6">
-        <div class="card p-7 overflow-hidden reveal">
-          <div class="flex items-center justify-between">
-            <h3 class="text-xl font-bold">Script library</h3>
-            <span class="pill px-3 py-1 text-xs font-bold" style="color: rgba(255,255,255,0.70)">Organised</span>
-          </div>
-          <p class="mt-2" style="color: var(--muted)">Keep everything searchable and sorted by recency.</p>
-          <div class="mt-6 rounded-2xl overflow-hidden border" style="border-color: rgba(255,255,255,0.10)">
-          </div>
+          <p class="mt-2" style="color: var(--muted)">Review speed changes, spot weak points, and track improvement over time.</p>
         </div>
 
-        <div class="card p-7 overflow-hidden reveal delay-100">
-          <div class="flex items-center justify-between">
-            <h3 class="text-xl font-bold">Practice sessions</h3>
-            <span class="pill px-3 py-1 text-xs font-bold" style="color: rgba(255,255,255,0.70)">Realtime</span>
-          </div>
-          <p class="mt-2" style="color: var(--muted)">Use voice tracking while recording, then review your results.</p>
-          <div class="mt-6 grid sm:grid-cols-2 gap-4">
-            <div class="rounded-2xl overflow-hidden border" style="border-color: rgba(255,255,255,0.10)">
+        <!-- Card 4 large -->
+        <div class="md:col-span-2 glass-strong bento p-8 reveal d2">
+          <div class="flex items-start justify-between">
+            <div>
+              <div class="bento-icon" style="background: rgba(89,154,152,0.14); color: var(--brand-teal);">
+                <i data-lucide="folder-open" class="w-6 h-6"></i>
+              </div>
+              <h3 class="mt-5 text-2xl font-bold">Script library &amp; practice sessions</h3>
+              <p class="mt-2 max-w-md" style="color: var(--muted)">Keep everything searchable and sorted. Use voice tracking while recording, then review your results with detailed session breakdowns.</p>
             </div>
-            <div class="rounded-2xl overflow-hidden border" style="border-color: rgba(255,255,255,0.10)">
-            </div>
+            <span class="pill hidden sm:flex" style="padding: 6px 14px; font-size: 12px; color: var(--muted-2);">Organised</span>
           </div>
         </div>
-      </div>
 
+      </div>
     </div>
   </section>
 
   <!-- HOW IT WORKS -->
-  <section id="how" class="py-16 px-6">
-    <div class="max-w-7xl mx-auto">
-      <div class="reveal">
-        <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight">How it works</h2>
-        <p class="mt-3 text-lg" style="color: var(--muted)">Three steps. No complicated setup.</p>
+  <section id="how" class="relative z-10 py-24 px-6">
+    <div class="max-w-6xl mx-auto">
+
+      <div class="text-center max-w-2xl mx-auto reveal">
+        <div class="section-label">
+          <i data-lucide="route" class="w-4 h-4"></i>
+          How it works
+        </div>
+        <h2 class="mt-4 text-3xl md:text-5xl font-extrabold tracking-tight">Three steps.<br><span class="text-gradient-reverse">Zero friction.</span></h2>
       </div>
 
-      <div class="mt-10 grid md:grid-cols-3 gap-6">
-        <div class="card-soft p-7 reveal delay-100">
-          <div class="text-sm font-extrabold" style="color: rgba(255,255,255,0.70)">01</div>
-          <h3 class="mt-2 text-lg font-bold">Write your script</h3>
-          <p class="mt-2" style="color: var(--muted)">Draft in a clean editor, then set your target pace.</p>
+      <div class="mt-16 grid md:grid-cols-3 gap-8">
+        <!-- Step 1 -->
+        <div class="glass-strong bento p-8 text-center reveal d1">
+          <div class="step-number">01</div>
+          <h3 class="mt-4 text-xl font-bold">Write your script</h3>
+          <p class="mt-3" style="color: var(--muted)">Draft in a clean editor. Set your target pace and estimated duration.</p>
+          <div class="mt-6 mx-auto w-12 h-12 rounded-2xl flex items-center justify-center" style="background: rgba(146,180,238,0.12); color: var(--brand-blue)">
+            <i data-lucide="file-text" class="w-6 h-6"></i>
+          </div>
         </div>
-        <div class="card-soft p-7 reveal delay-200">
-          <div class="text-sm font-extrabold" style="color: rgba(255,255,255,0.70)">02</div>
-          <h3 class="mt-2 text-lg font-bold">Rehearse with voice tracking</h3>
-          <p class="mt-2" style="color: var(--muted)">Teleprompter scrolls when you speak — and stops when you stop.</p>
+
+        <!-- Step 2 -->
+        <div class="glass-strong bento p-8 text-center reveal d2">
+          <div class="step-number">02</div>
+          <h3 class="mt-4 text-xl font-bold">Rehearse with voice tracking</h3>
+          <p class="mt-3" style="color: var(--muted)">The teleprompter scrolls when you speak &mdash; and pauses when you pause.</p>
+          <div class="mt-6 mx-auto w-12 h-12 rounded-2xl flex items-center justify-center" style="background: rgba(89,154,152,0.12); color: var(--brand-teal)">
+            <i data-lucide="mic" class="w-6 h-6"></i>
+          </div>
         </div>
-        <div class="card-soft p-7 reveal delay-300">
-          <div class="text-sm font-extrabold" style="color: rgba(255,255,255,0.70)">03</div>
-          <h3 class="mt-2 text-lg font-bold">Review and improve</h3>
-          <p class="mt-2" style="color: var(--muted)">See pacing insights and re-run sessions until it’s clean.</p>
+
+        <!-- Step 3 -->
+        <div class="glass-strong bento p-8 text-center reveal d3">
+          <div class="step-number">03</div>
+          <h3 class="mt-4 text-xl font-bold">Review &amp; improve</h3>
+          <p class="mt-3" style="color: var(--muted)">See pacing insights and re-run sessions until your delivery is clean.</p>
+          <div class="mt-6 mx-auto w-12 h-12 rounded-2xl flex items-center justify-center" style="background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.7)">
+            <i data-lucide="trending-up" class="w-6 h-6"></i>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- PRICING (simple, SaaS-y) -->
-  <section id="pricing" class="py-16 px-6">
-    <div class="max-w-7xl mx-auto">
-      <div class="text-center reveal">
-        <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight">Pricing</h2>
-        <p class="mt-3 text-lg" style="color: var(--muted)">It's completely free.</p>
+  <!-- PRICING -->
+  <section id="pricing" class="relative z-10 py-24 px-6">
+    <div class="max-w-5xl mx-auto">
+
+      <div class="text-center max-w-2xl mx-auto reveal">
+        <div class="section-label">
+          <i data-lucide="tag" class="w-4 h-4"></i>
+          Pricing
+        </div>
+        <h2 class="mt-4 text-3xl md:text-5xl font-extrabold tracking-tight">Completely <span class="text-gradient">free.</span></h2>
+        <p class="mt-4 text-lg" style="color: var(--muted)">No subscriptions, no paywalls. Just download and start practising.</p>
       </div>
 
-      <div class="mt-10 grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-        <div class="card p-8 reveal delay-100">
+      <div class="mt-14 grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+
+        <!-- Free -->
+        <div class="glass-strong bento p-8 reveal d1">
           <div class="flex items-center justify-between">
             <h3 class="text-xl font-bold">Free</h3>
-            <span class="pill px-3 py-1 text-xs font-bold" style="color: rgba(255,255,255,0.70)">Most people</span>
+            <span class="pill" style="padding: 5px 12px; font-size: 11px;">Most people</span>
           </div>
-          <p class="mt-2" style="color: var(--muted)">Everything you need to practise a solid speech.</p>
-          <div class="mt-6 text-4xl font-extrabold">$0</div>
-          <ul class="mt-6 space-y-3" style="color: var(--muted)">
-            <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4" style="color: var(--brand-teal)"></i> Script editor</li>
-            <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4" style="color: var(--brand-teal)"></i> Voice-following teleprompter</li>
-            <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4" style="color: var(--brand-teal)"></i> Session review</li>
+          <p class="mt-2 text-sm" style="color: var(--muted)">Everything you need to practise a solid speech.</p>
+          <div class="mt-6 text-5xl font-extrabold">$0</div>
+          <ul class="mt-6 space-y-3 list-none p-0 m-0" style="color: var(--muted)">
+            <li class="flex items-center gap-3 text-sm">
+              <i data-lucide="check" class="w-4 h-4 flex-shrink-0" style="color: var(--brand-teal)"></i> Script editor
+            </li>
+            <li class="flex items-center gap-3 text-sm">
+              <i data-lucide="check" class="w-4 h-4 flex-shrink-0" style="color: var(--brand-teal)"></i> Voice-following teleprompter
+            </li>
+            <li class="flex items-center gap-3 text-sm">
+              <i data-lucide="check" class="w-4 h-4 flex-shrink-0" style="color: var(--brand-teal)"></i> Session review
+            </li>
           </ul>
-          <a href="https://apps.apple.com/sg/app/scripties/id6755456358" class="mt-8 inline-flex w-full justify-center items-center btn btn-ghost px-6 py-3">Download</a>
+          <a href="https://apps.apple.com/sg/app/scripties/id6755456358" class="btn btn-secondary w-full mt-8" style="border-radius: 14px;">
+            Download
+          </a>
         </div>
 
-        <div class="card p-8 reveal delay-200" style="border-color: rgba(89,154,152,0.38);">
+        <!-- Pro (also free!) -->
+        <div class="glass-strong bento p-8 reveal d2" style="border-color: rgba(89,154,152,0.30); box-shadow: 0 24px 80px rgba(0,0,0,0.4), 0 0 0 1px rgba(89,154,152,0.15);">
           <div class="flex items-center justify-between">
             <h3 class="text-xl font-bold">Pro</h3>
-            <span class="pill px-3 py-1 text-xs font-bold" style="background: rgba(89,154,152,0.18); border-color: rgba(89,154,152,0.30); color: rgba(255,255,255,0.82)">Best value</span>
+            <span class="pill" style="padding: 5px 12px; font-size: 11px; background: rgba(89,154,152,0.15); border-color: rgba(89,154,152,0.25); color: var(--brand-teal);">Best value</span>
           </div>
-          <p class="mt-2" style="color: var(--muted)">For serious practice and consistent improvement.</p>
-          <div class="mt-6 text-4xl font-extrabold">$0.00</div>
-          <div class="text-sm" style="color: var(--muted-2)">Its still free</div>
-          <ul class="mt-6 space-y-3" style="color: var(--muted)">
-            <li class="flex gap-2"><i data-lucide="sparkles" class="w-4 h-4" style="color: var(--brand-blue)"></i>it literally</li>
-            <li class="flex gap-2"><i data-lucide="sparkles" class="w-4 h-4" style="color: var(--brand-blue)"></i> is</li>
-            <li class="flex gap-2"><i data-lucide="sparkles" class="w-4 h-4" style="color: var(--brand-blue)"></i>free</li>
+          <p class="mt-2 text-sm" style="color: var(--muted)">For serious practice and consistent improvement.</p>
+          <div class="mt-6 text-5xl font-extrabold">$0.00</div>
+          <div class="text-sm mt-1" style="color: var(--muted-2)">It's still free &#128521;</div>
+          <ul class="mt-6 space-y-3 list-none p-0 m-0" style="color: var(--muted)">
+            <li class="flex items-center gap-3 text-sm">
+              <i data-lucide="sparkles" class="w-4 h-4 flex-shrink-0" style="color: var(--brand-blue)"></i> It literally
+            </li>
+            <li class="flex items-center gap-3 text-sm">
+              <i data-lucide="sparkles" class="w-4 h-4 flex-shrink-0" style="color: var(--brand-blue)"></i> Is
+            </li>
+            <li class="flex items-center gap-3 text-sm">
+              <i data-lucide="sparkles" class="w-4 h-4 flex-shrink-0" style="color: var(--brand-blue)"></i> Free
+            </li>
           </ul>
-          <a href="https://apps.apple.com/sg/app/scripties/id6755456358" class="mt-8 inline-flex w-full justify-center items-center btn btn-primary px-6 py-3">Get Pro (free)</a>
+          <a href="https://apps.apple.com/sg/app/scripties/id6755456358" class="btn btn-primary w-full mt-8" style="border-radius: 14px;">
+            Get Pro (free)
+          </a>
         </div>
+
       </div>
     </div>
   </section>
 
   <!-- FAQ -->
-  <section id="faq" class="py-16 px-6">
-    <div class="max-w-3xl mx-auto">
+  <section id="faq" class="relative z-10 py-24 px-6">
+    <div class="max-w-2xl mx-auto">
+
       <div class="text-center reveal">
-        <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight">FAQ</h2>
-        <p class="mt-3 text-lg" style="color: var(--muted)">Quick answers. No stress.</p>
+        <div class="section-label">
+          <i data-lucide="help-circle" class="w-4 h-4"></i>
+          FAQ
+        </div>
+        <h2 class="mt-4 text-3xl md:text-4xl font-extrabold tracking-tight">Questions? Answered.</h2>
       </div>
 
-      <div class="mt-10 space-y-4">
-        <details class="card-soft p-6 reveal">
-          <summary class="cursor-pointer list-none flex items-center justify-between font-bold">
-            Is Scripties free?
-            <i data-lucide="chevron-down" class="w-5 h-5" style="color: rgba(255,255,255,0.55)"></i>
+      <div class="mt-12 space-y-4">
+        <details class="glass bento p-6 reveal d1">
+          <summary class="flex items-center justify-between font-bold text-base">
+            Is Scripties really free?
+            <i data-lucide="chevron-down" class="w-5 h-5 faq-chevron" style="color: var(--muted-2)"></i>
           </summary>
-          <p class="mt-3" style="color: var(--muted)">Yes — Scripties is completely free to download and use. Pro is optional for no extra features (its also free).</p>
+          <p class="mt-4 text-sm leading-relaxed" style="color: var(--muted)">Yes &mdash; Scripties is completely free to download and use. Pro is optional for no extra features (it's also free).</p>
         </details>
 
-        <details class="card-soft p-6 reveal delay-100">
-          <summary class="cursor-pointer list-none flex items-center justify-between font-bold">
+        <details class="glass bento p-6 reveal d2">
+          <summary class="flex items-center justify-between font-bold text-base">
             Does it work offline?
-            <i data-lucide="chevron-down" class="w-5 h-5" style="color: rgba(255,255,255,0.55)"></i>
+            <i data-lucide="chevron-down" class="w-5 h-5 faq-chevron" style="color: var(--muted-2)"></i>
           </summary>
-          <p class="mt-3" style="color: var(--muted)">Yep. Core features are offline-first, so you can rehearse anywhere.</p>
+          <p class="mt-4 text-sm leading-relaxed" style="color: var(--muted)">Yep. Core features are offline-first, so you can rehearse anywhere &mdash; no internet needed.</p>
         </details>
 
-        <details class="card-soft p-6 reveal delay-200">
-          <summary class="cursor-pointer list-none flex items-center justify-between font-bold">
+        <details class="glass bento p-6 reveal d3">
+          <summary class="flex items-center justify-between font-bold text-base">
             Is my data private?
-            <i data-lucide="chevron-down" class="w-5 h-5" style="color: rgba(255,255,255,0.55)"></i>
+            <i data-lucide="chevron-down" class="w-5 h-5 faq-chevron" style="color: var(--muted-2)"></i>
           </summary>
-          <p class="mt-3" style="color: var(--muted)">Your scripts and recordings stay on your device. No public model training off your voice.</p>
+          <p class="mt-4 text-sm leading-relaxed" style="color: var(--muted)">Your scripts and recordings stay on your device. No cloud uploads, no model training on your voice.</p>
         </details>
       </div>
     </div>
   </section>
 
+  <!-- CTA BANNER -->
+  <section class="relative z-10 py-16 px-6">
+    <div class="max-w-4xl mx-auto glass-strong p-12 md:p-16 text-center reveal" style="border-color: rgba(89,154,152,0.20);">
+      <div class="absolute inset-0 rounded-[24px] pointer-events-none" style="background: radial-gradient(ellipse 600px 300px at 50% 0%, rgba(89,154,152,0.12), transparent 70%);"></div>
+      <h2 class="relative text-3xl md:text-4xl font-extrabold tracking-tight">Ready to level up your speaking?</h2>
+      <p class="relative mt-4 text-lg" style="color: var(--muted)">Download Scripties for free and start practising today.</p>
+      <a href="https://apps.apple.com/sg/app/scripties/id6755456358" class="relative btn btn-primary mt-8" style="padding: 16px 36px; font-size: 16px;">
+        Download Scripties
+        <i data-lucide="arrow-right" class="w-5 h-5"></i>
+      </a>
+    </div>
+  </section>
+
   <!-- FOOTER -->
-  <footer class="px-6 pb-10 pt-10">
-    <div class="max-w-7xl mx-auto card-soft p-8">
-      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-        <div class="flex items-center gap-3">
-          <img src="icon.png" alt="" class="w-10 h-10 rounded-xl ring-glow" />
-          <div>
-            <div class="font-extrabold">Scripties</div>
-            <div class="text-sm" style="color: var(--muted-2)">Empowering voices, one script at a time.</div>
+  <footer class="relative z-10 px-6 pb-10 pt-6">
+    <div class="max-w-6xl mx-auto">
+      <div class="glass p-8">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div class="flex items-center gap-3">
+            <img src="icon.png" alt="Scripties" class="w-10 h-10 rounded-xl" style="box-shadow: 0 0 0 1px rgba(255,255,255,0.10);" />
+            <div>
+              <div class="font-extrabold">Scripties</div>
+              <div class="text-sm" style="color: var(--muted-2)">Empowering voices, one script at a time.</div>
+            </div>
+          </div>
+
+          <div class="text-sm" style="color: var(--muted-2)">
+            Developed by Adam Zafir &middot; Chan Yap Long &middot; Divya Dharshini &middot; Ethan Soh
           </div>
         </div>
 
-        <div class="text-sm" style="color: var(--muted-2)">
-          Developed by Adam Zafir • Chan Yap Long • Divya Dharshini • Ethan Soh
-        </div>
-      </div>
-
-      <div class="mt-8 pt-6 border-t" style="border-color: rgba(255,255,255,0.10); color: rgba(255,255,255,0.42)">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-sm">
-          <span>© 2025 Scripties. Apache 2.0 License.</span>
-          <a class="hover:text-white transition" href="#">Back to top</a>
+        <div class="mt-8 pt-6" style="border-top: 1px solid var(--border); color: var(--muted-2);">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-sm">
+            <span>&copy; 2025 Scripties. Apache 2.0 License.</span>
+            <a class="hover:text-white transition-colors no-underline" href="#" style="color: inherit">Back to top &uarr;</a>
+          </div>
         </div>
       </div>
     </div>
   </footer>
 
   <script>
+    // Initialize Lucide icons
     lucide.createIcons();
 
-    // Reveal on scroll
+    // Reveal-on-scroll observer
     const observer = new IntersectionObserver(
       (entries) => {
-        for (const e of entries) {
-          if (e.isIntersecting) e.target.classList.add('active');
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('active');
+          }
         }
       },
-      { threshold: 0.12, rootMargin: '0px 0px -60px 0px' }
+      { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
     );
-
     document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
+
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+      anchor.addEventListener('click', (e) => {
+        const target = document.querySelector(anchor.getAttribute('href'));
+        if (target) {
+          e.preventDefault();
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
   </script>
 </body>
 </html>
