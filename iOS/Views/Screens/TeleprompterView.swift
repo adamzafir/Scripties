@@ -2,8 +2,25 @@ import SwiftUI
 import AVFoundation
 import Speech
 import Accelerate
+#if os(iOS)
+import UIKit
+typealias PlatformFont = UIFont
+#elseif os(macOS)
+import AppKit
+typealias PlatformFont = NSFont
+#endif
 
-private func splitLines(_ text: String, font: UIFont, width: CGFloat) -> [String] {
+#if os(iOS)
+private func platformScreenWidth() -> CGFloat {
+    UIScreen.main.bounds.width
+}
+#elseif os(macOS)
+private func platformScreenWidth() -> CGFloat {
+    NSScreen.main?.frame.width ?? 800
+}
+#endif
+
+private func splitLines(_ text: String, font: PlatformFont, width: CGFloat) -> [String] {
     let words = text.split(whereSeparator: \.isWhitespace).map(String.init)
     var out:[String]=[]
     var line=""
@@ -73,8 +90,8 @@ struct Screen3Teleprompter: View {
     private let recogniser=SFSpeechRecognizer(locale:.current)
 
     private func recompute() {
-        let f = UIFont.systemFont(ofSize: CGFloat(fontSize))
-        scriptLines = splitLines(script, font:f, width: UIScreen.main.bounds.width - 32)
+        let f = PlatformFont.systemFont(ofSize: CGFloat(fontSize))
+        scriptLines = splitLines(script, font: f, width: platformScreenWidth() - 32)
         tokensPerLine = scriptLines.map(normTokens)
     }
 
@@ -131,9 +148,11 @@ struct Screen3Teleprompter: View {
 
     private func startRecog(){
         SFSpeechRecognizer.requestAuthorization{_ in}
+        #if os(iOS)
         let s=AVAudioSession.sharedInstance()
         try? s.setCategory(.playAndRecord,mode:.default,options:[.defaultToSpeaker,.allowBluetooth])
         try? s.setActive(true)
+        #endif
 
         let r=SFSpeechAudioBufferRecognitionRequest()
         r.shouldReportPartialResults=true
@@ -164,7 +183,9 @@ struct Screen3Teleprompter: View {
         task?.cancel()
         req=nil
         task=nil
+        #if os(iOS)
         try? AVAudioSession.sharedInstance().setActive(false)
+        #endif
     }
 
     private func tryAdvance(_ tokens:[String], _ proxy:ScrollViewProxy){
@@ -265,6 +286,33 @@ struct Screen3Teleprompter: View {
             }
             .navigationTitle(title)
             .toolbar {
+                #if os(macOS)
+                ToolbarItem(placement: .primaryAction) {
+                    Menu {
+                        Picker("Font Size", selection: $fontChoice) {
+                            ForEach(Settings.FontSizeChoice.allCases) { c in Text(c.title).tag(c) }
+                        }
+                        .onChange(of: fontChoice) { _, v in
+                            if let p = v.presetValue {
+                                fontSize = p
+                                customSize = p
+                            }
+                        }
+                        if fontChoice == .custom {
+                            Slider(value: $customSize, in: 10...60, step: 1)
+                                .onChange(of: customSize) { _, v in fontSize = v }
+                        }
+                    } label: {
+                        Image(systemName: "textformat.size")
+                    }
+                }
+
+                ToolbarItem(placement: .cancellationAction) {
+                    Button { dismiss() } label: {
+                        Image(systemName: "xmark")
+                    }
+                }
+                #else
                 ToolbarItem(placement:.topBarTrailing){
                     Menu{
                         Picker("Font Size",selection:$fontChoice){
@@ -290,6 +338,7 @@ struct Screen3Teleprompter: View {
                         Image(systemName:"xmark")
                     }
                 }
+                #endif
             }
             .onAppear{
                 fontChoice = Settings.FontSizeChoice.fromStored(fontSize)

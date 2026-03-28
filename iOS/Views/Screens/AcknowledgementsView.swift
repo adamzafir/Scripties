@@ -1,6 +1,9 @@
 import SwiftUI
 import AVFoundation
 import Combine
+#if os(macOS)
+import AppKit
+#endif
 
 final class AudioPlaybackCoordinator: NSObject, ObservableObject, AVAudioPlayerDelegate {
     @Published var isPlaying: Bool = false
@@ -9,12 +12,14 @@ final class AudioPlaybackCoordinator: NSObject, ObservableObject, AVAudioPlayerD
     private(set) var player: AVAudioPlayer?
     
     func configureSession() {
+        #if os(iOS)
         do {
             try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [])
             try AVAudioSession.sharedInstance().setActive(true)
         } catch {
             print("Audio session setup failed:", error)
         }
+        #endif
     }
     
     func playSound(named name: String, withExtension ext: String) {
@@ -194,7 +199,11 @@ struct Acknowledgements: View {
                                 .contentShape(Rectangle())
                                 .onTapGesture {
                                     if let url = URL(string: "https://github.com/jacobamobin/AppleIntelligenceGlowEffect") {
+                                        #if os(iOS)
                                         UIApplication.shared.open(url)
+                                        #elseif os(macOS)
+                                        NSWorkspace.shared.open(url)
+                                        #endif
                                     }
                                 }
                         }
@@ -203,7 +212,11 @@ struct Acknowledgements: View {
                                 .contentShape(Rectangle())
                                 .onTapGesture {
                                     if let url = URL(string: "https://github.com/adamzafir/yapLonger") {
+                                        #if os(iOS)
                                         UIApplication.shared.open(url)
+                                        #elseif os(macOS)
+                                        NSWorkspace.shared.open(url)
+                                        #endif
                                     }
                                 }
                         }

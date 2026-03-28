@@ -1,32 +1,26 @@
 {
   "fill-specializations" : [
     {
-      "value" : {
-        "solid" : "srgb:0.82482,0.82482,0.82482,1.00000"
-      }
+      "value" : "system-light"
     },
     {
       "appearance" : "dark",
-      "value" : {
-        "solid" : "srgb:0.00000,0.00000,0.00000,1.00000"
-      }
+      "value" : "system-dark"
     }
   ],
   "groups" : [
     {
+      "blend-mode" : "normal",
+      "blur-material" : 0.5,
       "layers" : [
         {
           "blend-mode-specializations" : [
             {
-              "value" : "overlay"
+              "value" : "normal"
             },
             {
               "appearance" : "dark",
               "value" : "plus-lighter"
-            },
-            {
-              "appearance" : "tinted",
-              "value" : "darken"
             }
           ],
           "fill-specializations" : [
@@ -38,32 +32,94 @@
             {
               "appearance" : "dark",
               "value" : {
-                "solid" : "srgb:0.96822,0.96822,0.96822,1.00000"
-              }
-            },
-            {
-              "appearance" : "tinted",
-              "value" : {
-                "solid" : "srgb:1.00000,1.00000,1.00000,1.00000"
+                "solid" : "srgb:0.95292,0.97916,1.00000,1.00000"
               }
             }
           ],
-          "glass-specializations" : [
-            {
-              "value" : false
-            },
-            {
-              "appearance" : "tinted",
-              "value" : false
-            }
-          ],
-          "image-name" : "chalkboard-teacher.png",
-          "name" : "chalkboard-teacher",
+          "glass" : true,
+          "hidden" : true,
+          "image-name" : "vuwmnuw.png",
+          "name" : "vuwmnuw",
           "position" : {
-            "scale" : 4,
+            "scale" : 1.15,
             "translation-in-points" : [
-              0,
-              -77.98877633430038
+              -68.53798887861342,
+              -60.70463497611638
+            ]
+          }
+        },
+        {
+          "fill-specializations" : [
+            {
+              "value" : {
+                "solid" : "display-p3:0.96884,0.98481,0.99993,1.00000"
+              }
+            },
+            {
+              "appearance" : "dark",
+              "value" : {
+                "solid" : "srgb:0.33729,0.39041,0.44705,1.00000"
+              }
+            }
+          ],
+          "glass" : false,
+          "image-name" : "Rectangle 4.png",
+          "name" : "Rectangle 4",
+          "position" : {
+            "scale" : 1.8,
+            "translation-in-points" : [
+              -68.53798887861342,
+              133.89999999999998
+            ]
+          }
+        },
+        {
+          "fill-specializations" : [
+            {
+              "value" : {
+                "solid" : "display-p3:0.97090,0.98701,0.99992,1.00000"
+              }
+            },
+            {
+              "appearance" : "dark",
+              "value" : {
+                "solid" : "srgb:0.34286,0.36788,0.39740,1.00000"
+              }
+            }
+          ],
+          "glass" : false,
+          "image-name" : "Rectangle 3.png",
+          "name" : "Rectangle 3",
+          "position" : {
+            "scale" : 1.7,
+            "translation-in-points" : [
+              -71.01298887861344,
+              37.39999999999998
+            ]
+          }
+        },
+        {
+          "fill-specializations" : [
+            {
+              "value" : {
+                "solid" : "display-p3:0.92667,0.94168,0.95655,1.00000"
+              }
+            },
+            {
+              "appearance" : "dark",
+              "value" : {
+                "solid" : "srgb:0.24138,0.24902,0.25717,1.00000"
+              }
+            }
+          ],
+          "glass" : false,
+          "image-name" : "Rectangle 2.png",
+          "name" : "Rectangle 2",
+          "position" : {
+            "scale" : 1.5,
+            "translation-in-points" : [
+              -68.53798887861342,
+              -58.82963497611638
             ]
           }
         },
@@ -73,26 +129,24 @@
               "value" : "normal"
             },
             {
+              "appearance" : "dark",
+              "value" : "hard-light"
+            },
+            {
               "appearance" : "tinted",
-              "value" : "plus-lighter"
+              "value" : "normal"
             }
           ],
           "fill-specializations" : [
             {
               "value" : {
-                "solid" : "srgb:0.94840,0.10082,0.24068,1.00000"
+                "solid" : "srgb:1.00000,0.14913,0.00000,1.00000"
               }
             },
             {
               "appearance" : "dark",
               "value" : {
-                "solid" : "srgb:0.94840,0.00000,0.02859,1.00000"
-              }
-            },
-            {
-              "appearance" : "tinted",
-              "value" : {
-                "solid" : "srgb:0.30172,1.00000,0.81620,1.00000"
+                "solid" : "srgb:1.00000,0.09240,0.23754,1.00000"
               }
             }
           ],
@@ -102,71 +156,51 @@
             },
             {
               "appearance" : "tinted",
-              "value" : true
+              "value" : false
             }
           ],
           "hidden" : false,
-          "image-name" : "waveform.low.png",
-          "name" : "waveform.low",
-          "opacity" : 1,
+          "image-name" : "waveform.mid.png",
+          "name" : "waveform.mid",
           "position" : {
-            "scale" : 1.7,
+            "scale" : 1,
             "translation-in-points" : [
-              0,
-              350.3828125
+              -308.3129888786134,
+              293.27036502388364
             ]
           }
         },
         {
-          "fill" : "none",
-          "glass-specializations" : [
+          "blend-mode-specializations" : [
             {
-              "value" : true
+              "value" : "hard-light"
             },
             {
               "appearance" : "dark",
-              "value" : false
+              "value" : "screen"
+            }
+          ],
+          "fill-specializations" : [
+            {
+              "value" : {
+                "solid" : "display-p3:0.60938,0.73291,0.98047,1.00000"
+              }
+            },
+            {
+              "appearance" : "dark",
+              "value" : {
+                "solid" : "display-p3:0.29697,0.43708,0.73609,1.00000"
+              }
             },
             {
               "appearance" : "tinted",
-              "value" : false
-            }
-          ],
-          "hidden" : true,
-          "image-name" : "background.svg",
-          "name" : "background",
-          "opacity" : 0.03,
-          "position" : {
-            "scale" : 50,
-            "translation-in-points" : [
-              12.203125,
-              -51.53125
-            ]
-          }
-        },
-        {
-          "fill" : {
-            "linear-gradient" : [
-              "display-p3:0.38403,0.64839,1.04685,1.00000",
-              "extended-srgb:0.00000,0.53333,1.00000,1.00000"
-            ],
-            "orientation" : {
-              "start" : {
-                "x" : -0.029574652777777776,
-                "y" : 0.06948784722222222
-              },
-              "stop" : {
-                "x" : 1.095295138888889,
-                "y" : 1.1676909722222222
+              "value" : {
+                "solid" : "display-p3:0.95603,1.00000,0.97531,1.00000"
               }
             }
-          },
+          ],
           "glass-specializations" : [
             {
-              "value" : true
-            },
-            {
-              "appearance" : "dark",
               "value" : true
             },
             {
@@ -175,25 +209,259 @@
             }
           ],
           "hidden" : true,
-          "image-name" : "background.svg",
-          "name" : "background",
-          "opacity" : 0.18,
+          "image-name" : "Ellipse 1.png",
+          "name" : "head",
+          "opacity-specializations" : [
+            {
+              "value" : 1
+            },
+            {
+              "appearance" : "dark",
+              "value" : 1
+            }
+          ],
           "position" : {
-            "scale" : 50,
+            "scale" : 2.5,
             "translation-in-points" : [
-              12.203125,
-              -51.53125
+              200.35933173932085,
+              0
+            ]
+          }
+        },
+        {
+          "blend-mode-specializations" : [
+            {
+              "appearance" : "dark",
+              "value" : "screen"
+            },
+            {
+              "appearance" : "tinted",
+              "value" : "hard-light"
+            }
+          ],
+          "fill-specializations" : [
+            {
+              "value" : {
+                "solid" : "display-p3:0.41819,0.60811,1.00000,1.00000"
+              }
+            },
+            {
+              "appearance" : "tinted",
+              "value" : {
+                "solid" : "display-p3:1.00000,0.94602,0.93822,1.00000"
+              }
+            }
+          ],
+          "glass-specializations" : [
+            {
+              "value" : true
+            },
+            {
+              "appearance" : "tinted",
+              "value" : false
+            }
+          ],
+          "hidden" : true,
+          "image-name" : "Ellipse 2.png",
+          "name" : "body",
+          "opacity-specializations" : [
+            {
+              "value" : 0.85
+            },
+            {
+              "appearance" : "dark",
+              "value" : 0.85
+            },
+            {
+              "appearance" : "tinted",
+              "value" : 1
+            }
+          ],
+          "position" : {
+            "scale" : 2.5,
+            "translation-in-points" : [
+              200.35933173932085,
+              312.52036502388364
+            ]
+          }
+        },
+        {
+          "fill-specializations" : [
+            {
+              "value" : "automatic"
+            },
+            {
+              "appearance" : "tinted",
+              "value" : {
+                "solid" : "extended-srgb:0.00000,0.53333,1.00000,1.00000"
+              }
+            }
+          ],
+          "glass-specializations" : [
+            {
+              "value" : true
+            },
+            {
+              "appearance" : "tinted",
+              "value" : true
+            }
+          ],
+          "hidden" : true,
+          "image-name" : "Polygon 1.png",
+          "name" : "Polygon 1",
+          "position" : {
+            "scale" : 4.5,
+            "translation-in-points" : [
+              -15.743781609226176,
+              0
+            ]
+          }
+        },
+        {
+          "blend-mode-specializations" : [
+            {
+              "value" : "hard-light"
+            },
+            {
+              "appearance" : "dark",
+              "value" : "hard-light"
+            },
+            {
+              "appearance" : "tinted",
+              "value" : "normal"
+            }
+          ],
+          "fill-specializations" : [
+            {
+              "value" : {
+                "solid" : "display-p3:0.35096,0.53191,0.91571,1.00000"
+              }
+            },
+            {
+              "appearance" : "dark",
+              "value" : {
+                "solid" : "srgb:0.30494,1.00000,0.97989,1.00000"
+              }
+            }
+          ],
+          "glass-specializations" : [
+            {
+              "appearance" : "dark",
+              "value" : true
+            }
+          ],
+          "image-name" : "Ellipse 4.png",
+          "name" : "Ellipse 4",
+          "opacity-specializations" : [
+            {
+              "appearance" : "dark",
+              "value" : 0.85
+            }
+          ],
+          "position" : {
+            "scale" : 2.2,
+            "translation-in-points" : [
+              267.7093317393209,
+              330.51036502388365
+            ]
+          }
+        },
+        {
+          "blend-mode" : "normal",
+          "fill-specializations" : [
+            {
+              "value" : {
+                "solid" : "display-p3:0.35792,0.54361,0.95085,1.00000"
+              }
+            },
+            {
+              "appearance" : "dark",
+              "value" : {
+                "solid" : "display-p3:0.37736,0.77835,0.76692,1.00000"
+              }
+            }
+          ],
+          "glass" : true,
+          "image-name" : "Ellipse 3.png",
+          "name" : "Ellipse 3",
+          "opacity-specializations" : [
+            {
+              "value" : 0.75
+            },
+            {
+              "appearance" : "dark",
+              "value" : 0.85
+            }
+          ],
+          "position" : {
+            "scale" : 2.2,
+            "translation-in-points" : [
+              267.70933173932076,
+              87.77036502388364
+            ]
+          }
+        },
+        {
+          "fill-specializations" : [
+            {
+              "value" : {
+                "linear-gradient" : [
+                  "srgb:0.47830,0.49492,0.50000,1.00000",
+                  "display-p3:0.56947,0.58568,0.59352,1.00000"
+                ],
+                "orientation" : {
+                  "start" : {
+                    "x" : 0.5,
+                    "y" : -0.19886923107473078
+                  },
+                  "stop" : {
+                    "x" : 0.5,
+                    "y" : 0.5
+                  }
+                }
+              }
+            },
+            {
+              "appearance" : "dark",
+              "value" : {
+                "linear-gradient" : [
+                  "srgb:0.91513,1.00000,0.95793,1.00000",
+                  "display-p3:0.77039,0.81679,0.78538,1.00000"
+                ],
+                "orientation" : {
+                  "start" : {
+                    "x" : 0.5,
+                    "y" : 0.08151524371004804
+                  },
+                  "stop" : {
+                    "x" : 0.4758269947877972,
+                    "y" : 1.1357901791312381
+                  }
+                }
+              }
+            }
+          ],
+          "glass" : true,
+          "image-name" : "Polygon 2.png",
+          "name" : "Polygon 2",
+          "position" : {
+            "scale" : 4.4,
+            "translation-in-points" : [
+              -31.889551378613533,
+              -16.3828125
             ]
           }
         }
       ],
+      "lighting" : "individual",
       "shadow" : {
-        "kind" : "neutral",
-        "opacity" : 0.5
+        "kind" : "layer-color",
+        "opacity" : 0.7
       },
+      "specular" : true,
       "translucency" : {
         "enabled" : true,
-        "value" : 0.5
+        "value" : 0.55
       }
     }
   ],

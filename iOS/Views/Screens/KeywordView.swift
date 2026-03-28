@@ -98,12 +98,18 @@ struct Screen3Keywords: View {
                                 // Start
                                 recordingStore.startRecording()
                                 SFSpeechRecognizer.requestAuthorization { _ in }
+                                #if os(iOS)
                                 Task { _ = await AVAudioApplication.requestRecordPermission() }
+                                #elseif os(macOS)
+                                AVCaptureDevice.requestAccess(for: .audio) { _ in }
+                                #endif
                                 guard let recogniser = speechRecogniser, recogniser.isAvailable else { return }
                                 
+                                #if os(iOS)
                                 let audioSession = AVAudioSession.sharedInstance()
                                 try? audioSession.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .allowBluetooth])
                                 try? audioSession.setActive(true)
+                                #endif
                                 
                                 let request = SFSpeechAudioBufferRecognitionRequest()
                                 request.shouldReportPartialResults = true
@@ -149,13 +155,23 @@ struct Screen3Keywords: View {
             }
             .padding(.vertical, 12)
             .navigationTitle($title)
+            #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar {
+                #if os(macOS)
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(action: { dismiss() }) {
+                        Label("Back", systemImage: "chevron.backward")
+                    }
+                }
+                #else
                 ToolbarItem(placement: .topBarLeading) {
                     Button(action: { dismiss() }) {
                         Label("Back", systemImage: "chevron.backward")
                     }
                 }
+                #endif
             }
             .onAppear {
                 Task {
@@ -177,7 +193,9 @@ struct Screen3Keywords: View {
         recognitionTask?.cancel()
         recognitionTask = nil
         recognitionRequest = nil
+        #if os(iOS)
         try? AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
+        #endif
     }
 }
 

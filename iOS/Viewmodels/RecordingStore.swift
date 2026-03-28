@@ -9,7 +9,9 @@ final class RecordingStore: ObservableObject {
     @Published var latestRecordingURL: URL? = nil
     @Published var permissionDenied: Bool = false
     
+    #if os(iOS)
     private var session: AVAudioSession = .sharedInstance()
+    #endif
     private var recorder: AVAudioRecorder?
     private var recordedCount: Int = 0
     
@@ -24,6 +26,7 @@ final class RecordingStore: ObservableObject {
     }
     
     func requestPermissionIfNeeded() async {
+        #if os(iOS)
         if #available(iOS 17.0, *) {
             let granted = await AVAudioApplication.requestRecordPermission()
             permissionDenied = !granted
@@ -37,15 +40,25 @@ final class RecordingStore: ObservableObject {
                 }
             }
         }
+        #elseif os(macOS)
+        let granted = await withCheckedContinuation { cont in
+            AVCaptureDevice.requestAccess(for: .audio) { allowed in
+                cont.resume(returning: allowed)
+            }
+        }
+        permissionDenied = !granted
+        #endif
     }
     
     func configureSessionIfNeeded() async {
+        #if os(iOS)
         do {
             try session.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .allowBluetooth])
             try session.setActive(true)
         } catch {
             print("RecordingStore session error: \(error.localizedDescription)")
         }
+        #endif
     }
     
     func startRecording() {

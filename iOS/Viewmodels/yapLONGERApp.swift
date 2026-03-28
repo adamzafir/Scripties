@@ -16,8 +16,13 @@ struct yapLONGERApp: App {
         WindowGroup {
             Group {
                 if hasCompletedOnboarding {
+                    #if os(macOS)
+                    MacRootView()
+                        .transition(.opacity)
+                    #else
                     Screen1(viewModel: scriptsViewModel)
                         .transition(.opacity)
+                    #endif
                 } else {
                     OnboardingView()
                         .transition(.opacity)

@@ -1,7 +1,6 @@
 import Foundation
 import SwiftUI
 import Combine
-import WatchConnectivity
 
 struct Review: Identifiable, Codable {
     var id: UUID
@@ -36,13 +35,6 @@ struct Reviews: Identifiable, Codable  {
         self.id = id
         self.reviewsItems = reviewsItems
     }
-}
-
-struct ScriptSummary: Identifiable, Codable {
-    var id: UUID
-    var title: String
-    var scriptText: String
-    var lastAccessed: Date
 }
 
 struct ScriptItem: Identifiable, Codable {
@@ -88,8 +80,6 @@ class Screen2ViewModel: NSObject, ObservableObject {
     private var untitledCount: Int = 0
     private var cancellables = Set<AnyCancellable>()
     private let fileURL: URL
-    private var watchSession: WCSession? = WCSession.isSupported() ? .default : nil
-
     override init() {
         let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
         self.fileURL = docs.appendingPathComponent("scripts.json")
@@ -97,15 +87,12 @@ class Screen2ViewModel: NSObject, ObservableObject {
         
         load()
         sortByRecency()
-        activateWatchSession()
-        sendScriptsToWatch()
         
         $scriptItems
             .debounce(for: .milliseconds(250), scheduler: DispatchQueue.main)
             .sink { [weak self] _ in
                 self?.sortByRecency()
                 self?.save()
-                self?.sendScriptsToWatch()
             }
             .store(in: &cancellables)
     }
@@ -231,172 +218,6 @@ class Screen2ViewModel: NSObject, ObservableObject {
             var script = item
             script.pastReviews.reviewsItems.sort { $0.date > $1.date }
             return script
-        }
-    }
-}
-
-// MARK: - Watch Connectivity
-extension Screen2ViewModel: WCSessionDelegate {
-    private func activateWatchSession() {
-        guard let watchSession, WCSession.isSupported() else { return }
-        watchSession.delegate = self
-        watchSession.activate()
-    }
-
-    private func scriptsData() -> Data? {
-        let summaries = scriptItems.map { ScriptSummary(id: $0.id, title: $0.title, scriptText: $0.scriptText, lastAccessed: $0.lastAccessed) }
-        return try? JSONEncoder().encode(summaries)
-    }
-
-    private func sendScriptsToWatch() {
-        guard let watchSession, watchSession.isPaired else {
-            print("WC iOS: not paired; skipping send")
-
-            return
-        }
-        guard let data = scriptsData() else { return }
-
-        let byteCount = data.count
-        print("WC iOS: pushing scripts (\(byteCount) bytes)")
-
-        // If the watch app is in the foreground, push immediately.
-        if watchSession.isReachable {
-            watchSession.sendMessage(["scripts": data], replyHandler: nil) { error in
-                print("WC sendMessage error: \(error.localizedDescription)")
-            }
-        }
-
-        // Keep background/queued paths too.
-        do {
-            print("WC iOS: updateApplicationContext scripts")
-            try watchSession.updateApplicationContext(["scripts": data])
-        } catch {
-            print("WC iOS updateApplicationContext error: \(error.localizedDescription)")
-        }
-
-        // Also transfer as userInfo for background delivery.
-        print("WC iOS: transferUserInfo scripts")
-        watchSession.transferUserInfo(["type": "scripts", "scripts": data])
-    }
-
-    // iOS 13+: activation completion (iOS)
-    func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {
-        print("WC iOS activation: \(activationState.rawValue) error: \(error?.localizedDescription ?? "none")")
-        if activationState == .activated {
-            sendScriptsToWatch()
-        }
-    }
-
-    func sessionDidBecomeInactive(_ session: WCSession) {}
-    func sessionDidDeactivate(_ session: WCSession) {
-        session.activate()
-    }
-
-    // Reachability changed: if the watch app just came to foreground, push immediately.
-    func sessionReachabilityDidChange(_ session: WCSession) {
-        print("WC iOS reachability changed: \(session.isReachable)")
-        if session.isReachable {
-            sendScriptsToWatch()
-        }
-    }
-
-    // Watch state changed (e.g., app installed later) — try again.
-    func sessionWatchStateDidChange(_ session: WCSession) {
-        print("WC iOS watch state changed; sending scripts")
-        sendScriptsToWatch()
-    }
-
-    // Live message without reply (legacy callers)
-    func session(_ session: WCSession, didReceiveMessage message: [String : Any]) {
-        guard let type = message["type"] as? String else { return }
-        if type == "requestScripts" {
-            print("WC iOS: got requestScripts message")
-            DispatchQueue.main.async { self.sendScriptsToWatch() }
-        } else if type == "review" {
-            handleReviewPayload(message)
-        }
-    }
-
-    // Live message with reply (watch prefers this when reachable)
-    func session(_ session: WCSession, didReceiveMessage message: [String : Any], replyHandler: @escaping ([String : Any]) -> Void) {
-        guard let type = message["type"] as? String else {
-            replyHandler([:])
-            return
-        }
-        if type == "requestScripts" {
-            print("WC iOS: got requestScripts reply message")
-            if let data = scriptsData() {
-                replyHandler(["scripts": data])
-            } else {
-                replyHandler([:])
-            }
-        } else if type == "review" {
-            handleReviewPayload(message)
-            replyHandler([:]) // ack
-        } else {
-            replyHandler([:])
-        }
-    }
-
-    // Background request from watch
-    func session(_ session: WCSession, didReceiveUserInfo userInfo: [String : Any] = [:]) {
-        if let type = userInfo["type"] as? String, type == "requestScripts" {
-            print("WC iOS: got requestScripts userInfo")
-            DispatchQueue.main.async { self.sendScriptsToWatch() }
-        } else {
-            handleReviewPayload(userInfo)
-        }
-    }
-
-    func session(_ session: WCSession, didReceive file: WCSessionFile) {
-        guard
-            let meta = file.metadata,
-            let scriptIDString = meta["scriptID"] as? String,
-            let reviewIDString = meta["reviewID"] as? String,
-            let scriptID = UUID(uuidString: scriptIDString),
-            let reviewID = UUID(uuidString: reviewIDString)
-        else { return }
-
-        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        let dest = docs.appendingPathComponent(file.fileURL.lastPathComponent)
-
-        do {
-            // fileExists only has a path-based API
-            if FileManager.default.fileExists(atPath: dest.path) {
-                try FileManager.default.removeItem(at: dest)
-            }
-            try FileManager.default.copyItem(at: file.fileURL, to: dest)
-
-            DispatchQueue.main.async {
-                self.attachAudio(url: dest, reviewID: reviewID, scriptID: scriptID)
-            }
-        } catch {
-            print("Failed to persist audio from watch: \(error.localizedDescription)")
-        }
-    }
-
-    private func handleReviewPayload(_ message: [String: Any]) {
-        guard let type = message["type"] as? String, type == "review" else { return }
-        guard
-            let scriptIDString = message["scriptID"] as? String,
-            let scriptID = UUID(uuidString: scriptIDString),
-            let cis = message["cis"] as? Int,
-            let wpm = message["wpm"] as? Int
-        else { return }
-
-        let reviewID = UUID(uuidString: message["reviewID"] as? String ?? "") ?? UUID()
-        let dateInterval = message["date"] as? TimeInterval ?? Date().timeIntervalSince1970
-        let review = Review(id: reviewID, cis: cis, wpm: wpm, audioURL: nil, date: Date(timeIntervalSince1970: dateInterval))
-        DispatchQueue.main.async {
-            self.appendReview(review, to: scriptID)
-        }
-    }
-
-    private func attachAudio(url: URL, reviewID: UUID, scriptID: UUID) {
-        guard let scriptIndex = scriptItems.firstIndex(where: { $0.id == scriptID }) else { return }
-        if let reviewIndex = scriptItems[scriptIndex].pastReviews.reviewsItems.firstIndex(where: { $0.id == reviewID }) {
-            scriptItems[scriptIndex].pastReviews.reviewsItems[reviewIndex].audioURL = url
-            save()
         }
     }
 }

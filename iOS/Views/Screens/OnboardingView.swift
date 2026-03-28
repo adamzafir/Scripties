@@ -5,6 +5,11 @@
 //  Created by Chan Yap Long on 17/11/25.
 //
 import SwiftUI
+#if os(iOS)
+import UIKit
+#elseif os(macOS)
+import AppKit
+#endif
 
 // MARK: - Onboarding Page Model
 struct OnboardingPage: Identifiable {
@@ -75,7 +80,15 @@ struct OnboardingView: View {
                 
                 Spacer()
                 
-                // TabView for pages
+                // TabView for pages (iOS) / custom pager (macOS)
+                #if os(macOS)
+                ZStack {
+                    OnboardingPageView(page: pages[safeCurrentPage])
+                        .id(safeCurrentPage)
+                        .transition(.opacity)
+                }
+                .animation(.easeInOut(duration: 0.25), value: safeCurrentPage)
+                #else
                 TabView(selection: $currentPage) {
                     ForEach(0..<pages.count, id: \.self) { index in
                         OnboardingPageView(page: pages[index])
@@ -92,6 +105,7 @@ struct OnboardingView: View {
                         currentPage = clamped
                     }
                 }
+                #endif
                 
                 Spacer()
                 // Navigation buttons
@@ -193,6 +207,7 @@ struct OnboardingPageView: View {
     @ViewBuilder
     private func pageImage(named name: String) -> some View {
         let effectiveName = resolvedImageName(from: name)
+        #if os(iOS)
         if let uiImage = UIImage(named: effectiveName) {
             // Use asset as-is (no tint)
             Image(uiImage: uiImage)
@@ -213,6 +228,28 @@ struct OnboardingPageView: View {
                     )
                 )
         }
+        #elseif os(macOS)
+        if let nsImage = NSImage(named: effectiveName) {
+            // Use asset as-is (no tint)
+            Image(nsImage: nsImage)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 100, height: 100)
+        } else {
+            // SF Symbol with pri→sec gradient
+            Image(systemName: effectiveName)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 100, height: 100)
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [Color.pri, Color.sec],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+        }
+        #endif
     }
     
     var body: some View {

@@ -73,12 +73,27 @@ struct Screen2: View {
                         TextField("Untitled Script", text: $title)
                             .font(.title)
                             .fontWeight(.bold)
-                            .textFieldStyle(.plain)
                             .submitLabel(.done)
+                            #if os(macOS)
+                            .textFieldStyle(.roundedBorder)
+                            #else
+                            .textFieldStyle(.plain)
+                            #endif
                         
                         TextEditor(text: $script)
                             .focused($isEditingScript)
                             .frame(maxHeight: .infinity)
+                            #if os(macOS)
+                            .padding(8)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(Color(nsColor: .textBackgroundColor))
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color(nsColor: .separatorColor), lineWidth: 1)
+                            )
+                            #endif
                     }
                     
                     Spacer()
@@ -131,6 +146,20 @@ struct Screen2: View {
                 Button("Cancel", role: .cancel) {}
             }
             .toolbar {
+                #if os(macOS)
+                ToolbarItem(placement: .primaryAction) {
+                    Menu {
+                        Button {
+                            showScreent = true
+                        } label: {
+                            Text("Teleprompter")
+                        }
+                    } label: {
+                        Image(systemName: "play.fill")
+                    }
+                    .padding()
+                }
+                #else
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Menu {
                         Button {
@@ -159,6 +188,7 @@ struct Screen2: View {
                         Image(systemName: "checkmark")
                     }
                 }
+                #endif
             }
         }
         .overlay(alignment: .bottom) {
@@ -182,6 +212,17 @@ struct Screen2: View {
                 .animation(.easeInOut(duration: 0.15), value: isEditingScript)
             }
         }
+        #if os(macOS)
+        .sheet(isPresented: $showScreent) {
+            Screen3Teleprompter(
+                scriptItemID: scriptItemID,
+                title: $title,
+                script: $script,
+                WPM: $WPM,
+                isPresented: $showScreent
+            )
+        }
+        #else
         .fullScreenCover(isPresented: $showScreent) {
             Screen3Teleprompter(
                 scriptItemID: scriptItemID,
@@ -191,6 +232,7 @@ struct Screen2: View {
                 isPresented: $showScreent
             )
         }
+        #endif
         .onDisappear {
             typingResetTask?.cancel()
         }

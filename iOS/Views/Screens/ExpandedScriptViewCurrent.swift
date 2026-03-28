@@ -5,6 +5,9 @@ struct Screen22: View {
     var scriptItemID: UUID
 
     @EnvironmentObject private var scriptsViewModel: Screen2ViewModel
+    #if os(macOS)
+    @EnvironmentObject private var macSessionState: MacSessionState
+    #endif
 
     @Binding var title: String
     @Binding var script: String
@@ -82,6 +85,9 @@ struct Screen22: View {
                         .padding(.horizontal, 16)
                         .padding(.vertical, 12)
                         .frame(maxWidth: .infinity, alignment: .leading)
+                        #if os(macOS)
+                        .textFieldStyle(.roundedBorder)
+                        #endif
                     
                     ZStack(alignment: .topLeading) {
                         TextEditor(text: $script)
@@ -89,7 +95,18 @@ struct Screen22: View {
                             .padding(.horizontal, 16)
                             .padding(.vertical, 8)
                             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                            #if os(macOS)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(Color(nsColor: .textBackgroundColor))
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color(nsColor: .separatorColor), lineWidth: 1)
+                            )
+                            #else
                             .background(Color.clear)
+                            #endif
                             .onChange(of: script) { _, newValue in
                                 wordCount = newValue.split { $0.isWhitespace }.count
                                 
@@ -150,6 +167,13 @@ struct Screen22: View {
                 Button("Cancel", role: .cancel) {}
             }
             .toolbar {
+                #if os(macOS)
+                ToolbarItem(placement: .primaryAction) {
+                    Button { showScreent = true } label: {
+                        Image(systemName: "music.microphone")
+                    }
+                }
+                #else
                 ToolbarItem(placement: .topBarTrailing) {
                     HStack(spacing: 20) {
                         Button { showScreent = true } label: {
@@ -170,6 +194,7 @@ struct Screen22: View {
                         Image(systemName: "checkmark")
                     }
                 }
+                #endif
             }
         }
         .overlay(alignment: .bottom) {
@@ -189,6 +214,17 @@ struct Screen22: View {
                 }
             }
         }
+        #if os(macOS)
+        .sheet(isPresented: $showScreent) {
+            Screen3Teleprompter(
+                scriptItemID: scriptItemID,
+                title: $title,
+                script: $script,
+                WPM: $WPM,
+                isPresented: $showScreent
+            )
+        }
+        #else
         .fullScreenCover(isPresented: $showScreent) {
             Screen3Teleprompter(
                 scriptItemID: scriptItemID,
@@ -198,8 +234,17 @@ struct Screen22: View {
                 isPresented: $showScreent
             )
         }
+        #endif
+        #if os(macOS)
+        .onChange(of: showScreent) { _, newValue in
+            macSessionState.isSessionActive = newValue
+        }
+        #endif
         .onDisappear {
             typingResetTask?.cancel()
+            #if os(macOS)
+            macSessionState.isSessionActive = false
+            #endif
         }
     }
 }

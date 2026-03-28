@@ -1,4 +1,17 @@
 import SwiftUI
+#if os(iOS)
+import UIKit
+#elseif os(macOS)
+import AppKit
+#endif
+
+private func platformScreenSize() -> CGSize {
+    #if os(iOS)
+    return UIScreen.main.bounds.size
+    #elseif os(macOS)
+    return NSScreen.main?.frame.size ?? CGSize(width: 800, height: 600)
+    #endif
+}
 
 struct AppleIntelligenceGradient: ViewModifier {
     var start: UnitPoint = .leading
@@ -108,8 +121,8 @@ struct Effect: View {
                     lineWidth: width
                 )
                 .frame(
-                    width: UIScreen.main.bounds.width,
-                    height: UIScreen.main.bounds.height
+                    width: platformScreenSize().width,
+                    height: platformScreenSize().height
                 )
                 .padding(.top, -17)
                 .blur(radius: blur)
@@ -132,8 +145,8 @@ struct EffectNoBlur: View {
                     lineWidth: width
                 )
                 .frame(
-                    width: UIScreen.main.bounds.width,
-                    height: UIScreen.main.bounds.height
+                    width: platformScreenSize().width,
+                    height: platformScreenSize().height
                 )
                 .padding(.top, -26)
         }

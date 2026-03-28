@@ -8,6 +8,7 @@
 import SwiftUI
 import AVKit
 
+#if os(iOS)
 struct AudioRecorderView: View {
     @State private var record = false
     @State private var session: AVAudioSession?
@@ -240,3 +241,14 @@ struct AudioRecorderView: View {
 #Preview {
     AudioRecorderView()
 }
+#else
+struct AudioRecorderView: View {
+    var body: some View {
+        ContentUnavailableView {
+            Label("Audio Recording Unavailable", systemImage: "mic.slash")
+        } description: {
+            Text("Audio recording is only available on iOS.")
+        }
+    }
+}
+#endif

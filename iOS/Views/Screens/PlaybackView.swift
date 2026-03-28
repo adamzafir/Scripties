@@ -16,12 +16,14 @@ struct Screen5: View {
     @State private var isPlaying = false  // Track the play/pause state
 
     private func configureAudioSessionForPlayback() {
+        #if os(iOS)
         do {
             try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [])
             try AVAudioSession.sharedInstance().setActive(true)
         } catch {
             print("Audio session setup failed:", error)
         }
+        #endif
     }
 
     private func startProgressTimer() {
