@@ -218,11 +218,26 @@ struct Screen3Teleprompter: View {
     private func finalizeReviewDraft() {
         let cis = Int(computeCIS().rounded())
         let wpm = computeWPMValue()
+        let rendered = ScriptRenderService.renderLines(
+            text: script,
+            fontSize: fontSize,
+            width: platformScreenWidth() - 32
+        )
+        let deliveryAnalysis = AudioAnalysisService.analyze(
+            recordingURL: recordingStore.latestRecordingURL,
+            transcript: transcription,
+            lineAlignment: .initial,
+            renderedLines: rendered,
+            elapsedTime: Double(elapsed),
+            wordCount: wordCount,
+            silenceDurations: silenceDurations
+        )
         reviewDraft = Review(
             cis: cis,
             wpm: wpm,
             audioURL: recordingStore.latestRecordingURL,
-            date: Date()
+            date: Date(),
+            pitchTone: deliveryAnalysis.pitchToneDisplay
         )
     }
 

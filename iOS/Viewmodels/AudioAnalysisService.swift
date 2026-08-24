@@ -71,7 +71,13 @@ enum AudioAnalysisService {
                 "pace": pace.confidence,
                 "pauses": pauseAnalysis.confidence,
                 "adherence": adherence.confidence
-            ]
+            ],
+            pitchToneDisplay: makePitchToneDisplay(
+                pitch: pitch,
+                energy: energy,
+                pace: pace,
+                pauses: pauseAnalysis
+            )
         )
     }
 
@@ -339,6 +345,75 @@ enum AudioAnalysisService {
         }
 
         return output
+    }
+
+    private static func makePitchToneDisplay(
+        pitch: PitchAnalysis,
+        energy: EnergyAnalysis,
+        pace: PaceAnalysis,
+        pauses: PauseAnalysis
+    ) -> PitchToneDisplay {
+        let confidence = AnalysisConfidence(
+            (pitch.confidence.value * 0.5) +
+            (energy.confidence.value * 0.2) +
+            (pace.confidence.value * 0.15) +
+            (pauses.confidence.value * 0.15)
+        )
+
+        guard confidence.value >= 0.45, pitch.confidence.value >= 0.35 else {
+            return PitchToneDisplay(
+                status: .insufficientSignal,
+                title: "Need a clearer recording",
+                subtitle: "The app could not read pitch reliably enough to judge vocal variety.",
+                actionableTip: "Record in a quieter room and keep the phone closer to the speaker.",
+                userFacingScore: 0,
+                confidence: confidence
+            )
+        }
+
+        let varietyScore = Int(round(
+            max(
+                0,
+                min(
+                    100,
+                    (pitch.pitchVariationScore * 0.55) +
+                    (energy.energyVariationScore * 0.2) +
+                    (pace.paceStabilityScore * 0.15) +
+                    (pauses.pauseControlScore * 0.1)
+                )
+            )
+        ))
+
+        if pitch.monotonyRiskScore >= 60 || pitch.pitchVariationScore < 45 {
+            return PitchToneDisplay(
+                status: .tooFlat,
+                title: "Too flat",
+                subtitle: "Your vocal variety stayed narrow, so parts of the speech may have sounded monotone.",
+                actionableTip: "Stress key words more clearly and let your pitch rise or fall at transitions instead of holding one band.",
+                userFacingScore: varietyScore,
+                confidence: confidence
+            )
+        }
+
+        if pitch.movementRate > 28 || pitch.pitchVariationScore < 35 {
+            return PitchToneDisplay(
+                status: .tooErratic,
+                title: "Too erratic",
+                subtitle: "Pitch moved around a lot, which can make the delivery feel jumpy instead of intentional.",
+                actionableTip: "Slow down slightly and reserve stronger pitch jumps for key points only.",
+                userFacingScore: varietyScore,
+                confidence: confidence
+            )
+        }
+
+        return PitchToneDisplay(
+            status: .balanced,
+            title: "Balanced vocal variety",
+            subtitle: "Your pitch and tone variation looked healthy enough to keep the speech sounding alive without becoming chaotic.",
+            actionableTip: "Keep using pitch changes on important phrases and pair them with deliberate pauses.",
+            userFacingScore: varietyScore,
+            confidence: confidence
+        )
     }
 
     private static func rootMeanSquare(_ frame: [Float]) -> Float {

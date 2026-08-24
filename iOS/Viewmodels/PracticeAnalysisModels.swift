@@ -233,6 +233,23 @@ struct DeliveryAnalysis: Codable, Hashable {
     let deliveryConsistencyScore: Double
     let summary: [String]
     let confidenceByMetric: [String: AnalysisConfidence]
+    let pitchToneDisplay: PitchToneDisplay
+}
+
+enum PitchToneStatus: String, Codable, Hashable {
+    case insufficientSignal
+    case tooFlat
+    case balanced
+    case tooErratic
+}
+
+struct PitchToneDisplay: Codable, Hashable {
+    let status: PitchToneStatus
+    let title: String
+    let subtitle: String
+    let actionableTip: String
+    let userFacingScore: Int
+    let confidence: AnalysisConfidence
 }
 
 struct PracticeSession: Identifiable, Codable, Hashable {

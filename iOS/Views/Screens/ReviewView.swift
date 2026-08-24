@@ -121,6 +121,26 @@ struct ReviewView: View {
             }
 
             Section("Result") {
+                if let pitchTone = review.pitchTone {
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack {
+                            Text("Pitch & Tone")
+                            Spacer()
+                            Text("\(pitchTone.userFacingScore)")
+                                .monospacedDigit()
+                                .foregroundStyle(.secondary)
+                        }
+                        Text(pitchTone.title)
+                            .font(.headline)
+                        Text(pitchTone.subtitle)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                        Text("Tip: \(pitchTone.actionableTip)")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
                 DisclosureGroup(isExpanded: $expandWPM) {
                     SemiCircleGauge(
                         progress: max(0, min(1, Double(review.wpm)/180)),

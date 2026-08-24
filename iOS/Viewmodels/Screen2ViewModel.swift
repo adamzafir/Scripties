@@ -8,13 +8,15 @@ struct Review: Identifiable, Codable {
     var wpm: Int
     var audioURL: URL?
     var date: Date
+    var pitchTone: PitchToneDisplay?
 
-    init(id: UUID = UUID(), cis: Int, wpm: Int, audioURL: URL? = nil, date: Date = Date()) {
+    init(id: UUID = UUID(), cis: Int, wpm: Int, audioURL: URL? = nil, date: Date = Date(), pitchTone: PitchToneDisplay? = nil) {
         self.id = id
         self.cis = cis
         self.wpm = wpm
         self.audioURL = audioURL
         self.date = date
+        self.pitchTone = pitchTone
     }
 
     init(from decoder: Decoder) throws {
@@ -24,6 +26,7 @@ struct Review: Identifiable, Codable {
         wpm = (try? container.decode(Int.self, forKey: .wpm)) ?? 0
         audioURL = try? container.decode(URL.self, forKey: .audioURL)
         date = (try? container.decode(Date.self, forKey: .date)) ?? Date()
+        pitchTone = try? container.decode(PitchToneDisplay.self, forKey: .pitchTone)
     }
 }
 
