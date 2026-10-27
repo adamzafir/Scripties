@@ -8,7 +8,6 @@ private enum ScriptRoute: Hashable {
 struct Screen1: View {
     @ObservedObject var viewModel: Screen2ViewModel
     @State private var path: [ScriptRoute] = []
-    @State private var pendingDeletion: UUID?
     
     var body: some View {
         NavigationStack(path: $path) {
@@ -18,7 +17,7 @@ struct Screen1: View {
                         ContentUnavailableView {
                             Label("No Scripts", systemImage: "list.bullet")
                         } description: {
-                            Text("Create a script, then practice it with live voice tracking.")
+                            Text("Select 'New Script' to add a new script")
                         }
                        
                     } else {
@@ -51,9 +50,11 @@ struct Screen1: View {
                                     }
                                 .tint(.pri)
                                 }
-                                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                                     Button(role: .destructive) {
-                                        pendingDeletion = item.id
+                                        if let idx = viewModel.scriptItems.firstIndex(where: { $0.id == item.id }) {
+                                            deleteItems(at: IndexSet(integer: idx))
+                                        }
                                     } label: {
                                         Label("Delete", systemImage: "trash")
                                     }
@@ -66,7 +67,6 @@ struct Screen1: View {
                 VStack {
                     Spacer()
                     Button {
-                        InteractionFeedback.impact()
                         viewModel.addNewScriptAtFront()
                         if let id = viewModel.scriptItems.first?.id {
                             path.append(.editor(id))
@@ -80,28 +80,12 @@ struct Screen1: View {
                             .background(Color.pri)
                             .clipShape(RoundedRectangle(cornerRadius: 14))
                     }
-                    .buttonStyle(PressableButtonStyle())
+                    .buttonStyle(.plain)
                     .padding(.horizontal, 20)
                     .padding(.bottom, 10)
                 }
             }
             .navigationTitle("Scripts")
-            .confirmationDialog("Delete this script?", isPresented: Binding(
-                get: { pendingDeletion != nil },
-                set: { if !$0 { pendingDeletion = nil } }
-            ), titleVisibility: .visible) {
-                Button("Delete Script", role: .destructive) {
-                    guard let id = pendingDeletion,
-                          let index = viewModel.scriptItems.firstIndex(where: { $0.id == id }) else {
-                        return
-                    }
-                    deleteItems(at: IndexSet(integer: index))
-                    pendingDeletion = nil
-                }
-                Button("Cancel", role: .cancel) { pendingDeletion = nil }
-            } message: {
-                Text("Its practice history will also be removed.")
-            }
             .navigationDestination(for: ScriptRoute.self) { route in
                 switch route {
                 case .editor(let id):
