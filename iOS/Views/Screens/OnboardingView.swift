@@ -22,7 +22,6 @@ struct OnboardingPage: Identifiable {
 // MARK: - Main Onboarding View
 struct OnboardingView: View {
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var currentPage = 0
     
     private var safeCurrentPage: Int {
@@ -66,7 +65,7 @@ struct OnboardingView: View {
                     }
                     .foregroundStyle(Color.pri)
                     .opacity(safeCurrentPage < pages.count - 1 ? 1 : 0)
-                    .animation(reduceMotion ? nil : .easeOut(duration: 0.18), value: safeCurrentPage)
+                    .animation(.easeInOut(duration: 0.3), value: safeCurrentPage)
                     .padding()
                 }
                 .frame(height: 50)
@@ -105,8 +104,7 @@ struct OnboardingView: View {
                 HStack(spacing: 20) {
                     if safeCurrentPage > 0 {
                         Button(action: {
-                            InteractionFeedback.impact()
-                            withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) {
+                            withAnimation(.spring(response: 0.8)) {
                                 currentPage = max(0, safeCurrentPage - 1)
                             }
                         }) {
@@ -135,8 +133,7 @@ struct OnboardingView: View {
                     Spacer()
                     Button(action: {
                         if safeCurrentPage < pages.count - 1 {
-                            InteractionFeedback.impact()
-                            withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) {
+                            withAnimation(.spring(response: 0.3)) {
                                 currentPage = min(pages.count - 1, safeCurrentPage + 1)
                             }
                         } else {
@@ -160,15 +157,15 @@ struct OnboardingView: View {
                                     .transition(.opacity)
                             }
                         }
-                        .animation(reduceMotion ? nil : .easeOut(duration: 0.18), value: safeCurrentPage)
+                        .animation(.spring(response: 0.3), value: safeCurrentPage)
                         .foregroundColor(.white)
                         .frame(width: 170, height: 50)
                         .background(
                             Color.pri
                         )
                         .cornerRadius(12)
+                        .shadow(color: Color.pri.opacity(0.35), radius: 8, x: 0, y: 4)
                     }
-                    .buttonStyle(PressableButtonStyle())
                     .padding()
                 }
             }
@@ -176,8 +173,7 @@ struct OnboardingView: View {
     }
     
     private func completeOnboarding() {
-        InteractionFeedback.success()
-        withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) {
+        withAnimation {
             hasCompletedOnboarding = true
         }
     }
@@ -186,6 +182,7 @@ struct OnboardingView: View {
 // MARK: - Individual Onboarding Page
 struct OnboardingPageView: View {
     let page: OnboardingPage
+    @State private var isAnimating = false
     @Environment(\.colorScheme) private var colorScheme
     
     private func resolvedImageName(from baseName: String) -> String {
@@ -261,6 +258,9 @@ struct OnboardingPageView: View {
             }
         }
         .padding()
+        .onAppear {
+            isAnimating = true
+        }
     }
 }
 

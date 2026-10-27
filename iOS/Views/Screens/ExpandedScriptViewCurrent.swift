@@ -17,7 +17,10 @@ struct Screen22: View {
     
     @State private var showScreent = false
     @State private var WPM: Int = 120
+    @State private var timer = TimerManager()
+    
     @State private var isLoading = false
+    @State private var showEstimate = true
     
     @State private var isTyping = false
     @State private var typingResetTask: Task<Void, Never>? = nil
@@ -205,7 +208,7 @@ struct Screen22: View {
             }
         }
         .safeAreaInset(edge: .bottom) {
-            if !isEditingScript && !isEditingTitle && !isTyping {
+            if showEstimate && !isEditingScript && !isEditingTitle && !isTyping {
                 VStack(spacing: 10) {
                     HStack {
                         Label("\(wordCount) words", systemImage: "text.word.spacing")
@@ -217,7 +220,6 @@ struct Screen22: View {
                     .monospacedDigit()
 
                     Button {
-                        InteractionFeedback.impact(.medium)
                         showScreent = true
                     } label: {
                         Label("Practice This Script", systemImage: "mic.fill")
@@ -228,7 +230,7 @@ struct Screen22: View {
                             .background(Color.pri)
                             .clipShape(RoundedRectangle(cornerRadius: 14))
                     }
-                    .buttonStyle(PressableButtonStyle())
+                    .buttonStyle(.plain)
                     .disabled(script.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
                 .padding(.horizontal, 20)
